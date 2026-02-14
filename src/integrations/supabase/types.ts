@@ -81,7 +81,10 @@ export type Database = {
           admin_amount: number
           amount: number
           apporteur_id: string
+          commission_month: number
+          commission_year: number
           created_at: string
+          days_worked: number
           id: string
           mission_id: string
           percentage: number
@@ -92,7 +95,10 @@ export type Database = {
           admin_amount?: number
           amount?: number
           apporteur_id: string
+          commission_month?: number
+          commission_year?: number
           created_at?: string
+          days_worked?: number
           id?: string
           mission_id: string
           percentage?: number
@@ -103,7 +109,10 @@ export type Database = {
           admin_amount?: number
           amount?: number
           apporteur_id?: string
+          commission_month?: number
+          commission_year?: number
           created_at?: string
+          days_worked?: number
           id?: string
           mission_id?: string
           percentage?: number
@@ -129,6 +138,7 @@ export type Database = {
           created_at: string
           description: string
           duration: string
+          hidden_by_user: boolean
           id: string
           location: string
           margin: number
@@ -153,6 +163,7 @@ export type Database = {
           created_at?: string
           description?: string
           duration?: string
+          hidden_by_user?: boolean
           id?: string
           location?: string
           margin?: number
@@ -177,6 +188,7 @@ export type Database = {
           created_at?: string
           description?: string
           duration?: string
+          hidden_by_user?: boolean
           id?: string
           location?: string
           margin?: number
