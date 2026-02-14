@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Link, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import { useCreateLead } from "@/hooks/useLeads";
 
 const techOptions = [
   "React", "Angular", "Vue.js", "Node.js", "Python", "Java", "Go", ".NET", "PHP",
@@ -26,9 +26,10 @@ const stepsConfig = [
 const DeclareLead = () => {
   const [step, setStep] = useState(0);
   const navigate = useNavigate();
+  const createLead = useCreateLead();
   const [form, setForm] = useState({
     client: "", sector: "", location: "", remote: "",
-    position: "", seniority: "", stack: [] as string[], startDate: "", duration: "",
+    position: "", seniority: "", stack: [] as string[], start_date: "", duration: "",
     tjm: "", margin: "", priority: "",
     description: "",
   });
@@ -41,8 +42,24 @@ const DeclareLead = () => {
   };
 
   const submit = () => {
-    toast.success("Besoin envoyé avec succès !", { description: "Statut : À qualifier" });
-    navigate("/dashboard");
+    createLead.mutate(
+      {
+        client: form.client,
+        sector: form.sector,
+        location: form.location,
+        remote: form.remote,
+        position: form.position,
+        seniority: form.seniority,
+        stack: form.stack,
+        start_date: form.start_date,
+        duration: form.duration,
+        tjm: parseFloat(form.tjm) || 0,
+        margin: parseFloat(form.margin) || 0,
+        priority: form.priority || "normal",
+        description: form.description,
+      },
+      { onSuccess: () => navigate("/dashboard") }
+    );
   };
 
   return (
@@ -143,7 +160,7 @@ const DeclareLead = () => {
                   </div>
                   <div>
                     <Label>Démarrage</Label>
-                    <Input type="date" value={form.startDate} onChange={e => update("startDate", e.target.value)} className="mt-1.5 bg-background/50" />
+                    <Input type="date" value={form.start_date} onChange={e => update("start_date", e.target.value)} className="mt-1.5 bg-background/50" />
                   </div>
                   <div>
                     <Label>Durée estimée</Label>
@@ -231,8 +248,8 @@ const DeclareLead = () => {
               Suivant <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={submit} className="gradient-primary glow-primary border-0">
-              <Check className="mr-2 h-4 w-4" /> Envoyer le besoin
+            <Button onClick={submit} disabled={createLead.isPending} className="gradient-primary glow-primary border-0">
+              <Check className="mr-2 h-4 w-4" /> {createLead.isPending ? "Envoi..." : "Envoyer le besoin"}
             </Button>
           )}
         </div>

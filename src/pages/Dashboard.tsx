@@ -1,43 +1,21 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Send, FileSearch, Users, CheckCircle2, Handshake, Receipt, Coins, Clock, TrendingUp, Plus, MessageSquare } from "lucide-react";
+import { ArrowRight, Send, FileSearch, Handshake, Coins, Clock, TrendingUp, Plus, CheckCircle2, MessageSquare, LogOut, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-
-const summaryCards = [
-  { label: "Besoins envoyés", value: "12", icon: Send, color: "text-primary" },
-  { label: "Profils en cours", value: "5", icon: FileSearch, color: "text-warning" },
-  { label: "Missions signées", value: "3", icon: Handshake, color: "text-success" },
-  { label: "Commissions en attente", value: "4 200€", icon: Clock, color: "text-warning" },
-  { label: "Commissions payées", value: "8 750€", icon: Coins, color: "text-success" },
-];
+import { useAuth } from "@/contexts/AuthContext";
+import { useLeads } from "@/hooks/useLeads";
+import { useMissions, useCommissions } from "@/hooks/useMissions";
+import { useCandidates } from "@/hooks/useCandidates";
 
 const workflowSteps = [
-  "Déclaré", "Qualifié", "Sourcing", "Profil trouvé", "Envoyé client", "Négociation", "Signé"
+  "Déclaré", "Qualifié", "En sourcing", "Profil trouvé", "Envoyé client", "Négociation", "Gagné"
 ];
 
-type Lead = {
-  id: number;
-  client: string;
-  position: string;
-  currentStep: number;
-  date: string;
-  priority: string;
-  hasProfile?: boolean;
+const statusToStep: Record<string, number> = {
+  "Déclaré": 0, "À qualifier": 0, "Qualifié": 1, "En sourcing": 2,
+  "Profil trouvé": 3, "Envoyé client": 4, "Négociation": 5, "Gagné": 6, "Perdu": 7,
 };
-
-const mockLeads: Lead[] = [
-  { id: 1, client: "BNP Paribas", position: "Tech Lead React", currentStep: 3, date: "2026-02-10", priority: "urgent", hasProfile: true },
-  { id: 2, client: "Société Générale", position: "DevOps Senior", currentStep: 5, date: "2026-02-08", priority: "normal" },
-  { id: 3, client: "Anonyme", position: "Data Engineer", currentStep: 1, date: "2026-02-12", priority: "normal" },
-  { id: 4, client: "AXA", position: "Architecte Cloud", currentStep: 6, date: "2026-01-25", priority: "urgent" },
-];
-
-const commissions = [
-  { mission: "DevOps — SG", tjm: "600€", duration: "6 mois", pct: "10%", amount: "7 920€", status: "Payée", paid: true },
-  { mission: "Tech Lead — BNP", tjm: "700€", duration: "3 mois", pct: "12%", amount: "5 544€", status: "En attente", paid: false },
-  { mission: "Fullstack — Engie", tjm: "550€", duration: "4 mois", pct: "10%", amount: "4 620€", status: "En cours", paid: false },
-];
 
 const priorityBadge = (p: string) => {
   if (p === "urgent") return <Badge className="bg-destructive/20 text-destructive border-0 text-xs">Urgent</Badge>;
@@ -45,26 +23,73 @@ const priorityBadge = (p: string) => {
 };
 
 const Dashboard = () => {
+  const { user, profile, isAdmin, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { data: leads = [], isLoading: leadsLoading } = useLeads();
+  const { data: missions = [] } = useMissions();
+  const { data: commissions = [] } = useCommissions();
+  const { data: candidates = [] } = useCandidates();
+
+  const myLeads = leads.filter(l => l.user_id === user?.id);
+  const myMissions = missions.filter(m => m.apporteur_id === user?.id);
+  const myCommissions = commissions.filter(c => c.apporteur_id === user?.id);
+
+  const leadsWithProfiles = myLeads.map(lead => {
+    const leadCandidates = candidates.filter(c => c.lead_id === lead.id);
+    return { ...lead, hasProfile: leadCandidates.some(c => c.status === "Proposé" || c.status === "Validé apporteur") };
+  });
+
+  const paidAmount = myCommissions.filter(c => c.status === "Payée").reduce((s, c) => s + c.amount, 0);
+  const pendingAmount = myCommissions.filter(c => c.status !== "Payée").reduce((s, c) => s + c.amount, 0);
+
+  const initials = profile ? `${profile.first_name?.[0] || ""}${profile.last_name?.[0] || ""}`.toUpperCase() : "?";
+
+  const summaryCards = [
+    { label: "Besoins envoyés", value: String(myLeads.length), icon: Send, color: "text-primary" },
+    { label: "Profils en cours", value: String(candidates.filter(c => myLeads.some(l => l.id === c.lead_id)).length), icon: FileSearch, color: "text-warning" },
+    { label: "Missions signées", value: String(myMissions.length), icon: Handshake, color: "text-success" },
+    { label: "Commissions en attente", value: `${pendingAmount.toLocaleString("fr-FR")}€`, icon: Clock, color: "text-warning" },
+    { label: "Commissions payées", value: `${paidAmount.toLocaleString("fr-FR")}€`, icon: Coins, color: "text-success" },
+  ];
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/login");
+  };
+
   return (
     <div className="dark min-h-screen bg-background text-foreground">
-      {/* Nav */}
       <nav className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto flex h-16 items-center justify-between px-6">
           <Link to="/" className="font-display text-xl font-bold text-gradient">DealFlow</Link>
           <div className="flex items-center gap-3">
+            {isAdmin && (
+              <Link to="/admin">
+                <Button size="sm" variant="outline">
+                  <Settings className="mr-1.5 h-4 w-4" /> Admin
+                </Button>
+              </Link>
+            )}
             <Link to="/declare">
               <Button size="sm" className="gradient-primary border-0">
                 <Plus className="mr-1.5 h-4 w-4" /> Nouveau besoin
               </Button>
             </Link>
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-sm font-semibold text-primary">
-              JD
+              {initials}
             </div>
+            <Button size="sm" variant="ghost" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </nav>
 
       <div className="container mx-auto px-6 py-8">
+        <h1 className="mb-6 font-display text-2xl font-bold">
+          Bonjour {profile?.first_name || ""}
+        </h1>
+
         {/* Summary */}
         <motion.div
           className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5"
@@ -92,66 +117,66 @@ const Dashboard = () => {
         >
           <div className="flex items-center justify-between">
             <h2 className="font-display text-xl font-bold">Suivi des besoins</h2>
-            <Link to="/declare">
-              <Button variant="ghost" size="sm">
-                Voir tout <ArrowRight className="ml-1 h-4 w-4" />
-              </Button>
-            </Link>
           </div>
 
-          <div className="mt-4 space-y-4">
-            {mockLeads.map((lead) => (
-              <div
-                key={lead.id}
-                className="gradient-card rounded-xl border border-border/50 p-5"
-              >
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">{lead.position}</span>
-                      {priorityBadge(lead.priority)}
-                    </div>
-                    <span className="mt-1 text-sm text-muted-foreground">{lead.client} · {lead.date}</span>
-                  </div>
-                  {lead.hasProfile && (
-                    <div className="flex gap-2">
-                      <Button size="sm" className="gradient-primary border-0">
-                        <CheckCircle2 className="mr-1 h-3.5 w-3.5" /> Valider profil
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        <MessageSquare className="mr-1 h-3.5 w-3.5" /> Commenter
-                      </Button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Timeline */}
-                <div className="mt-4 flex items-center gap-1">
-                  {workflowSteps.map((s, i) => (
-                    <div key={s} className="flex flex-1 items-center">
-                      <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-all ${
-                        i < lead.currentStep
-                          ? "gradient-primary text-primary-foreground"
-                          : i === lead.currentStep
-                          ? "border-2 border-primary bg-primary/20 text-primary"
-                          : "bg-secondary text-muted-foreground"
-                      }`}>
-                        {i < lead.currentStep ? <CheckCircle2 className="h-3.5 w-3.5" /> : i + 1}
+          {leadsLoading ? (
+            <div className="mt-4 text-center text-muted-foreground">Chargement...</div>
+          ) : leadsWithProfiles.length === 0 ? (
+            <div className="mt-4 gradient-card rounded-xl border border-border/50 p-8 text-center">
+              <p className="text-muted-foreground">Aucun besoin déclaré pour le moment.</p>
+              <Link to="/declare">
+                <Button className="mt-4 gradient-primary border-0">
+                  <Plus className="mr-1.5 h-4 w-4" /> Déclarer un besoin
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <div className="mt-4 space-y-4">
+              {leadsWithProfiles.map((lead) => {
+                const currentStep = statusToStep[lead.status] ?? 0;
+                return (
+                  <div key={lead.id} className="gradient-card rounded-xl border border-border/50 p-5">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold">{lead.position}</span>
+                          {priorityBadge(lead.priority)}
+                        </div>
+                        <span className="mt-1 text-sm text-muted-foreground">
+                          {lead.client} · {new Date(lead.created_at).toLocaleDateString("fr-FR")}
+                        </span>
                       </div>
-                      {i < workflowSteps.length - 1 && (
-                        <div className={`mx-1 h-0.5 flex-1 rounded ${i < lead.currentStep ? "bg-primary" : "bg-border"}`} />
-                      )}
                     </div>
-                  ))}
-                </div>
-                <div className="mt-2 flex justify-between text-[10px] text-muted-foreground">
-                  {workflowSteps.map(s => (
-                    <span key={s} className="flex-1 text-center">{s}</span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+
+                    {/* Timeline */}
+                    <div className="mt-4 flex items-center gap-1">
+                      {workflowSteps.map((s, i) => (
+                        <div key={s} className="flex flex-1 items-center">
+                          <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-all ${
+                            i < currentStep
+                              ? "gradient-primary text-primary-foreground"
+                              : i === currentStep
+                              ? "border-2 border-primary bg-primary/20 text-primary"
+                              : "bg-secondary text-muted-foreground"
+                          }`}>
+                            {i < currentStep ? <CheckCircle2 className="h-3.5 w-3.5" /> : i + 1}
+                          </div>
+                          {i < workflowSteps.length - 1 && (
+                            <div className={`mx-1 h-0.5 flex-1 rounded ${i < currentStep ? "bg-primary" : "bg-border"}`} />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-2 flex justify-between text-[10px] text-muted-foreground">
+                      {workflowSteps.map(s => (
+                        <span key={s} className="flex-1 text-center">{s}</span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </motion.div>
 
         {/* Commissions */}
@@ -166,39 +191,44 @@ const Dashboard = () => {
             <h2 className="font-display text-xl font-bold">Commissions</h2>
           </div>
 
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border/50 text-left text-muted-foreground">
-                  <th className="pb-3 font-medium">Mission</th>
-                  <th className="pb-3 font-medium">TJM</th>
-                  <th className="pb-3 font-medium">Durée</th>
-                  <th className="pb-3 font-medium">%</th>
-                  <th className="pb-3 font-medium">Montant</th>
-                  <th className="pb-3 font-medium">Statut</th>
-                </tr>
-              </thead>
-              <tbody>
-                {commissions.map((c) => (
-                  <tr key={c.mission} className="border-b border-border/30">
-                    <td className="py-3 font-medium">{c.mission}</td>
-                    <td className="py-3 text-muted-foreground">{c.tjm}</td>
-                    <td className="py-3 text-muted-foreground">{c.duration}</td>
-                    <td className="py-3 text-muted-foreground">{c.pct}</td>
-                    <td className="py-3 font-semibold text-gradient">{c.amount}</td>
-                    <td className="py-3">
-                      <Badge
-                        variant="outline"
-                        className={c.paid ? "border-success/30 bg-success/10 text-success" : "border-warning/30 bg-warning/10 text-warning"}
-                      >
-                        {c.status}
-                      </Badge>
-                    </td>
+          {myCommissions.length === 0 ? (
+            <div className="mt-4 gradient-card rounded-xl border border-border/50 p-8 text-center">
+              <p className="text-muted-foreground">Aucune commission pour le moment.</p>
+            </div>
+          ) : (
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border/50 text-left text-muted-foreground">
+                    <th className="pb-3 font-medium">Mission</th>
+                    <th className="pb-3 font-medium">%</th>
+                    <th className="pb-3 font-medium">Montant</th>
+                    <th className="pb-3 font-medium">Statut</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {myCommissions.map((c) => {
+                    const mission = missions.find(m => m.id === c.mission_id);
+                    return (
+                      <tr key={c.id} className="border-b border-border/30">
+                        <td className="py-3 font-medium">{mission?.consultant_name || "—"} — {mission?.client || ""}</td>
+                        <td className="py-3 text-muted-foreground">{c.percentage}%</td>
+                        <td className="py-3 font-semibold text-gradient">{c.amount.toLocaleString("fr-FR")}€</td>
+                        <td className="py-3">
+                          <Badge
+                            variant="outline"
+                            className={c.status === "Payée" ? "border-success/30 bg-success/10 text-success" : "border-warning/30 bg-warning/10 text-warning"}
+                          >
+                            {c.status}
+                          </Badge>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </motion.div>
       </div>
     </div>
