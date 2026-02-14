@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Search, UserCheck, Mail, Phone, Building2, Eye } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Search, UserCheck, Phone, Building2, Eye } from "lucide-react";
 import { useProfiles } from "@/hooks/useProfiles";
 import { useLeads } from "@/hooks/useLeads";
 import { useMissions, useCommissions } from "@/hooks/useMissions";
@@ -21,7 +22,7 @@ const AdminApporteurs = () => {
   const [search, setSearch] = useState("");
   const [selectedProfile, setSelectedProfile] = useState<any>(null);
   const [editMode, setEditMode] = useState(false);
-  const [editForm, setEditForm] = useState({ first_name: "", last_name: "", phone: "", company: "" });
+  const [editForm, setEditForm] = useState({ first_name: "", last_name: "", phone: "", company: "", admin_comment: "" });
   const queryClient = useQueryClient();
 
   const filtered = profiles.filter(p => {
@@ -53,6 +54,7 @@ const AdminApporteurs = () => {
       last_name: profile.last_name,
       phone: profile.phone || "",
       company: profile.company || "",
+      admin_comment: profile.admin_comment || "",
     });
     setEditMode(false);
   };
@@ -61,7 +63,7 @@ const AdminApporteurs = () => {
     if (!selectedProfile) return;
     const { error } = await supabase
       .from("profiles")
-      .update(editForm)
+      .update(editForm as any)
       .eq("id", selectedProfile.id);
     if (error) {
       toast.error(error.message);
@@ -170,6 +172,15 @@ const AdminApporteurs = () => {
                     <Label>Entreprise</Label>
                     <Input value={editForm.company} onChange={e => setEditForm(f => ({ ...f, company: e.target.value }))} />
                   </div>
+                  <div>
+                    <Label>Commentaire admin</Label>
+                    <Textarea 
+                      value={editForm.admin_comment} 
+                      onChange={e => setEditForm(f => ({ ...f, admin_comment: e.target.value }))} 
+                      placeholder="Notes internes sur cet apporteur..."
+                      rows={3}
+                    />
+                  </div>
                   <div className="flex gap-2 justify-end">
                     <Button variant="outline" onClick={() => setEditMode(false)}>Annuler</Button>
                     <Button onClick={handleSave}>Enregistrer</Button>
@@ -190,6 +201,12 @@ const AdminApporteurs = () => {
                       <Building2 className="h-4 w-4 text-muted-foreground" />
                       <span>{selectedProfile.company || "—"}</span>
                     </div>
+                    {selectedProfile.admin_comment && (
+                      <div className="rounded-lg bg-secondary/30 p-3 text-sm">
+                        <p className="text-xs text-muted-foreground mb-1">Commentaire admin</p>
+                        <p>{selectedProfile.admin_comment}</p>
+                      </div>
+                    )}
                   </div>
                   {(() => {
                     const stats = getStats(selectedProfile.user_id);

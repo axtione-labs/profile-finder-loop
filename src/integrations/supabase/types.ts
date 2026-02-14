@@ -275,6 +275,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          admin_comment: string | null
           company: string | null
           created_at: string
           first_name: string
@@ -285,6 +286,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          admin_comment?: string | null
           company?: string | null
           created_at?: string
           first_name?: string
@@ -295,6 +297,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          admin_comment?: string | null
           company?: string | null
           created_at?: string
           first_name?: string
