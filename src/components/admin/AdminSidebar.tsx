@@ -42,7 +42,7 @@ export function AdminSidebar() {
         <div className="flex items-center gap-2 px-4 py-4">
           {!collapsed && (
             <Link to="/" className="font-display text-lg font-bold text-gradient">
-              DealFlow
+              DealFlowNetwork
             </Link>
           )}
         </div>

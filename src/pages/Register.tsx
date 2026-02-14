@@ -79,10 +79,10 @@ const Register = () => {
             <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
               <Zap className="w-5 h-5 text-white" />
             </div>
-            <span className="text-2xl font-display font-bold text-white">DealFlow</span>
+            <span className="text-2xl font-display font-bold text-white">DealFlowNetwork</span>
           </div>
           <h2 className="text-3xl font-display font-bold text-white mb-6">
-            Rejoignez le réseau <span className="text-gradient">DealFlow</span>
+            Rejoignez le réseau <span className="text-gradient">DealFlowNetwork</span>
           </h2>
           <div className="space-y-4">
             {benefits.map((b, i) => (
@@ -122,7 +122,7 @@ const Register = () => {
             <div className="w-9 h-9 gradient-primary rounded-xl flex items-center justify-center">
               <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="text-xl font-display font-bold text-foreground">DealFlow</span>
+            <span className="text-xl font-display font-bold text-foreground">DealFlowNetwork</span>
           </div>
 
           <div>

@@ -78,7 +78,7 @@ const Login = () => {
             <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
               <Zap className="w-5 h-5 text-white" />
             </div>
-            <span className="text-2xl font-display font-bold text-white">DealFlow</span>
+            <span className="text-2xl font-display font-bold text-white">DealFlowNetwork</span>
           </div>
           <h2 className="text-3xl font-display font-bold text-white mb-4">
             Transformez vos contacts en <span className="text-gradient">commissions</span>
@@ -110,7 +110,7 @@ const Login = () => {
             <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
               <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="text-lg font-display font-bold text-foreground">DealFlow</span>
+            <span className="text-lg font-display font-bold text-foreground">DealFlowNetwork</span>
           </div>
 
           <div>
@@ -194,8 +194,8 @@ const Login = () => {
               <AlertDialogTitle className="text-center">Compte bloqué</AlertDialogTitle>
               <AlertDialogDescription className="text-center">
                 Votre compte a été suspendu. Pour toute question, veuillez contacter le support à l'adresse{" "}
-                <a href="mailto:support@dealflow.fr" className="text-primary font-medium hover:underline">
-                  support@dealflow.fr
+                <a href="mailto:support@dealflownetwork.fr" className="text-primary font-medium hover:underline">
+                  support@dealflownetwork.fr
                 </a>
               </AlertDialogDescription>
             </AlertDialogHeader>
