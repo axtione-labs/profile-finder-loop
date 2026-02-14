@@ -100,7 +100,7 @@ const Index = () => {
           </motion.div>
 
           <motion.h1
-            className="mx-auto mt-6 max-w-4xl font-display text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl"
+            className="mx-auto mt-6 max-w-4xl font-display text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
@@ -110,26 +110,43 @@ const Index = () => {
             <span className="text-gradient">revenu passif</span>.
           </motion.h1>
 
-          <motion.p
-            className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground"
+          <motion.div
+            className="mx-auto mt-8 max-w-2xl"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            Un besoin IT détecté → 2 min pour le déclarer → nous trouvons le profil → vous touchez 5 à 10% de commission. Chaque mois. Sans recruter.
-          </motion.p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-2 text-base sm:text-lg">
+              <span className="inline-flex items-center gap-2 rounded-full bg-primary/15 border border-primary/25 px-4 py-2 font-medium text-primary">
+                <Zap className="h-4 w-4" /> Besoin IT détecté
+              </span>
+              <ArrowRight className="h-4 w-4 text-muted-foreground hidden sm:block" />
+              <ChevronDown className="h-4 w-4 text-muted-foreground sm:hidden" />
+              <span className="inline-flex items-center gap-2 rounded-full bg-primary/15 border border-primary/25 px-4 py-2 font-medium text-primary">
+                <Clock className="h-4 w-4" /> 2 min pour déclarer
+              </span>
+              <ArrowRight className="h-4 w-4 text-muted-foreground hidden sm:block" />
+              <ChevronDown className="h-4 w-4 text-muted-foreground sm:hidden" />
+              <span className="inline-flex items-center gap-2 rounded-full bg-primary/15 border border-primary/25 px-4 py-2 font-medium text-primary">
+                <TrendingUp className="h-4 w-4" /> 5 à 10% chaque mois
+              </span>
+            </div>
+            <p className="mt-4 text-muted-foreground text-center text-base">
+              On trouve le profil. Vous touchez la commission. <span className="text-foreground font-semibold">Sans recruter.</span>
+            </p>
+          </motion.div>
 
           <motion.div
-            className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center"
+            className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
             <Link to="/register">
-              <Button size="lg" className="gradient-primary glow-primary border-0 px-8 text-base font-semibold">
-                Rejoindre la meute
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <Button size="lg" className="gradient-primary glow-primary border-0 px-6 sm:px-8 text-sm sm:text-base font-semibold">
+                 Rejoindre la meute
+                 <ArrowRight className="ml-2 h-4 w-4" />
+               </Button>
             </Link>
             <Link to="/dashboard">
               <Button variant="outline" size="lg" className="text-base">
@@ -140,7 +157,7 @@ const Index = () => {
 
           {/* Stats */}
           <motion.div
-            className="mx-auto mt-16 grid max-w-xl grid-cols-3 gap-8"
+            className="mx-auto mt-12 grid max-w-xl grid-cols-3 gap-4 sm:gap-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.5 }}
@@ -172,7 +189,7 @@ const Index = () => {
           </motion.div>
 
           <motion.div
-            className="mx-auto max-w-2xl gradient-card rounded-2xl border border-border/50 p-8"
+            className="mx-auto max-w-2xl gradient-card rounded-2xl border border-border/50 p-5 sm:p-8"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -205,27 +222,27 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="mt-8 grid gap-4 sm:grid-cols-3">
-              <div className="rounded-xl bg-background/30 border border-border/30 p-5 text-center">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">Par jour</p>
-                <p className="mt-2 font-display text-2xl font-bold text-gradient">{dailyCommission.toFixed(0)}€</p>
+            <div className="mt-6 sm:mt-8 grid gap-3 sm:gap-4 grid-cols-3">
+              <div className="rounded-xl bg-background/30 border border-border/30 p-3 sm:p-5 text-center">
+                <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">Par jour</p>
+                <p className="mt-1 sm:mt-2 font-display text-lg sm:text-2xl font-bold text-gradient">{dailyCommission.toFixed(0)}€</p>
               </div>
-              <div className="rounded-xl bg-background/30 border border-primary/30 p-5 text-center glow-primary">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">Par mois</p>
-                <p className="mt-2 font-display text-2xl font-bold text-gradient">{monthlyCommission.toLocaleString("fr-FR")}€</p>
-                <p className="text-xs text-muted-foreground mt-1">20 jours travaillés</p>
+              <div className="rounded-xl bg-background/30 border border-primary/30 p-3 sm:p-5 text-center glow-primary">
+                <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">Par mois</p>
+                <p className="mt-1 sm:mt-2 font-display text-lg sm:text-2xl font-bold text-gradient">{monthlyCommission.toLocaleString("fr-FR")}€</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 hidden sm:block">20 jours travaillés</p>
               </div>
-              <div className="rounded-xl bg-background/30 border border-border/30 p-5 text-center">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">Par an</p>
-                <p className="mt-2 font-display text-2xl font-bold text-gradient">{yearlyCommission.toLocaleString("fr-FR")}€</p>
+              <div className="rounded-xl bg-background/30 border border-border/30 p-3 sm:p-5 text-center">
+                <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">Par an</p>
+                <p className="mt-1 sm:mt-2 font-display text-lg sm:text-2xl font-bold text-gradient">{yearlyCommission.toLocaleString("fr-FR")}€</p>
               </div>
             </div>
 
             <div className="mt-6 text-center">
               <Button
                 variant="outline"
-                size="lg"
-                className="text-primary border-primary/40 hover:bg-primary/10 font-semibold gap-2 text-base px-6"
+                size="default"
+                className="text-primary border-primary/40 hover:bg-primary/10 font-semibold gap-2 text-sm sm:text-base px-4 sm:px-6"
                 onClick={() => setShowPopup(true)}
               >
                 <Rocket className="h-5 w-5" />
@@ -266,9 +283,9 @@ const Index = () => {
                     exit={{ opacity: 0, x: -60 }}
                     transition={{ duration: 0.4, ease: "easeInOut" }}
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-5">
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl gradient-primary">
-                        <need.icon className="h-7 w-7 text-primary-foreground" />
+            <div className="flex items-start sm:items-center gap-4 sm:gap-5">
+                       <div className="flex h-11 w-11 sm:h-14 sm:w-14 shrink-0 items-center justify-center rounded-xl gradient-primary">
+                         <need.icon className="h-5 w-5 sm:h-7 sm:w-7 text-primary-foreground" />
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-3 flex-wrap">
