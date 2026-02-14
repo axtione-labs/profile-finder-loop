@@ -46,7 +46,7 @@ const ForgotPassword = () => {
           <div className="w-9 h-9 gradient-primary rounded-xl flex items-center justify-center">
             <Zap className="w-4 h-4 text-white" />
           </div>
-          <span className="text-xl font-display font-bold text-foreground">DealFlow</span>
+          <span className="text-xl font-display font-bold text-foreground">DealFlowNetwork</span>
         </div>
 
         <div>

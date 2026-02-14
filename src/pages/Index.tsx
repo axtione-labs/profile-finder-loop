@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import logoWolf from "@/assets/logo-wolf.png";
+import { Zap as ZapLogo } from "lucide-react";
 
 const steps = [
   { icon: Zap, title: "Détectez", desc: "Vous identifiez un besoin IT chez un client" },
@@ -67,8 +67,10 @@ const Index = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
           <Link to="/" className="flex items-center gap-2">
-            <img src={logoWolf} alt="DealFlow" className="h-10 w-10 sm:h-12 sm:w-12" />
-            <span className="font-display text-lg sm:text-xl font-bold text-gradient">DealFlow</span>
+            <div className="w-8 h-8 sm:w-10 sm:h-10 gradient-primary rounded-xl flex items-center justify-center">
+              <ZapLogo className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            </div>
+            <span className="font-display text-lg sm:text-xl font-bold text-gradient">DealFlowNetwork</span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-4">
             <Link to="/login">
@@ -517,7 +519,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="border-t border-border/50 py-8">
         <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
-          © 2026 DealFlow. Tous droits réservés.
+          © 2026 DealFlowNetwork. Tous droits réservés.
         </div>
       </footer>
     </div>
