@@ -1,5 +1,3 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -14,48 +12,26 @@ Deno.serve(async (req) => {
   try {
     const { record } = await req.json();
 
-    // record comes from the profiles table insert trigger
-    if (!record?.user_id || !record?.first_name) {
-      return new Response(JSON.stringify({ message: "No valid record" }), {
+    const email = record?.email;
+    const firstName = record?.first_name || "Apporteur";
+
+    if (!email) {
+      return new Response(JSON.stringify({ message: "No email provided" }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
-
-    // Get user email from auth
-    const { data: userData, error: userError } =
-      await supabaseAdmin.auth.admin.getUserById(record.user_id);
-
-    if (userError || !userData?.user?.email) {
-      console.error("Could not get user email:", userError);
-      return new Response(JSON.stringify({ error: "User not found" }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const email = userData.user.email;
-    const firstName = record.first_name || "Apporteur";
-    const platformUrl = Deno.env.get("PLATFORM_URL") || "https://profile-finder-loop.lovable.app";
-
-    // Send email via Supabase Auth admin API (custom email)
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
-
     if (!resendApiKey) {
       console.log("RESEND_API_KEY not set — skipping welcome email for", email);
       return new Response(
         JSON.stringify({ message: "Email service not configured" }),
-        {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    const platformUrl = "https://profile-finder-loop.lovable.app";
 
     const emailHtml = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
