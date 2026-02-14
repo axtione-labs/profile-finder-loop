@@ -86,7 +86,7 @@ export type Database = {
           created_at: string
           days_worked: number
           id: string
-          mission_id: string
+          mission_id: string | null
           percentage: number
           status: string
           updated_at: string
@@ -100,7 +100,7 @@ export type Database = {
           created_at?: string
           days_worked?: number
           id?: string
-          mission_id: string
+          mission_id?: string | null
           percentage?: number
           status?: string
           updated_at?: string
@@ -114,7 +114,7 @@ export type Database = {
           created_at?: string
           days_worked?: number
           id?: string
-          mission_id?: string
+          mission_id?: string | null
           percentage?: number
           status?: string
           updated_at?: string

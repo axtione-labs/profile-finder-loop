@@ -55,8 +55,10 @@ const AdminLeads = () => {
       // Free candidates and delete missions
       for (const m of linked) {
         updateCandidate.mutate({ id: m.candidate_id, status: "Disponible" });
-        // Only delete non-paid commissions for this mission
+        // Delete non-paid commissions
         await supabase.from("commissions" as any).delete().eq("mission_id", m.id).neq("status", "Payée");
+        // Detach paid commissions from mission so FK doesn't block deletion
+        await supabase.from("commissions" as any).update({ mission_id: null }).eq("mission_id", m.id).eq("status", "Payée");
         await supabase.from("missions" as any).delete().eq("id", m.id);
       }
       // Hard delete the lead
@@ -349,9 +351,10 @@ const AdminLeads = () => {
             <AlertDialogHeader>
               <AlertDialogTitle>Supprimer ce besoin ?</AlertDialogTitle>
               <AlertDialogDescription>
-                ⚠️ Cette action est irréversible. La suppression du besoin entraînera également :
-                <br />• La suppression de toutes les missions associées
-                <br />• La suppression des commissions liées
+                ⚠️ Cette action est irréversible. La suppression du besoin entraînera :
+                <br />• La suppression des missions associées
+                <br />• La suppression des commissions <strong>non payées</strong>
+                <br />• Les commissions déjà <strong>payées seront conservées</strong> dans le dashboard de l'apporteur
                 <br />• La remise en disponibilité des candidats concernés
               </AlertDialogDescription>
             </AlertDialogHeader>
