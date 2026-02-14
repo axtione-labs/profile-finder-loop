@@ -131,6 +131,7 @@ export type Database = {
       }
       leads: {
         Row: {
+          admin_comment: string | null
           client: string
           contact_email: string | null
           contact_name: string
@@ -156,6 +157,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          admin_comment?: string | null
           client?: string
           contact_email?: string | null
           contact_name?: string
@@ -181,6 +183,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          admin_comment?: string | null
           client?: string
           contact_email?: string | null
           contact_name?: string

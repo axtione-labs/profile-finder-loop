@@ -1,0 +1,1 @@
+ALTER TABLE public.leads ADD COLUMN admin_comment text DEFAULT '';
