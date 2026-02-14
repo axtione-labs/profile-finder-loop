@@ -54,8 +54,8 @@ const AdminMissions = () => {
     });
   };
 
-  // All leads that are qualified+ for mission assignment
-  const eligibleLeads = leads.filter(l => !["Déclaré", "Perdu"].includes(l.status));
+  // Only leads with status "Profil trouvé" can be assigned to a mission
+  const eligibleLeads = leads.filter(l => l.status === "Profil trouvé");
   // All candidates available
   const availableCandidates = candidates.filter(c => c.status === "Disponible" || c.status === "En process");
 

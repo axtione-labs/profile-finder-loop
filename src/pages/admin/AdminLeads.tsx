@@ -3,17 +3,19 @@ import AdminLayout from "@/components/admin/AdminLayout";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, Eye, Trash2 } from "lucide-react";
+import { Search, Eye, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { useLeads, useUpdateLead, useDeleteLead, type Lead } from "@/hooks/useLeads";
 import { useProfiles } from "@/hooks/useProfiles";
 
-type LeadStatus = "Déclaré" | "À qualifier" | "Qualifié" | "En sourcing" | "Profil trouvé" | "Envoyé client" | "Négociation" | "Gagné" | "Perdu";
+type LeadStatus = "Déclaré" | "À qualifier" | "Qualifié" | "En sourcing" | "Profil trouvé" | "Envoyé client";
 
-const allStatuses: LeadStatus[] = ["Déclaré", "À qualifier", "Qualifié", "En sourcing", "Profil trouvé", "Envoyé client", "Négociation", "Gagné", "Perdu"];
+const allStatuses: LeadStatus[] = ["Déclaré", "À qualifier", "Qualifié", "En sourcing", "Profil trouvé", "Envoyé client"];
 
 const statusColor: Record<string, string> = {
   "Déclaré": "bg-warning/15 text-warning border-warning/30",
@@ -22,9 +24,6 @@ const statusColor: Record<string, string> = {
   "En sourcing": "bg-primary/15 text-primary border-primary/30",
   "Profil trouvé": "bg-success/15 text-success border-success/30",
   "Envoyé client": "bg-primary/15 text-primary border-primary/30",
-  "Négociation": "bg-warning/15 text-warning border-warning/30",
-  "Gagné": "bg-success/15 text-success border-success/30",
-  "Perdu": "bg-destructive/15 text-destructive border-destructive/30",
 };
 
 const AdminLeads = () => {
@@ -36,6 +35,7 @@ const AdminLeads = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [editLead, setEditLead] = useState<Lead | null>(null);
 
   const getApporteurName = (userId: string) => {
     const p = profiles.find(pr => pr.user_id === userId);
@@ -60,6 +60,17 @@ const AdminLeads = () => {
     if (confirm("Supprimer ce besoin ?")) {
       deleteLead.mutate(id);
     }
+  };
+
+  const handleSaveEdit = () => {
+    if (!editLead) return;
+    const { id, ...rest } = editLead;
+    updateLead.mutate({ id, ...rest }, {
+      onSuccess: () => {
+        toast.success("Besoin mis à jour");
+        setEditLead(null);
+      },
+    });
   };
 
   return (
@@ -147,6 +158,9 @@ const AdminLeads = () => {
                         <Button variant="ghost" size="sm" onClick={() => setSelectedLead(lead)}>
                           <Eye className="h-4 w-4" />
                         </Button>
+                        <Button variant="ghost" size="sm" onClick={() => setEditLead({ ...lead })}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
                         <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleDelete(lead.id)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -196,6 +210,99 @@ const AdminLeads = () => {
                   <span className="text-muted-foreground">Description :</span>
                   <p className="mt-1 text-foreground">{selectedLead.description}</p>
                 </div>
+                {(selectedLead as any).admin_comment && (
+                  <div className="border-t border-border/30 pt-3">
+                    <span className="text-muted-foreground font-medium">Commentaire admin :</span>
+                    <p className="mt-1 text-foreground">{(selectedLead as any).admin_comment}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Dialog */}
+        <Dialog open={!!editLead} onOpenChange={() => setEditLead(null)}>
+          <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="font-display">Modifier le besoin</DialogTitle>
+            </DialogHeader>
+            {editLead && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label>Poste</Label>
+                    <Input className="mt-1.5 bg-background/50" value={editLead.position} onChange={e => setEditLead(p => p ? { ...p, position: e.target.value } : null)} />
+                  </div>
+                  <div>
+                    <Label>Client</Label>
+                    <Input className="mt-1.5 bg-background/50" value={editLead.client} onChange={e => setEditLead(p => p ? { ...p, client: e.target.value } : null)} />
+                  </div>
+                  <div>
+                    <Label>Secteur</Label>
+                    <Input className="mt-1.5 bg-background/50" value={editLead.sector} onChange={e => setEditLead(p => p ? { ...p, sector: e.target.value } : null)} />
+                  </div>
+                  <div>
+                    <Label>Localisation</Label>
+                    <Input className="mt-1.5 bg-background/50" value={editLead.location} onChange={e => setEditLead(p => p ? { ...p, location: e.target.value } : null)} />
+                  </div>
+                  <div>
+                    <Label>Mode</Label>
+                    <Select value={editLead.remote} onValueChange={v => setEditLead(p => p ? { ...p, remote: v } : null)}>
+                      <SelectTrigger className="mt-1.5 bg-background/50"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Sur site">Sur site</SelectItem>
+                        <SelectItem value="Hybride">Hybride</SelectItem>
+                        <SelectItem value="Full remote">Full remote</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>TJM (€)</Label>
+                    <Input className="mt-1.5 bg-background/50" type="number" value={editLead.tjm} onChange={e => setEditLead(p => p ? { ...p, tjm: parseFloat(e.target.value) || 0 } : null)} />
+                  </div>
+                  <div>
+                    <Label>Durée</Label>
+                    <Input className="mt-1.5 bg-background/50" value={editLead.duration} onChange={e => setEditLead(p => p ? { ...p, duration: e.target.value } : null)} />
+                  </div>
+                  <div>
+                    <Label>Priorité</Label>
+                    <Select value={editLead.priority} onValueChange={v => setEditLead(p => p ? { ...p, priority: v } : null)}>
+                      <SelectTrigger className="mt-1.5 bg-background/50"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="normal">Normal</SelectItem>
+                        <SelectItem value="urgent">Urgent</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Séniorité</Label>
+                    <Input className="mt-1.5 bg-background/50" value={editLead.seniority} onChange={e => setEditLead(p => p ? { ...p, seniority: e.target.value } : null)} />
+                  </div>
+                  <div>
+                    <Label>Contact</Label>
+                    <Input className="mt-1.5 bg-background/50" value={editLead.contact_name} onChange={e => setEditLead(p => p ? { ...p, contact_name: e.target.value } : null)} />
+                  </div>
+                  <div>
+                    <Label>Tél. contact</Label>
+                    <Input className="mt-1.5 bg-background/50" value={editLead.contact_phone} onChange={e => setEditLead(p => p ? { ...p, contact_phone: e.target.value } : null)} />
+                  </div>
+                  <div>
+                    <Label>Email contact</Label>
+                    <Input className="mt-1.5 bg-background/50" value={editLead.contact_email} onChange={e => setEditLead(p => p ? { ...p, contact_email: e.target.value } : null)} />
+                  </div>
+                </div>
+                <div>
+                  <Label>Description</Label>
+                  <Textarea className="mt-1.5 bg-background/50" rows={3} value={editLead.description} onChange={e => setEditLead(p => p ? { ...p, description: e.target.value } : null)} />
+                </div>
+                <div>
+                  <Label>Commentaire admin (texte libre)</Label>
+                  <Textarea className="mt-1.5 bg-background/50" rows={3} value={(editLead as any).admin_comment || ""} onChange={e => setEditLead(p => p ? { ...p, admin_comment: e.target.value } as any : null)} placeholder="Ajouter un commentaire interne..." />
+                </div>
+                <Button onClick={handleSaveEdit} disabled={updateLead.isPending} className="gradient-primary border-0 w-full">
+                  {updateLead.isPending ? "Enregistrement..." : "Enregistrer"}
+                </Button>
               </div>
             )}
           </DialogContent>
