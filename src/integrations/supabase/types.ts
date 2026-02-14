@@ -265,6 +265,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "missions_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidates_safe"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "missions_lead_id_fkey"
             columns: ["lead_id"]
             isOneToOne: false
@@ -335,7 +342,68 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      candidates_safe: {
+        Row: {
+          availability: string | null
+          created_at: string | null
+          cv_url: string | null
+          experience: string | null
+          first_name: string | null
+          id: string | null
+          last_name: string | null
+          lead_id: string | null
+          name: string | null
+          phone: string | null
+          position: string | null
+          stack: string[] | null
+          status: string | null
+          tjm: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          availability?: string | null
+          created_at?: string | null
+          cv_url?: string | null
+          experience?: string | null
+          first_name?: string | null
+          id?: string | null
+          last_name?: string | null
+          lead_id?: string | null
+          name?: string | null
+          phone?: never
+          position?: string | null
+          stack?: string[] | null
+          status?: string | null
+          tjm?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          availability?: string | null
+          created_at?: string | null
+          cv_url?: string | null
+          experience?: string | null
+          first_name?: string | null
+          id?: string | null
+          last_name?: string | null
+          lead_id?: string | null
+          name?: string | null
+          phone?: never
+          position?: string | null
+          stack?: string[] | null
+          status?: string | null
+          tjm?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidates_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       has_role: {

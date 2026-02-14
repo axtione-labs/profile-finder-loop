@@ -28,7 +28,7 @@ export const useCandidates = () => {
     queryKey: ["candidates"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("candidates" as any)
+        .from("candidates_safe" as any)
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
