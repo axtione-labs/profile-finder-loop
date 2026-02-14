@@ -5,6 +5,7 @@ import {
   Handshake,
   Coins,
   ArrowLeft,
+  Building2,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -26,6 +27,7 @@ const navItems = [
   { title: "Sourcing", url: "/admin/sourcing", icon: Users },
   { title: "Missions", url: "/admin/missions", icon: Handshake },
   { title: "Commissions", url: "/admin/commissions", icon: Coins },
+  { title: "Clients", url: "/admin/clients", icon: Building2 },
 ];
 
 export function AdminSidebar() {

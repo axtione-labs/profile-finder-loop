@@ -29,8 +29,9 @@ const DeclareLead = () => {
   const createLead = useCreateLead();
   const [form, setForm] = useState({
     client: "", sector: "", location: "", remote: "",
+    contact_name: "", contact_phone: "", contact_email: "",
     position: "", seniority: "", stack: [] as string[], start_date: "", duration: "",
-    tjm: "", margin: "", priority: "",
+    tjm: "", priority: "",
     description: "",
   });
 
@@ -48,13 +49,15 @@ const DeclareLead = () => {
         sector: form.sector,
         location: form.location,
         remote: form.remote,
+        contact_name: form.contact_name,
+        contact_phone: form.contact_phone,
+        contact_email: form.contact_email,
         position: form.position,
         seniority: form.seniority,
         stack: form.stack,
         start_date: form.start_date,
         duration: form.duration,
         tjm: parseFloat(form.tjm) || 0,
-        margin: parseFloat(form.margin) || 0,
         priority: form.priority || "normal",
         description: form.description,
       },
@@ -135,6 +138,23 @@ const DeclareLead = () => {
                     </Select>
                   </div>
                 </div>
+                <div className="border-t border-border/30 pt-4">
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3">Responsable recrutement côté client</h3>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="sm:col-span-2">
+                      <Label>Nom du responsable</Label>
+                      <Input placeholder="Ex: Marie Martin" value={form.contact_name} onChange={e => update("contact_name", e.target.value)} className="mt-1.5 bg-background/50" />
+                    </div>
+                    <div>
+                      <Label>Téléphone <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
+                      <Input placeholder="06 12 34 56 78" value={form.contact_phone} onChange={e => update("contact_phone", e.target.value)} className="mt-1.5 bg-background/50" />
+                    </div>
+                    <div>
+                      <Label>Email <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
+                      <Input type="email" placeholder="marie@client.com" value={form.contact_email} onChange={e => update("contact_email", e.target.value)} className="mt-1.5 bg-background/50" />
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -196,15 +216,9 @@ const DeclareLead = () => {
             {step === 2 && (
               <div className="space-y-5">
                 <h2 className="font-display text-2xl font-bold">Budget & Priorité</h2>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <Label>TJM estimé (€)</Label>
-                    <Input type="number" placeholder="Ex: 550" value={form.tjm} onChange={e => update("tjm", e.target.value)} className="mt-1.5 bg-background/50" />
-                  </div>
-                  <div>
-                    <Label>Marge possible (€)</Label>
-                    <Input type="number" placeholder="Ex: 100" value={form.margin} onChange={e => update("margin", e.target.value)} className="mt-1.5 bg-background/50" />
-                  </div>
+                <div>
+                  <Label>TJM proposé par le client (€)</Label>
+                  <Input type="number" placeholder="Ex: 550" value={form.tjm} onChange={e => update("tjm", e.target.value)} className="mt-1.5 bg-background/50" />
                 </div>
                 <div>
                   <Label>Priorité</Label>

@@ -1,12 +1,13 @@
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Send, FileSearch, Handshake, Coins, Clock, TrendingUp, Plus, CheckCircle2, MessageSquare, LogOut, Settings } from "lucide-react";
+import { Send, FileSearch, Handshake, Coins, Clock, TrendingUp, Plus, CheckCircle2, LogOut, Settings, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
-import { useLeads } from "@/hooks/useLeads";
+import { useLeads, useDeleteLead } from "@/hooks/useLeads";
 import { useMissions, useCommissions } from "@/hooks/useMissions";
 import { useCandidates } from "@/hooks/useCandidates";
+import { toast } from "sonner";
 
 const workflowSteps = [
   "Déclaré", "Qualifié", "En sourcing", "Profil trouvé", "Envoyé client", "Négociation", "Gagné"
@@ -29,15 +30,11 @@ const Dashboard = () => {
   const { data: missions = [] } = useMissions();
   const { data: commissions = [] } = useCommissions();
   const { data: candidates = [] } = useCandidates();
+  const deleteLead = useDeleteLead();
 
   const myLeads = leads.filter(l => l.user_id === user?.id);
   const myMissions = missions.filter(m => m.apporteur_id === user?.id);
   const myCommissions = commissions.filter(c => c.apporteur_id === user?.id);
-
-  const leadsWithProfiles = myLeads.map(lead => {
-    const leadCandidates = candidates.filter(c => c.lead_id === lead.id);
-    return { ...lead, hasProfile: leadCandidates.some(c => c.status === "Proposé" || c.status === "Validé apporteur") };
-  });
 
   const paidAmount = myCommissions.filter(c => c.status === "Payée").reduce((s, c) => s + c.amount, 0);
   const pendingAmount = myCommissions.filter(c => c.status !== "Payée").reduce((s, c) => s + c.amount, 0);
@@ -55,6 +52,12 @@ const Dashboard = () => {
   const handleSignOut = async () => {
     await signOut();
     navigate("/login");
+  };
+
+  const handleDeleteLead = (id: string) => {
+    if (confirm("Supprimer ce besoin ?")) {
+      deleteLead.mutate(id);
+    }
   };
 
   return (
@@ -115,13 +118,11 @@ const Dashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <div className="flex items-center justify-between">
-            <h2 className="font-display text-xl font-bold">Suivi des besoins</h2>
-          </div>
+          <h2 className="font-display text-xl font-bold">Suivi des besoins</h2>
 
           {leadsLoading ? (
             <div className="mt-4 text-center text-muted-foreground">Chargement...</div>
-          ) : leadsWithProfiles.length === 0 ? (
+          ) : myLeads.length === 0 ? (
             <div className="mt-4 gradient-card rounded-xl border border-border/50 p-8 text-center">
               <p className="text-muted-foreground">Aucun besoin déclaré pour le moment.</p>
               <Link to="/declare">
@@ -132,7 +133,7 @@ const Dashboard = () => {
             </div>
           ) : (
             <div className="mt-4 space-y-4">
-              {leadsWithProfiles.map((lead) => {
+              {myLeads.map((lead) => {
                 const currentStep = statusToStep[lead.status] ?? 0;
                 return (
                   <div key={lead.id} className="gradient-card rounded-xl border border-border/50 p-5">
@@ -146,6 +147,9 @@ const Dashboard = () => {
                           {lead.client} · {new Date(lead.created_at).toLocaleDateString("fr-FR")}
                         </span>
                       </div>
+                      <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleDeleteLead(lead.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
 
                     {/* Timeline */}
@@ -201,7 +205,6 @@ const Dashboard = () => {
                 <thead>
                   <tr className="border-b border-border/50 text-left text-muted-foreground">
                     <th className="pb-3 font-medium">Mission</th>
-                    <th className="pb-3 font-medium">%</th>
                     <th className="pb-3 font-medium">Montant</th>
                     <th className="pb-3 font-medium">Statut</th>
                   </tr>
@@ -212,7 +215,6 @@ const Dashboard = () => {
                     return (
                       <tr key={c.id} className="border-b border-border/30">
                         <td className="py-3 font-medium">{mission?.consultant_name || "—"} — {mission?.client || ""}</td>
-                        <td className="py-3 text-muted-foreground">{c.percentage}%</td>
                         <td className="py-3 font-semibold text-gradient">{c.amount.toLocaleString("fr-FR")}€</td>
                         <td className="py-3">
                           <Badge
