@@ -55,11 +55,9 @@ const AdminLeads = () => {
       // Free candidates and delete missions
       for (const m of linked) {
         updateCandidate.mutate({ id: m.candidate_id, status: "Disponible" });
+        // Only delete non-paid commissions for this mission
+        await supabase.from("commissions" as any).delete().eq("mission_id", m.id).neq("status", "Payée");
         await supabase.from("missions" as any).delete().eq("id", m.id);
-      }
-      // Delete commissions for those missions
-      for (const m of linked) {
-        await supabase.from("commissions" as any).delete().eq("mission_id", m.id);
       }
       // Hard delete the lead
       const { error } = await supabase.from("leads" as any).delete().eq("id", id);
@@ -67,7 +65,7 @@ const AdminLeads = () => {
       qc.invalidateQueries({ queryKey: ["leads"] });
       qc.invalidateQueries({ queryKey: ["missions"] });
       qc.invalidateQueries({ queryKey: ["commissions"] });
-      toast.success("Besoin supprimé (missions et commissions associées incluses)");
+      toast.success("Besoin supprimé (commissions payées conservées)");
     } catch (e: any) {
       toast.error(e.message);
     } finally {
