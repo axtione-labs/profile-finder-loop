@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Zap, TrendingUp, Shield, Clock, Calculator, ChevronDown, X, Rocket } from "lucide-react";
+import { ArrowRight, Zap, TrendingUp, Shield, Clock, Calculator, ChevronDown, X, Rocket, Code, Server, FolderKanban, Database, Cloud, Cpu } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import logoWolf from "@/assets/logo-wolf.png";
 
 const steps = [
@@ -30,21 +29,13 @@ const faqs = [
   { q: "Puis-je suivre l'état de mes leads ?", a: "Oui, votre tableau de bord vous donne une visibilité complète : statut du lead, avancement du sourcing, et détail de vos commissions." },
 ];
 
-// Fake animated data for the dashboard preview
-const generateGrowthData = (seed: number) => {
-  const months = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
-  return months.map((m, i) => ({
-    month: m,
-    gains: Math.round((300 + i * 420 + Math.sin(i + seed) * 200) * (1 + seed * 0.05)),
-    leads: Math.round(2 + i * 1.5 + Math.cos(i + seed) * 1.5),
-  }));
-};
-
-const barData = [
-  { name: "Sem 1", value: 1200 },
-  { name: "Sem 2", value: 1800 },
-  { name: "Sem 3", value: 2400 },
-  { name: "Sem 4", value: 3100 },
+const itNeeds = [
+  { icon: Server, role: "Ingénieur DevOps", client: "Banque Nationale", stack: "AWS · Kubernetes · Terraform", tjm: "650€", urgency: "Urgent" },
+  { icon: Code, role: "Développeur Full-Stack", client: "Startup FinTech", stack: "React · Node.js · TypeScript", tjm: "550€", urgency: "Normal" },
+  { icon: FolderKanban, role: "Chef de Projet IT", client: "Groupe Industriel", stack: "Agile · Jira · SAFe", tjm: "700€", urgency: "Urgent" },
+  { icon: Database, role: "Data Engineer", client: "Assurance Européenne", stack: "Python · Spark · Airflow", tjm: "600€", urgency: "Normal" },
+  { icon: Cloud, role: "Architecte Cloud", client: "Ministère de la Défense", stack: "Azure · Docker · CI/CD", tjm: "750€", urgency: "Urgent" },
+  { icon: Cpu, role: "Ingénieur IA / ML", client: "Laboratoire Pharma", stack: "Python · TensorFlow · MLOps", tjm: "800€", urgency: "Normal" },
 ];
 
 const Index = () => {
@@ -62,25 +53,13 @@ const Index = () => {
   const tenLeadsMonthly = monthlyCommission * 10;
   const tenLeadsYearly = yearlyCommission * 10;
 
-  // Animated dashboard counter
-  const [tick, setTick] = useState(0);
-  const [animatedTotal, setAnimatedTotal] = useState(0);
+  // Animated IT needs carousel
+  const [activeNeed, setActiveNeed] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => setTick(t => t + 1), 3000);
+    const interval = setInterval(() => setActiveNeed(i => (i + 1) % itNeeds.length), 3500);
     return () => clearInterval(interval);
   }, []);
-
-  useEffect(() => {
-    const target = 42750 + tick * 1250;
-    const step = Math.ceil((target - animatedTotal) / 20);
-    if (animatedTotal < target) {
-      const timer = setTimeout(() => setAnimatedTotal(prev => Math.min(prev + step, target)), 30);
-      return () => clearTimeout(timer);
-    }
-  }, [tick, animatedTotal]);
-
-  const chartData = generateGrowthData(tick % 5);
 
   return (
     <div className="dark min-h-screen bg-background text-foreground">
@@ -256,7 +235,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Animated Dashboard Preview */}
+      {/* Animated IT Needs Showcase */}
       <section className="py-24 border-t border-border/50 overflow-hidden">
         <div className="container mx-auto px-6">
           <motion.div
@@ -266,103 +245,88 @@ const Index = () => {
             viewport={{ once: true }}
           >
             <h2 className="font-display text-3xl font-bold">
-              Un dashboard qui <span className="text-gradient">fait plaisir</span>
+              Des besoins <span className="text-gradient">IT</span> partout autour de vous
             </h2>
-            <p className="mt-3 text-muted-foreground">Suivez vos gains en temps réel et regardez-les monter</p>
+            <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
+              DevOps, développeurs, chefs de projet… Vous les connaissez. Remontez le besoin, on s'occupe de trouver le profil.
+            </p>
           </motion.div>
 
-          <motion.div
-            className="mx-auto max-w-4xl gradient-card rounded-2xl border border-border/50 p-6 sm:p-8"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-          >
-            {/* Top stats row */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-              <div className="rounded-xl bg-background/40 border border-border/30 p-4">
-                <p className="text-xs text-muted-foreground">Total gagné</p>
-                <motion.p
-                  className="mt-1 font-display text-xl sm:text-2xl font-bold text-gradient"
-                  key={animatedTotal}
-                >
-                  {animatedTotal.toLocaleString("fr-FR")}€
-                </motion.p>
-              </div>
-              <div className="rounded-xl bg-background/40 border border-border/30 p-4">
-                <p className="text-xs text-muted-foreground">Ce mois</p>
-                <p className="mt-1 font-display text-xl sm:text-2xl font-bold text-success">
-                  +{(3100 + tick * 150).toLocaleString("fr-FR")}€
-                </p>
-              </div>
-              <div className="rounded-xl bg-background/40 border border-border/30 p-4">
-                <p className="text-xs text-muted-foreground">Leads actifs</p>
-                <p className="mt-1 font-display text-xl sm:text-2xl font-bold text-foreground">{7 + (tick % 3)}</p>
-              </div>
-              <div className="rounded-xl bg-background/40 border border-primary/20 p-4">
-                <p className="text-xs text-muted-foreground">Missions</p>
-                <p className="mt-1 font-display text-xl sm:text-2xl font-bold text-primary">{3 + Math.floor(tick / 2)}</p>
-              </div>
+          <div className="mx-auto max-w-3xl">
+            {/* Carousel of needs */}
+            <div className="relative min-h-[180px]">
+              <AnimatePresence mode="wait">
+                {itNeeds.map((need, i) => i === activeNeed && (
+                  <motion.div
+                    key={need.role}
+                    className="gradient-card rounded-2xl border border-border/50 p-6 sm:p-8"
+                    initial={{ opacity: 0, x: 60 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -60 }}
+                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+                      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl gradient-primary">
+                        <need.icon className="h-7 w-7 text-primary-foreground" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <h3 className="font-display text-xl font-bold">{need.role}</h3>
+                          {need.urgency === "Urgent" && (
+                            <span className="rounded-full bg-destructive/15 px-2.5 py-0.5 text-xs font-medium text-destructive">
+                              🔴 Urgent
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Client : <span className="text-foreground font-medium">{need.client}</span>
+                        </p>
+                        <div className="mt-3 flex flex-wrap items-center gap-2">
+                          {need.stack.split(" · ").map(tech => (
+                            <span key={tech} className="rounded-md bg-primary/10 border border-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
+                              {tech}
+                            </span>
+                          ))}
+                          <span className="ml-auto font-display text-lg font-bold text-gradient">{need.tjm}/j</span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
 
-            {/* Charts */}
-            <div className="grid gap-6 lg:grid-cols-5">
-              <div className="lg:col-span-3 rounded-xl bg-background/30 border border-border/30 p-4">
-                <p className="text-sm font-medium text-muted-foreground mb-4">📈 Évolution des gains</p>
-                <ResponsiveContainer width="100%" height={220}>
-                  <AreaChart data={chartData}>
-                    <defs>
-                      <linearGradient id="gainGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="hsl(173, 80%, 45%)" stopOpacity={0.4} />
-                        <stop offset="100%" stopColor="hsl(173, 80%, 45%)" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <XAxis dataKey="month" tick={{ fill: 'hsl(215, 15%, 55%)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: 'hsl(215, 15%, 55%)', fontSize: 11 }} axisLine={false} tickLine={false} width={45} />
-                    <Tooltip
-                      contentStyle={{ background: 'hsl(224, 25%, 12%)', border: '1px solid hsl(224, 20%, 20%)', borderRadius: 8, fontSize: 12 }}
-                      labelStyle={{ color: 'hsl(210, 20%, 95%)' }}
-                      formatter={(v: number) => [`${v.toLocaleString("fr-FR")}€`, "Gains"]}
-                    />
-                    <Area type="monotone" dataKey="gains" stroke="hsl(173, 80%, 45%)" fill="url(#gainGradient)" strokeWidth={2.5} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-
-              <div className="lg:col-span-2 rounded-xl bg-background/30 border border-border/30 p-4">
-                <p className="text-sm font-medium text-muted-foreground mb-4">💰 Revenus hebdo</p>
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={barData.map((d, i) => ({ ...d, value: d.value + tick * 80 * (i + 1) }))}>
-                    <XAxis dataKey="name" tick={{ fill: 'hsl(215, 15%, 55%)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: 'hsl(215, 15%, 55%)', fontSize: 11 }} axisLine={false} tickLine={false} width={45} />
-                    <Tooltip
-                      contentStyle={{ background: 'hsl(224, 25%, 12%)', border: '1px solid hsl(224, 20%, 20%)', borderRadius: 8, fontSize: 12 }}
-                      formatter={(v: number) => [`${v.toLocaleString("fr-FR")}€`, "Revenu"]}
-                    />
-                    <Bar dataKey="value" fill="hsl(173, 80%, 45%)" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+            {/* Dots */}
+            <div className="mt-6 flex justify-center gap-2">
+              {itNeeds.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveNeed(i)}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    i === activeNeed ? "w-8 bg-primary" : "w-2 bg-border hover:bg-muted-foreground"
+                  }`}
+                />
+              ))}
             </div>
 
-            {/* Fake notification */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={tick}
-                className="mt-6 flex items-center gap-3 rounded-lg border border-success/20 bg-success/5 px-4 py-3"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.4 }}
-              >
-                <span className="text-success text-lg">💸</span>
-                <span className="text-sm text-success font-medium">
-                  Nouvelle commission créditée : +{(250 + tick * 50).toLocaleString("fr-FR")}€
-                </span>
-                <span className="ml-auto text-xs text-muted-foreground">à l'instant</span>
-              </motion.div>
-            </AnimatePresence>
-          </motion.div>
+            {/* CTA */}
+            <motion.div
+              className="mt-8 text-center"
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <p className="text-muted-foreground mb-4">
+                Vous avez un besoin similaire ? <span className="text-foreground font-medium">2 minutes suffisent.</span>
+              </p>
+              <Link to="/declare">
+                <Button size="lg" className="gradient-primary glow-primary border-0 px-8 text-base font-semibold">
+                  Déclarer ce besoin
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </motion.div>
+          </div>
         </div>
       </section>
 
