@@ -5,15 +5,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ArrowRight, ArrowLeft, Zap } from "lucide-react";
+import { ArrowRight, ArrowLeft, Zap, ShieldAlert } from "lucide-react";
 import { lovable } from "@/integrations/lovable/index";
 import { Separator } from "@/components/ui/separator";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [blockedDialogOpen, setBlockedDialogOpen] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
 
@@ -21,13 +32,32 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     const { error } = await signIn(email, password);
-    setIsLoading(false);
 
     if (error) {
+      setIsLoading(false);
       toast.error("Identifiants incorrects. Vérifiez votre email et mot de passe.");
-    } else {
-      navigate("/dashboard");
+      return;
     }
+
+    // Check if user is blocked
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (authUser) {
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("blocked")
+        .eq("user_id", authUser.id)
+        .single();
+
+      if (profileData?.blocked) {
+        await supabase.auth.signOut();
+        setIsLoading(false);
+        setBlockedDialogOpen(true);
+        return;
+      }
+    }
+
+    setIsLoading(false);
+    navigate("/dashboard");
   };
 
   return (
@@ -115,6 +145,12 @@ const Login = () => {
               />
             </div>
 
+            <div className="flex justify-end">
+              <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                Mot de passe oublié ?
+              </Link>
+            </div>
+
             <Button type="submit" className="w-full h-11 gradient-primary text-white font-semibold" disabled={isLoading}>
               {isLoading ? "Connexion..." : "Se connecter"}
               <ArrowRight className="w-4 h-4 ml-1" />
@@ -147,6 +183,29 @@ const Login = () => {
             </Link>
           </p>
         </motion.div>
+
+        {/* Blocked Account Dialog */}
+        <AlertDialog open={blockedDialogOpen} onOpenChange={setBlockedDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
+                <ShieldAlert className="h-7 w-7 text-destructive" />
+              </div>
+              <AlertDialogTitle className="text-center">Compte bloqué</AlertDialogTitle>
+              <AlertDialogDescription className="text-center">
+                Votre compte a été suspendu. Pour toute question, veuillez contacter le support à l'adresse{" "}
+                <a href="mailto:support@dealflow.fr" className="text-primary font-medium hover:underline">
+                  support@dealflow.fr
+                </a>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="sm:justify-center">
+              <AlertDialogAction onClick={() => setBlockedDialogOpen(false)}>
+                Compris
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
