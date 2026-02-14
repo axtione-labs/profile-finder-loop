@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -6,29 +6,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { TrendingUp, Plus } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useMissions, useCreateMission, useCreateCommission, useUpdateMission } from "@/hooks/useMissions";
+import { useMissions, useCreateMission, useCreateCommission, useUpdateMission, useDeleteMission } from "@/hooks/useMissions";
 import { useLeads } from "@/hooks/useLeads";
-import { useCandidates } from "@/hooks/useCandidates";
+import { useCandidates, useUpdateCandidate } from "@/hooks/useCandidates";
 import { useProfiles } from "@/hooks/useProfiles";
 
-const missionStatuses = ["Validé apporteur", "Non validé apporteur", "CV envoyé client", "Perdu", "Gagné"];
+const missionStatuses = ["Validé apporteur", "Non validé apporteur", "CV envoyé client", "Négociation", "Perdu", "Gagné"];
 
 const missionStatusColor: Record<string, string> = {
   "Validé apporteur": "bg-success/15 text-success",
   "Non validé apporteur": "bg-destructive/15 text-destructive",
   "CV envoyé client": "bg-primary/15 text-primary",
+  "Négociation": "bg-warning/15 text-warning",
   "Perdu": "bg-destructive/15 text-destructive",
   "Gagné": "bg-success/15 text-success",
   "En cours": "bg-primary/15 text-primary",
-};
-
-const commStatusColor: Record<string, string> = {
-  "À générer": "bg-warning/15 text-warning",
-  "Générée": "bg-primary/15 text-primary",
-  "Payée": "bg-success/15 text-success",
 };
 
 const AdminMissions = () => {
@@ -39,9 +35,15 @@ const AdminMissions = () => {
   const updateMission = useUpdateMission();
   const createMission = useCreateMission();
   const createCommission = useCreateCommission();
+  const deleteMission = useDeleteMission();
+  const updateCandidate = useUpdateCandidate();
 
   const [missionOpen, setMissionOpen] = useState(false);
   const [newMission, setNewMission] = useState({ lead_id: "", candidate_id: "", duration: "", tjm_client: "", commission_apporteur: "" });
+
+  const [editOpen, setEditOpen] = useState(false);
+  const [editMission, setEditMission] = useState<any>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   const getApporteurName = (userId: string) => {
     const p = profiles.find(pr => pr.user_id === userId);
@@ -56,8 +58,21 @@ const AdminMissions = () => {
 
   // Only leads with status "Profil trouvé" can be assigned to a mission
   const eligibleLeads = leads.filter(l => l.status === "Profil trouvé");
-  // All candidates available
-  const availableCandidates = candidates.filter(c => c.status === "Disponible" || c.status === "En process");
+  
+  // Only candidates NOT already placed
+  const availableCandidates = candidates.filter(c => 
+    !c.status.startsWith("Placé chez") && c.status !== "Indisponible"
+  );
+
+  // Pre-fill TJM client when lead is selected
+  useEffect(() => {
+    if (newMission.lead_id) {
+      const lead = leads.find(l => l.id === newMission.lead_id);
+      if (lead && !newMission.tjm_client) {
+        setNewMission(p => ({ ...p, tjm_client: String(lead.tjm) }));
+      }
+    }
+  }, [newMission.lead_id]);
 
   const handleCreateMission = async () => {
     if (!newMission.lead_id || !newMission.candidate_id) return;
@@ -83,6 +98,7 @@ const AdminMissions = () => {
     });
 
     if (mission?.id) {
+      // Create commission
       createCommission.mutate({
         mission_id: mission.id,
         apporteur_id: lead.user_id,
@@ -94,10 +110,43 @@ const AdminMissions = () => {
         commission_month: new Date().getMonth() + 1,
         commission_year: new Date().getFullYear(),
       });
+
+      // Update candidate status to "Placé chez [client]"
+      updateCandidate.mutate({
+        id: candidate.id,
+        status: `Placé chez ${lead.client}`,
+      });
     }
 
     setMissionOpen(false);
     setNewMission({ lead_id: "", candidate_id: "", duration: "", tjm_client: "", commission_apporteur: "" });
+  };
+
+  const openEdit = (m: any) => {
+    setEditMission({ ...m });
+    setEditOpen(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editMission) return;
+    const { id, created_at, updated_at, ...updates } = editMission;
+    updateMission.mutate({ id, ...updates }, {
+      onSuccess: () => {
+        toast.success("Mission mise à jour");
+        setEditOpen(false);
+      },
+    });
+  };
+
+  const handleDelete = (id: string) => {
+    // Also free the candidate
+    const mission = missions.find(m => m.id === id);
+    if (mission) {
+      updateCandidate.mutate({ id: mission.candidate_id, status: "Disponible" });
+    }
+    deleteMission.mutate(id, {
+      onSuccess: () => setDeleteConfirm(null),
+    });
   };
 
   return (
@@ -120,16 +169,19 @@ const AdminMissions = () => {
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label>Besoin associé</Label>
-                  <Select value={newMission.lead_id} onValueChange={v => setNewMission(p => ({ ...p, lead_id: v }))}>
+                  <Label>Besoin associé (statut "Profil trouvé")</Label>
+                  <Select value={newMission.lead_id} onValueChange={v => {
+                    const lead = leads.find(l => l.id === v);
+                    setNewMission(p => ({ ...p, lead_id: v, tjm_client: lead ? String(lead.tjm) : "" }));
+                  }}>
                     <SelectTrigger className="mt-1.5 bg-background/50"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
                     <SelectContent>
-                      {eligibleLeads.map(l => <SelectItem key={l.id} value={l.id}>{l.position} — {l.client}</SelectItem>)}
+                      {eligibleLeads.map(l => <SelectItem key={l.id} value={l.id}>{l.position} — {l.client} (TJM: {l.tjm}€)</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label>Candidat</Label>
+                  <Label>Candidat (disponible uniquement)</Label>
                   <Select value={newMission.candidate_id} onValueChange={v => setNewMission(p => ({ ...p, candidate_id: v }))}>
                     <SelectTrigger className="mt-1.5 bg-background/50"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
                     <SelectContent>
@@ -166,8 +218,6 @@ const AdminMissions = () => {
           </Dialog>
         </div>
 
-
-
         <Tabs defaultValue="missions">
           <TabsList className="bg-secondary/50">
             <TabsTrigger value="missions">Missions</TabsTrigger>
@@ -193,6 +243,7 @@ const AdminMissions = () => {
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">TJM cand.</th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">TJM client</th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">Statut</th>
+                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -213,6 +264,16 @@ const AdminMissions = () => {
                             </SelectContent>
                           </Select>
                         </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1">
+                            <Button variant="ghost" size="sm" onClick={() => openEdit(m)}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(m.id)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -222,6 +283,70 @@ const AdminMissions = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Edit Mission Dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Modifier la mission</DialogTitle>
+          </DialogHeader>
+          {editMission && (
+            <div className="space-y-4">
+              <div>
+                <Label>Consultant</Label>
+                <Input value={editMission.consultant_name} onChange={e => setEditMission((m: any) => ({ ...m, consultant_name: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Client</Label>
+                <Input value={editMission.client} onChange={e => setEditMission((m: any) => ({ ...m, client: e.target.value }))} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>TJM candidat (€)</Label>
+                  <Input type="number" value={editMission.tjm} onChange={e => setEditMission((m: any) => ({ ...m, tjm: parseFloat(e.target.value) || 0 }))} />
+                </div>
+                <div>
+                  <Label>TJM client (€)</Label>
+                  <Input type="number" value={editMission.tjm_client} onChange={e => setEditMission((m: any) => ({ ...m, tjm_client: parseFloat(e.target.value) || 0 }))} />
+                </div>
+              </div>
+              <div>
+                <Label>Durée</Label>
+                <Input value={editMission.duration} onChange={e => setEditMission((m: any) => ({ ...m, duration: e.target.value }))} />
+              </div>
+              <div>
+                <Label>Statut</Label>
+                <Select value={editMission.status} onValueChange={v => setEditMission((m: any) => ({ ...m, status: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {missionStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setEditOpen(false)}>Annuler</Button>
+                <Button onClick={handleSaveEdit}>Enregistrer</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <Dialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Supprimer la mission</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Êtes-vous sûr ? Les commissions associées seront aussi supprimées et le candidat sera libéré.
+          </p>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setDeleteConfirm(null)}>Annuler</Button>
+            <Button variant="destructive" onClick={() => deleteConfirm && handleDelete(deleteConfirm)}>Supprimer</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };
