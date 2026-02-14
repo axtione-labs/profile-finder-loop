@@ -1,0 +1,119 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { record } = await req.json();
+
+    // record comes from the profiles table insert trigger
+    if (!record?.user_id || !record?.first_name) {
+      return new Response(JSON.stringify({ message: "No valid record" }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    // Get user email from auth
+    const { data: userData, error: userError } =
+      await supabaseAdmin.auth.admin.getUserById(record.user_id);
+
+    if (userError || !userData?.user?.email) {
+      console.error("Could not get user email:", userError);
+      return new Response(JSON.stringify({ error: "User not found" }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const email = userData.user.email;
+    const firstName = record.first_name || "Apporteur";
+    const platformUrl = Deno.env.get("PLATFORM_URL") || "https://profile-finder-loop.lovable.app";
+
+    // Send email via Supabase Auth admin API (custom email)
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+
+    if (!resendApiKey) {
+      console.log("RESEND_API_KEY not set — skipping welcome email for", email);
+      return new Response(
+        JSON.stringify({ message: "Email service not configured" }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const emailHtml = `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+        <div style="text-align: center; margin-bottom: 32px;">
+          <div style="display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 12px; border-radius: 12px;">
+            <span style="color: white; font-size: 24px; font-weight: bold;">⚡</span>
+          </div>
+          <h1 style="margin: 16px 0 0; font-size: 24px; color: #1a1a2e;">DealFlow</h1>
+        </div>
+        <h2 style="color: #1a1a2e; font-size: 20px;">Bienvenue ${firstName} ! 🎉</h2>
+        <p style="color: #555; line-height: 1.6; font-size: 16px;">
+          Votre compte apporteur d'affaires a bien été créé sur <strong>DealFlow</strong>.
+        </p>
+        <p style="color: #555; line-height: 1.6; font-size: 16px;">
+          Vous pouvez dès maintenant :
+        </p>
+        <ul style="color: #555; line-height: 2; font-size: 16px;">
+          <li>📋 Déclarer vos besoins IT en quelques clics</li>
+          <li>📊 Suivre l'avancement de vos leads en temps réel</li>
+          <li>💰 Consulter vos commissions</li>
+        </ul>
+        <div style="text-align: center; margin: 32px 0;">
+          <a href="${platformUrl}/login" style="display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
+            Accéder à la plateforme →
+          </a>
+        </div>
+        <p style="color: #888; font-size: 14px; text-align: center; border-top: 1px solid #eee; padding-top: 20px;">
+          L'équipe DealFlow
+        </p>
+      </div>
+    `;
+
+    const emailRes = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "DealFlow <onboarding@resend.dev>",
+        to: [email],
+        subject: `Bienvenue sur DealFlow, ${firstName} !`,
+        html: emailHtml,
+      }),
+    });
+
+    const emailResult = await emailRes.json();
+    console.log("Welcome email sent:", emailResult);
+
+    return new Response(JSON.stringify({ success: true, email }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});

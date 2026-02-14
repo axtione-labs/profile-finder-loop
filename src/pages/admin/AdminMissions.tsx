@@ -65,8 +65,8 @@ const AdminMissions = () => {
     setStatusConfirm(null);
   };
 
-  // Only leads with status "Profil trouvé" can be assigned to a mission
-  const eligibleLeads = leads.filter(l => l.status === "Profil trouvé");
+  // All leads except closed ones can be assigned to a mission
+  const eligibleLeads = leads.filter(l => l.status !== "Perdu" && l.status !== "Gagné");
   
   // Only candidates NOT already placed
   const availableCandidates = candidates.filter(c => 
@@ -181,14 +181,18 @@ const AdminMissions = () => {
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label>Besoin associé (statut "Profil trouvé")</Label>
+                  <Label>Besoin associé</Label>
                   <Select value={newMission.lead_id} onValueChange={v => {
                     const lead = leads.find(l => l.id === v);
                     setNewMission(p => ({ ...p, lead_id: v, tjm_client: lead ? String(lead.tjm) : "" }));
                   }}>
-                    <SelectTrigger className="mt-1.5 bg-background/50"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                    <SelectTrigger className="mt-1.5 bg-background/50"><SelectValue placeholder="Sélectionner un besoin" /></SelectTrigger>
                     <SelectContent>
-                      {eligibleLeads.map(l => <SelectItem key={l.id} value={l.id}>{l.position} — {l.client} (TJM: {l.tjm}€)</SelectItem>)}
+                      {eligibleLeads.length === 0 ? (
+                        <div className="px-3 py-2 text-sm text-muted-foreground">Aucun besoin disponible</div>
+                      ) : (
+                        eligibleLeads.map(l => <SelectItem key={l.id} value={l.id}>{l.position} — {l.client} ({l.status}, TJM: {l.tjm}€)</SelectItem>)
+                      )}
                     </SelectContent>
                   </Select>
                 </div>

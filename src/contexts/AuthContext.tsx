@@ -25,13 +25,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchUserData = async (userId: string) => {
     const [rolesRes, profileRes] = await Promise.all([
       supabase.from("user_roles").select("role").eq("user_id", userId),
-      supabase.from("profiles").select("first_name, last_name, company, phone").eq("user_id", userId).single(),
+      supabase.from("profiles").select("first_name, last_name, company, phone, blocked").eq("user_id", userId).single(),
     ]);
     
     if (rolesRes.data) {
       setIsAdmin(rolesRes.data.some((r: any) => r.role === "admin"));
     }
     if (profileRes.data) {
+      // If the user is blocked, sign them out immediately
+      if ((profileRes.data as any).blocked) {
+        await supabase.auth.signOut();
+        setUser(null);
+        setSession(null);
+        setIsAdmin(false);
+        setProfile(null);
+        return;
+      }
       setProfile(profileRes.data as any);
     }
   };
