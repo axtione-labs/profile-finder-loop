@@ -37,7 +37,12 @@ const Register = () => {
     setIsLoading(false);
 
     if (error) {
-      toast.error(error.message);
+      // Handle "email already exists" specifically
+      if (error.message?.toLowerCase().includes("already registered") || error.message?.toLowerCase().includes("already been registered") || error.message?.toLowerCase().includes("user already registered")) {
+        toast.error("Cette adresse email est déjà utilisée. Connectez-vous ou utilisez une autre adresse.");
+      } else {
+        toast.error(error.message);
+      }
     } else {
       // Send welcome email via edge function (fire and forget)
       fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-welcome-email`, {
@@ -128,18 +133,18 @@ const Register = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="firstName">Prénom</Label>
-                <Input id="firstName" placeholder="Jean" value={firstName} onChange={(e) => setFirstName(e.target.value)} required className="h-11" />
+                <Label htmlFor="firstName">Prénom <span className="text-destructive">*</span></Label>
+                <Input id="firstName" placeholder="Jean" value={firstName} onChange={(e) => setFirstName(e.target.value)} required className="h-11 border-primary/30 focus-visible:ring-primary" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastName">Nom</Label>
-                <Input id="lastName" placeholder="Dupont" value={lastName} onChange={(e) => setLastName(e.target.value)} required className="h-11" />
+                <Label htmlFor="lastName">Nom <span className="text-destructive">*</span></Label>
+                <Input id="lastName" placeholder="Dupont" value={lastName} onChange={(e) => setLastName(e.target.value)} required className="h-11 border-primary/30 focus-visible:ring-primary" />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="vous@exemple.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11" />
+              <Label htmlFor="email">Email <span className="text-destructive">*</span></Label>
+              <Input id="email" type="email" placeholder="vous@exemple.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 border-primary/30 focus-visible:ring-primary" />
             </div>
 
             <div className="space-y-2">
@@ -153,8 +158,9 @@ const Register = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
-              <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="h-11" />
+              <Label htmlFor="password">Mot de passe <span className="text-destructive">*</span></Label>
+              <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="h-11 border-primary/30 focus-visible:ring-primary" />
+              <p className="text-xs text-muted-foreground">Minimum 6 caractères</p>
             </div>
 
             <Button type="submit" className="w-full h-11 gradient-primary text-white font-semibold" disabled={isLoading}>

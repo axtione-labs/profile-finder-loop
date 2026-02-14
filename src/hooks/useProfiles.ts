@@ -11,6 +11,7 @@ export interface Profile {
   phone: string | null;
   admin_comment: string | null;
   blocked: boolean;
+  deleted_at: string | null;
 }
 
 export const useProfiles = () => {

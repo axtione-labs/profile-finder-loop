@@ -7,7 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, UserCheck, Phone, Building2, Eye, Trash2, ShieldOff, ShieldCheck } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Search, UserCheck, Phone, Building2, Eye, Trash2, ShieldOff, ShieldCheck, RotateCcw } from "lucide-react";
 import { useProfiles } from "@/hooks/useProfiles";
 import { useLeads } from "@/hooks/useLeads";
 import { useMissions, useCommissions } from "@/hooks/useMissions";
@@ -26,9 +27,17 @@ const AdminApporteurs = () => {
   const [editForm, setEditForm] = useState({ first_name: "", last_name: "", phone: "", company: "", admin_comment: "" });
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [blockConfirm, setBlockConfirm] = useState<{ id: string; blocked: boolean } | null>(null);
+  const [restoreConfirmId, setRestoreConfirmId] = useState<string | null>(null);
+  const [tab, setTab] = useState("active");
   const queryClient = useQueryClient();
 
-  const filtered = profiles.filter(p => {
+  // Separate active and trashed profiles
+  const activeProfiles = profiles.filter(p => !(p as any).deleted_at);
+  const trashedProfiles = profiles.filter(p => !!(p as any).deleted_at);
+
+  const currentList = tab === "active" ? activeProfiles : trashedProfiles;
+
+  const filtered = currentList.filter(p => {
     const term = search.toLowerCase();
     return (
       p.first_name.toLowerCase().includes(term) ||
@@ -78,19 +87,36 @@ const AdminApporteurs = () => {
     setSelectedProfile({ ...selectedProfile, ...editForm });
   };
 
+  // Soft delete: set deleted_at instead of hard delete
   const handleDelete = async () => {
     if (!deleteConfirmId) return;
     const { error } = await supabase
       .from("profiles")
-      .delete()
+      .update({ deleted_at: new Date().toISOString() } as any)
       .eq("id", deleteConfirmId);
     if (error) {
       toast.error("Erreur suppression: " + error.message);
     } else {
-      toast.success("Apporteur supprimé");
+      toast.success("Apporteur déplacé dans la corbeille (suppression définitive dans 60 jours)");
       queryClient.invalidateQueries({ queryKey: ["profiles"] });
     }
     setDeleteConfirmId(null);
+  };
+
+  // Restore from trash
+  const handleRestore = async () => {
+    if (!restoreConfirmId) return;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ deleted_at: null } as any)
+      .eq("id", restoreConfirmId);
+    if (error) {
+      toast.error("Erreur restauration: " + error.message);
+    } else {
+      toast.success("Apporteur restauré avec succès");
+      queryClient.invalidateQueries({ queryKey: ["profiles"] });
+    }
+    setRestoreConfirmId(null);
   };
 
   const handleToggleBlock = async () => {
@@ -109,6 +135,14 @@ const AdminApporteurs = () => {
     setBlockConfirm(null);
   };
 
+  const getDaysUntilPurge = (deletedAt: string) => {
+    const deleteDate = new Date(deletedAt);
+    const purgeDate = new Date(deleteDate.getTime() + 60 * 24 * 60 * 60 * 1000);
+    const now = new Date();
+    const daysLeft = Math.ceil((purgeDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+    return Math.max(0, daysLeft);
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -116,6 +150,13 @@ const AdminApporteurs = () => {
           <h1 className="font-display text-2xl font-bold">Apporteurs d'affaires</h1>
           <p className="text-sm text-muted-foreground">Gérer les profils et suivre l'activité</p>
         </div>
+
+        <Tabs value={tab} onValueChange={setTab}>
+          <TabsList>
+            <TabsTrigger value="active">Actifs ({activeProfiles.length})</TabsTrigger>
+            <TabsTrigger value="trash">Corbeille ({trashedProfiles.length})</TabsTrigger>
+          </TabsList>
+        </Tabs>
 
         <motion.div className="relative max-w-md" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -126,7 +167,9 @@ const AdminApporteurs = () => {
           {isLoading ? (
             <div className="py-12 text-center text-muted-foreground">Chargement...</div>
           ) : filtered.length === 0 ? (
-            <div className="py-12 text-center text-muted-foreground">Aucun apporteur trouvé</div>
+            <div className="py-12 text-center text-muted-foreground">
+              {tab === "trash" ? "La corbeille est vide" : "Aucun apporteur trouvé"}
+            </div>
           ) : (
             <table className="w-full text-sm">
               <thead>
@@ -138,13 +181,14 @@ const AdminApporteurs = () => {
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Missions</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Gagné</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">En attente</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Statut</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">{tab === "trash" ? "Suppression dans" : "Statut"}</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map(p => {
                   const stats = getStats(p.user_id);
+                  const deletedAt = (p as any).deleted_at;
                   return (
                     <tr key={p.id} className="border-b border-border/30 hover:bg-secondary/20 transition-colors">
                       <td className="px-4 py-3 font-medium">
@@ -164,7 +208,11 @@ const AdminApporteurs = () => {
                       <td className="px-4 py-3 font-medium text-success">{stats.totalEarned.toLocaleString("fr-FR")} €</td>
                       <td className="px-4 py-3 text-warning">{stats.totalPending.toLocaleString("fr-FR")} €</td>
                       <td className="px-4 py-3">
-                        {p.blocked ? (
+                        {tab === "trash" && deletedAt ? (
+                          <span className="rounded-full bg-warning/15 px-2 py-0.5 text-xs font-medium text-warning">
+                            {getDaysUntilPurge(deletedAt)} jours
+                          </span>
+                        ) : p.blocked ? (
                           <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-xs font-medium text-destructive">Bloqué</span>
                         ) : (
                           <span className="rounded-full bg-success/15 px-2 py-0.5 text-xs font-medium text-success">Actif</span>
@@ -172,20 +220,28 @@ const AdminApporteurs = () => {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
-                          <Button variant="ghost" size="sm" onClick={() => openDetail(p)}>
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setBlockConfirm({ id: p.id, blocked: p.blocked })}
-                            title={p.blocked ? "Débloquer" : "Bloquer"}
-                          >
-                            {p.blocked ? <ShieldCheck className="h-4 w-4 text-success" /> : <ShieldOff className="h-4 w-4 text-warning" />}
-                          </Button>
-                          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteConfirmId(p.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {tab === "trash" ? (
+                            <Button variant="ghost" size="sm" onClick={() => setRestoreConfirmId(p.id)} title="Restaurer">
+                              <RotateCcw className="h-4 w-4 text-primary" />
+                            </Button>
+                          ) : (
+                            <>
+                              <Button variant="ghost" size="sm" onClick={() => openDetail(p)}>
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setBlockConfirm({ id: p.id, blocked: p.blocked })}
+                                title={p.blocked ? "Débloquer" : "Bloquer"}
+                              >
+                                {p.blocked ? <ShieldCheck className="h-4 w-4 text-success" /> : <ShieldOff className="h-4 w-4 text-warning" />}
+                              </Button>
+                              <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteConfirmId(p.id)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -284,20 +340,36 @@ const AdminApporteurs = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation */}
+      {/* Delete Confirmation (soft) */}
       <AlertDialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Supprimer cet apporteur ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. Le profil de l'apporteur sera définitivement supprimé.
+              L'apporteur sera déplacé dans la corbeille pendant 60 jours avant suppression définitive. Ses commissions seront conservées dans le tableau de bord global. Vous pouvez le restaurer à tout moment depuis la corbeille.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Supprimer
+              Déplacer dans la corbeille
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Restore Confirmation */}
+      <AlertDialog open={!!restoreConfirmId} onOpenChange={(open) => !open && setRestoreConfirmId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Restaurer cet apporteur ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              L'apporteur sera réactivé et pourra à nouveau accéder à son espace.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRestore}>Restaurer</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
