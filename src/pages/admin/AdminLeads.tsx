@@ -10,8 +10,13 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Search, Eye, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
-import { useLeads, useUpdateLead, useDeleteLead, type Lead } from "@/hooks/useLeads";
+import { useLeads, useUpdateLead, type Lead } from "@/hooks/useLeads";
+import { useMissions, useDeleteMission } from "@/hooks/useMissions";
+import { useUpdateCandidate } from "@/hooks/useCandidates";
 import { useProfiles } from "@/hooks/useProfiles";
+import { supabase } from "@/integrations/supabase/client";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { useQueryClient } from "@tanstack/react-query";
 
 type LeadStatus = "Déclaré" | "À qualifier" | "Qualifié" | "En sourcing" | "Profil trouvé" | "Envoyé client";
 
@@ -29,13 +34,47 @@ const statusColor: Record<string, string> = {
 const AdminLeads = () => {
   const { data: leads = [], isLoading } = useLeads();
   const { data: profiles = [] } = useProfiles();
+  const { data: missions = [] } = useMissions();
   const updateLead = useUpdateLead();
-  const deleteLead = useDeleteLead();
+  const updateCandidate = useUpdateCandidate();
+  const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [editLead, setEditLead] = useState<Lead | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const getLinkedMissions = (leadId: string) => missions.filter(m => m.lead_id === leadId);
+
+  const handleDelete = async (id: string) => {
+    setDeleting(true);
+    try {
+      const linked = getLinkedMissions(id);
+      // Free candidates and delete missions
+      for (const m of linked) {
+        updateCandidate.mutate({ id: m.candidate_id, status: "Disponible" });
+        await supabase.from("missions" as any).delete().eq("id", m.id);
+      }
+      // Delete commissions for those missions
+      for (const m of linked) {
+        await supabase.from("commissions" as any).delete().eq("mission_id", m.id);
+      }
+      // Hard delete the lead
+      const { error } = await supabase.from("leads" as any).delete().eq("id", id);
+      if (error) throw error;
+      qc.invalidateQueries({ queryKey: ["leads"] });
+      qc.invalidateQueries({ queryKey: ["missions"] });
+      qc.invalidateQueries({ queryKey: ["commissions"] });
+      toast.success("Besoin supprimé (missions et commissions associées incluses)");
+    } catch (e: any) {
+      toast.error(e.message);
+    } finally {
+      setDeleting(false);
+      setDeleteConfirm(null);
+    }
+  };
 
   const getApporteurName = (userId: string) => {
     const p = profiles.find(pr => pr.user_id === userId);
@@ -54,12 +93,6 @@ const AdminLeads = () => {
     updateLead.mutate({ id, status }, {
       onSuccess: () => toast.success(`Statut mis à jour : ${status}`),
     });
-  };
-
-  const handleDelete = (id: string) => {
-    if (confirm("Supprimer ce besoin ?")) {
-      deleteLead.mutate(id);
-    }
   };
 
   const handleSaveEdit = () => {
@@ -161,7 +194,7 @@ const AdminLeads = () => {
                         <Button variant="ghost" size="sm" onClick={() => setEditLead({ ...lead })}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleDelete(lead.id)}>
+                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(lead.id)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -311,6 +344,31 @@ const AdminLeads = () => {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Delete Confirmation */}
+        <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Supprimer ce besoin ?</AlertDialogTitle>
+              <AlertDialogDescription>
+                ⚠️ Cette action est irréversible. La suppression du besoin entraînera également :
+                <br />• La suppression de toutes les missions associées
+                <br />• La suppression des commissions liées
+                <br />• La remise en disponibilité des candidats concernés
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={deleting}>Annuler</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
+                disabled={deleting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleting ? "Suppression..." : "Supprimer"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AdminLayout>
   );
