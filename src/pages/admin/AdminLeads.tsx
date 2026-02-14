@@ -5,43 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Search, Filter, Eye, UserPlus, CheckCircle2, XCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Search, Eye } from "lucide-react";
 import { toast } from "sonner";
+import { useLeads, useUpdateLead, type Lead } from "@/hooks/useLeads";
+import { useProfiles } from "@/hooks/useProfiles";
 
-type LeadStatus = "À qualifier" | "Qualifié" | "En sourcing" | "Profil trouvé" | "Envoyé client" | "Négociation" | "Gagné" | "Perdu";
+type LeadStatus = "Déclaré" | "À qualifier" | "Qualifié" | "En sourcing" | "Profil trouvé" | "Envoyé client" | "Négociation" | "Gagné" | "Perdu";
 
-interface Lead {
-  id: number;
-  apporteur: string;
-  client: string;
-  position: string;
-  stack: string[];
-  sector: string;
-  location: string;
-  remote: string;
-  tjm: string;
-  duration: string;
-  priority: string;
-  status: LeadStatus;
-  recruiter: string;
-  date: string;
-  description: string;
-}
-
-const mockLeads: Lead[] = [
-  { id: 1, apporteur: "Jean Dupont", client: "BNP Paribas", position: "Tech Lead React", stack: ["React", "TypeScript", "Node.js"], sector: "Banque / Finance", location: "Paris", remote: "Hybride", tjm: "700€", duration: "6 mois", priority: "urgent", status: "À qualifier", recruiter: "", date: "14/02/2026", description: "Besoin d'un tech lead pour piloter l'équipe frontend." },
-  { id: 2, apporteur: "Marie Martin", client: "Société Générale", position: "DevOps Senior", stack: ["AWS", "Docker", "Kubernetes"], sector: "Banque / Finance", location: "La Défense", remote: "Hybride", tjm: "650€", duration: "12 mois", priority: "normal", status: "En sourcing", recruiter: "Alice R.", date: "13/02/2026", description: "Migration cloud AWS à grande échelle." },
-  { id: 3, apporteur: "Pierre Durand", client: "Anonyme", position: "Data Engineer", stack: ["Python", "SQL", "GCP"], sector: "Tech", location: "Lyon", remote: "Full remote", tjm: "550€", duration: "3 mois", priority: "normal", status: "À qualifier", recruiter: "", date: "12/02/2026", description: "Mise en place d'un data lake." },
-  { id: 4, apporteur: "Sophie Bernard", client: "AXA", position: "Architecte Cloud", stack: ["Azure", "Kubernetes", "DevOps"], sector: "Assurance", location: "Paris", remote: "Sur site", tjm: "800€", duration: "6 mois", priority: "urgent", status: "Profil trouvé", recruiter: "Marc D.", date: "11/02/2026", description: "Architecture multi-cloud pour la DSI." },
-  { id: 5, apporteur: "Lucas Moreau", client: "Engie", position: "Développeur Java", stack: ["Java", ".NET", "SQL"], sector: "Énergie", location: "Nantes", remote: "Hybride", tjm: "500€", duration: "4 mois", priority: "normal", status: "Qualifié", recruiter: "Alice R.", date: "10/02/2026", description: "Refonte du SI facturation." },
-];
-
-const allStatuses: LeadStatus[] = ["À qualifier", "Qualifié", "En sourcing", "Profil trouvé", "Envoyé client", "Négociation", "Gagné", "Perdu"];
+const allStatuses: LeadStatus[] = ["Déclaré", "À qualifier", "Qualifié", "En sourcing", "Profil trouvé", "Envoyé client", "Négociation", "Gagné", "Perdu"];
 
 const statusColor: Record<string, string> = {
+  "Déclaré": "bg-warning/15 text-warning border-warning/30",
   "À qualifier": "bg-warning/15 text-warning border-warning/30",
   "Qualifié": "bg-primary/15 text-primary border-primary/30",
   "En sourcing": "bg-primary/15 text-primary border-primary/30",
@@ -52,30 +27,43 @@ const statusColor: Record<string, string> = {
   "Perdu": "bg-destructive/15 text-destructive border-destructive/30",
 };
 
-const recruiters = ["Alice R.", "Marc D.", "Julie L.", "Thomas B."];
-
 const AdminLeads = () => {
-  const [leads, setLeads] = useState(mockLeads);
+  const { data: leads = [], isLoading } = useLeads();
+  const { data: profiles = [] } = useProfiles();
+  const updateLead = useUpdateLead();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
+  const getApporteurName = (userId: string) => {
+    const p = profiles.find(pr => pr.user_id === userId);
+    return p ? `${p.first_name} ${p.last_name}` : "—";
+  };
+
   const filtered = leads.filter(l => {
-    const matchSearch = l.position.toLowerCase().includes(search.toLowerCase()) || l.client.toLowerCase().includes(search.toLowerCase()) || l.apporteur.toLowerCase().includes(search.toLowerCase());
+    const apporteurName = getApporteurName(l.user_id).toLowerCase();
+    const matchSearch = l.position.toLowerCase().includes(search.toLowerCase()) || l.client.toLowerCase().includes(search.toLowerCase()) || apporteurName.includes(search.toLowerCase());
     const matchStatus = statusFilter === "all" || l.status === statusFilter;
     const matchPriority = priorityFilter === "all" || l.priority === priorityFilter;
     return matchSearch && matchStatus && matchPriority;
   });
 
-  const updateLeadStatus = (id: number, status: LeadStatus) => {
-    setLeads(prev => prev.map(l => l.id === id ? { ...l, status } : l));
-    toast.success(`Statut mis à jour : ${status}`);
+  const handleUpdateStatus = (id: string, status: string) => {
+    updateLead.mutate({ id, status }, {
+      onSuccess: () => toast.success(`Statut mis à jour : ${status}`),
+    });
   };
 
-  const assignRecruiter = (id: number, recruiter: string) => {
-    setLeads(prev => prev.map(l => l.id === id ? { ...l, recruiter, status: l.status === "À qualifier" ? "Qualifié" : l.status } : l));
-    toast.success(`Recruteur assigné : ${recruiter}`);
+  const handleAssignRecruiter = (id: string, recruiter: string) => {
+    const lead = leads.find(l => l.id === id);
+    updateLead.mutate({
+      id,
+      recruiter,
+      status: lead?.status === "Déclaré" || lead?.status === "À qualifier" ? "Qualifié" : lead?.status,
+    }, {
+      onSuccess: () => toast.success(`Recruteur assigné : ${recruiter}`),
+    });
   };
 
   return (
@@ -86,7 +74,6 @@ const AdminLeads = () => {
           <p className="text-sm text-muted-foreground">Qualifier, affecter et suivre les leads</p>
         </div>
 
-        {/* Filters */}
         <motion.div
           className="flex flex-wrap items-center gap-3"
           initial={{ opacity: 0, y: 10 }}
@@ -113,106 +100,114 @@ const AdminLeads = () => {
           </Select>
         </motion.div>
 
-        {/* Table */}
         <motion.div
           className="overflow-x-auto rounded-xl border border-border/50"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border/50 bg-secondary/30">
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Poste</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Client</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Apporteur</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">TJM</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Statut</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Recruteur</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((lead) => (
-                <tr key={lead.id} className="border-b border-border/30 hover:bg-secondary/20 transition-colors">
-                  <td className="px-4 py-3">
-                    <div>
-                      <span className="font-medium">{lead.position}</span>
-                      <div className="mt-0.5 flex flex-wrap gap-1">
-                        {lead.stack.slice(0, 3).map(t => (
-                          <span key={t} className="rounded bg-secondary/60 px-1.5 py-0.5 text-[10px] text-muted-foreground">{t}</span>
-                        ))}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{lead.client}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{lead.apporteur}</td>
-                  <td className="px-4 py-3 font-medium">{lead.tjm}</td>
-                  <td className="px-4 py-3">
-                    <Select value={lead.status} onValueChange={(v) => updateLeadStatus(lead.id, v as LeadStatus)}>
-                      <SelectTrigger className={`h-7 w-[130px] border text-xs font-medium ${statusColor[lead.status]}`}>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {allStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Select value={lead.recruiter || "none"} onValueChange={(v) => v !== "none" && assignRecruiter(lead.id, v)}>
-                      <SelectTrigger className="h-7 w-[120px] bg-background/50 text-xs">
-                        <SelectValue placeholder="Assigner" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none" disabled>Assigner</SelectItem>
-                        {recruiters.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="ghost" size="sm" onClick={() => setSelectedLead(lead)}>
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-lg">
-                        <DialogHeader>
-                          <DialogTitle className="font-display">{lead.position}</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4 text-sm">
-                          <div className="grid grid-cols-2 gap-3">
-                            <div><span className="text-muted-foreground">Client :</span> <span className="font-medium">{lead.client}</span></div>
-                            <div><span className="text-muted-foreground">Apporteur :</span> <span className="font-medium">{lead.apporteur}</span></div>
-                            <div><span className="text-muted-foreground">Secteur :</span> <span>{lead.sector}</span></div>
-                            <div><span className="text-muted-foreground">Localisation :</span> <span>{lead.location}</span></div>
-                            <div><span className="text-muted-foreground">Mode :</span> <span>{lead.remote}</span></div>
-                            <div><span className="text-muted-foreground">TJM :</span> <span className="font-medium">{lead.tjm}</span></div>
-                            <div><span className="text-muted-foreground">Durée :</span> <span>{lead.duration}</span></div>
-                            <div><span className="text-muted-foreground">Priorité :</span> <span>{lead.priority === "urgent" ? "🔴 Urgent" : "Normal"}</span></div>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Stack :</span>
-                            <div className="mt-1 flex flex-wrap gap-1.5">
-                              {lead.stack.map(t => <Badge key={t} variant="outline" className="text-xs">{t}</Badge>)}
-                            </div>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Description :</span>
-                            <p className="mt-1 text-foreground">{lead.description}</p>
-                          </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  </td>
+          {isLoading ? (
+            <div className="py-12 text-center text-muted-foreground">Chargement...</div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border/50 bg-secondary/30">
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Poste</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Client</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Apporteur</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">TJM</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Statut</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Recruteur</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {filtered.length === 0 && (
+              </thead>
+              <tbody>
+                {filtered.map((lead) => (
+                  <tr key={lead.id} className="border-b border-border/30 hover:bg-secondary/20 transition-colors">
+                    <td className="px-4 py-3">
+                      <div>
+                        <span className="font-medium">{lead.position}</span>
+                        <div className="mt-0.5 flex flex-wrap gap-1">
+                          {lead.stack.slice(0, 3).map(t => (
+                            <span key={t} className="rounded bg-secondary/60 px-1.5 py-0.5 text-[10px] text-muted-foreground">{t}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{lead.client}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{getApporteurName(lead.user_id)}</td>
+                    <td className="px-4 py-3 font-medium">{lead.tjm}€</td>
+                    <td className="px-4 py-3">
+                      <Select value={lead.status} onValueChange={(v) => handleUpdateStatus(lead.id, v)}>
+                        <SelectTrigger className={`h-7 w-[130px] border text-xs font-medium ${statusColor[lead.status] || ""}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {allStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Input
+                        value={lead.recruiter}
+                        placeholder="Assigner"
+                        className="h-7 w-[120px] bg-background/50 text-xs"
+                        onBlur={(e) => {
+                          if (e.target.value !== lead.recruiter) {
+                            handleAssignRecruiter(lead.id, e.target.value);
+                          }
+                        }}
+                        onChange={() => {}}
+                        defaultValue={lead.recruiter}
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Button variant="ghost" size="sm" onClick={() => setSelectedLead(lead)}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          {!isLoading && filtered.length === 0 && (
             <div className="py-12 text-center text-muted-foreground">Aucun résultat trouvé</div>
           )}
         </motion.div>
+
+        {/* Detail Dialog */}
+        <Dialog open={!!selectedLead} onOpenChange={() => setSelectedLead(null)}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="font-display">{selectedLead?.position}</DialogTitle>
+            </DialogHeader>
+            {selectedLead && (
+              <div className="space-y-4 text-sm">
+                <div className="grid grid-cols-2 gap-3">
+                  <div><span className="text-muted-foreground">Client :</span> <span className="font-medium">{selectedLead.client}</span></div>
+                  <div><span className="text-muted-foreground">Apporteur :</span> <span className="font-medium">{getApporteurName(selectedLead.user_id)}</span></div>
+                  <div><span className="text-muted-foreground">Secteur :</span> <span>{selectedLead.sector}</span></div>
+                  <div><span className="text-muted-foreground">Localisation :</span> <span>{selectedLead.location}</span></div>
+                  <div><span className="text-muted-foreground">Mode :</span> <span>{selectedLead.remote}</span></div>
+                  <div><span className="text-muted-foreground">TJM :</span> <span className="font-medium">{selectedLead.tjm}€</span></div>
+                  <div><span className="text-muted-foreground">Durée :</span> <span>{selectedLead.duration}</span></div>
+                  <div><span className="text-muted-foreground">Priorité :</span> <span>{selectedLead.priority === "urgent" ? "🔴 Urgent" : "Normal"}</span></div>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Stack :</span>
+                  <div className="mt-1 flex flex-wrap gap-1.5">
+                    {selectedLead.stack.map(t => <Badge key={t} variant="outline" className="text-xs">{t}</Badge>)}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Description :</span>
+                  <p className="mt-1 text-foreground">{selectedLead.description}</p>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   );
