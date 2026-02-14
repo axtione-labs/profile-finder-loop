@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
+import CommissionsDashboard from "./pages/CommissionsDashboard";
 import DeclareLead from "./pages/DeclareLead";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -14,6 +15,7 @@ import AdminOverview from "./pages/admin/AdminOverview";
 import AdminLeads from "./pages/admin/AdminLeads";
 import AdminSourcing from "./pages/admin/AdminSourcing";
 import AdminMissions from "./pages/admin/AdminMissions";
+import AdminCommissions from "./pages/admin/AdminCommissions";
 import AdminClients from "./pages/admin/AdminClients";
 import NotFound from "./pages/NotFound";
 
@@ -31,12 +33,13 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/commissions" element={<ProtectedRoute><CommissionsDashboard /></ProtectedRoute>} />
             <Route path="/declare" element={<ProtectedRoute><DeclareLead /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminOverview /></ProtectedRoute>} />
             <Route path="/admin/leads" element={<ProtectedRoute requireAdmin><AdminLeads /></ProtectedRoute>} />
             <Route path="/admin/sourcing" element={<ProtectedRoute requireAdmin><AdminSourcing /></ProtectedRoute>} />
             <Route path="/admin/missions" element={<ProtectedRoute requireAdmin><AdminMissions /></ProtectedRoute>} />
-            <Route path="/admin/commissions" element={<ProtectedRoute requireAdmin><AdminMissions /></ProtectedRoute>} />
+            <Route path="/admin/commissions" element={<ProtectedRoute requireAdmin><AdminCommissions /></ProtectedRoute>} />
             <Route path="/admin/clients" element={<ProtectedRoute requireAdmin><AdminClients /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

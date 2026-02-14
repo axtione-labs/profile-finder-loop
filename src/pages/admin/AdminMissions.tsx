@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { TrendingUp, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useMissions, useCommissions, useUpdateCommission, useCreateMission, useCreateCommission, useUpdateMission } from "@/hooks/useMissions";
+import { useMissions, useCreateMission, useCreateCommission, useUpdateMission } from "@/hooks/useMissions";
 import { useLeads } from "@/hooks/useLeads";
 import { useCandidates } from "@/hooks/useCandidates";
 import { useProfiles } from "@/hooks/useProfiles";
@@ -33,11 +33,9 @@ const commStatusColor: Record<string, string> = {
 
 const AdminMissions = () => {
   const { data: missions = [], isLoading: missionsLoading } = useMissions();
-  const { data: commissions = [], isLoading: commissionsLoading } = useCommissions();
   const { data: leads = [] } = useLeads();
   const { data: candidates = [] } = useCandidates();
   const { data: profiles = [] } = useProfiles();
-  const updateCommission = useUpdateCommission();
   const updateMission = useUpdateMission();
   const createMission = useCreateMission();
   const createCommission = useCreateCommission();
@@ -48,12 +46,6 @@ const AdminMissions = () => {
   const getApporteurName = (userId: string) => {
     const p = profiles.find(pr => pr.user_id === userId);
     return p ? `${p.first_name} ${p.last_name}` : "—";
-  };
-
-  const handleUpdateCommissionStatus = (id: string, status: string) => {
-    updateCommission.mutate({ id, status }, {
-      onSuccess: () => toast.success(`Commission : ${status}`),
-    });
   };
 
   const handleUpdateMissionStatus = (id: string, status: string) => {
@@ -98,6 +90,9 @@ const AdminMissions = () => {
         amount: commissionApporteur,
         admin_amount: Math.max(0, adminMargin),
         status: "À générer",
+        days_worked: 0,
+        commission_month: new Date().getMonth() + 1,
+        commission_year: new Date().getFullYear(),
       });
     }
 
@@ -105,16 +100,12 @@ const AdminMissions = () => {
     setNewMission({ lead_id: "", candidate_id: "", duration: "", tjm_client: "", commission_apporteur: "" });
   };
 
-  const totalAdminCommissions = commissions.reduce((sum, c) => sum + (c.admin_amount || 0), 0);
-  const totalApporteurCommissions = commissions.reduce((sum, c) => sum + c.amount, 0);
-  const paidCommissions = commissions.filter(c => c.status === "Payée").reduce((sum, c) => sum + c.amount, 0);
-
   return (
     <AdminLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-2xl font-bold">Missions & Commissions</h1>
+            <h1 className="font-display text-2xl font-bold">Missions</h1>
             <p className="text-sm text-muted-foreground">Suivi commercial et financier</p>
           </div>
           <Dialog open={missionOpen} onOpenChange={setMissionOpen}>
@@ -175,31 +166,11 @@ const AdminMissions = () => {
           </Dialog>
         </div>
 
-        <motion.div
-          className="grid gap-4 sm:grid-cols-3"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <div className="gradient-card rounded-xl border border-border/50 p-5">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <TrendingUp className="h-4 w-4" /> Ma marge totale
-            </div>
-            <div className="mt-2 font-display text-2xl font-bold text-gradient">{totalAdminCommissions.toLocaleString("fr-FR")} €</div>
-          </div>
-          <div className="gradient-card rounded-xl border border-border/50 p-5">
-            <div className="text-sm text-muted-foreground">Commissions apporteurs</div>
-            <div className="mt-2 font-display text-2xl font-bold text-warning">{totalApporteurCommissions.toLocaleString("fr-FR")} €</div>
-          </div>
-          <div className="gradient-card rounded-xl border border-border/50 p-5">
-            <div className="text-sm text-muted-foreground">Payées</div>
-            <div className="mt-2 font-display text-2xl font-bold text-success">{paidCommissions.toLocaleString("fr-FR")} €</div>
-          </div>
-        </motion.div>
+
 
         <Tabs defaultValue="missions">
           <TabsList className="bg-secondary/50">
             <TabsTrigger value="missions">Missions</TabsTrigger>
-            <TabsTrigger value="commissions">Commissions</TabsTrigger>
           </TabsList>
 
           <TabsContent value="missions">
@@ -239,58 +210,6 @@ const AdminMissions = () => {
                             </SelectTrigger>
                             <SelectContent>
                               {missionStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </motion.div>
-          </TabsContent>
-
-          <TabsContent value="commissions">
-            <motion.div
-              className="mt-4 overflow-x-auto rounded-xl border border-border/50"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              {commissionsLoading ? (
-                <div className="py-12 text-center text-muted-foreground">Chargement...</div>
-              ) : commissions.length === 0 ? (
-                <div className="py-12 text-center text-muted-foreground">Aucune commission pour le moment.</div>
-              ) : (
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-border/50 bg-secondary/30">
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Apporteur</th>
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Comm. apporteur</th>
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Marge admin</th>
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Statut</th>
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {commissions.map((c) => (
-                      <tr key={c.id} className="border-b border-border/30 hover:bg-secondary/20 transition-colors">
-                        <td className="px-4 py-3 text-muted-foreground">{getApporteurName(c.apporteur_id)}</td>
-                        <td className="px-4 py-3 font-semibold">{c.amount.toLocaleString("fr-FR")}€</td>
-                        <td className="px-4 py-3 font-semibold text-gradient">{(c.admin_amount || 0).toLocaleString("fr-FR")}€</td>
-                        <td className="px-4 py-3">
-                          <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${commStatusColor[c.status] || ""}`}>
-                            {c.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <Select value={c.status} onValueChange={(v) => handleUpdateCommissionStatus(c.id, v)}>
-                            <SelectTrigger className="h-7 w-[120px] bg-background/50 text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="À générer">À générer</SelectItem>
-                              <SelectItem value="Générée">Générée</SelectItem>
-                              <SelectItem value="Payée">Payée</SelectItem>
                             </SelectContent>
                           </Select>
                         </td>

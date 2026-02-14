@@ -32,7 +32,7 @@ const Dashboard = () => {
   const { data: candidates = [] } = useCandidates();
   const deleteLead = useDeleteLead();
 
-  const myLeads = leads.filter(l => l.user_id === user?.id);
+  const myLeads = leads.filter(l => l.user_id === user?.id && !(l as any).hidden_by_user);
   const myMissions = missions.filter(m => m.apporteur_id === user?.id);
   const myCommissions = commissions.filter(c => c.apporteur_id === user?.id);
 
@@ -190,9 +190,14 @@ const Dashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <div className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-primary" />
-            <h2 className="font-display text-xl font-bold">Commissions</h2>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-primary" />
+              <h2 className="font-display text-xl font-bold">Commissions</h2>
+            </div>
+            <Link to="/commissions">
+              <Button size="sm" variant="outline">Voir le détail</Button>
+            </Link>
           </div>
 
           {myCommissions.length === 0 ? (

@@ -27,6 +27,9 @@ export interface Commission {
   admin_amount: number;
   status: string;
   created_at: string;
+  days_worked: number;
+  commission_month: number;
+  commission_year: number;
 }
 
 export const useMissions = () => {

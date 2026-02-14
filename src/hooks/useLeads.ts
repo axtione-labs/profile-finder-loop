@@ -88,15 +88,16 @@ export const useDeleteLead = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      // Soft-delete: hide the lead for the apporteur without removing admin data
       const { error } = await supabase
         .from("leads" as any)
-        .delete()
+        .update({ hidden_by_user: true } as any)
         .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["leads"] });
-      toast.success("Besoin supprimé");
+      toast.success("Besoin masqué");
     },
     onError: (e: any) => toast.error(e.message),
   });
