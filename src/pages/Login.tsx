@@ -90,14 +90,14 @@ const Login = () => {
       </div>
 
       {/* Right panel */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-background relative">
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-background relative">
         <Button
           variant="ghost"
           size="sm"
-          className="absolute top-6 left-6 gap-1.5 text-muted-foreground hover:text-foreground"
+          className="absolute top-4 left-4 sm:top-6 sm:left-6 gap-1.5 text-muted-foreground hover:text-foreground text-xs sm:text-sm z-10"
           onClick={() => navigate("/")}
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Retour
         </Button>
         <motion.div
@@ -106,11 +106,11 @@ const Login = () => {
           transition={{ duration: 0.5 }}
           className="w-full max-w-md space-y-8"
         >
-          <div className="lg:hidden flex items-center gap-3 mb-4">
-            <div className="w-9 h-9 gradient-primary rounded-xl flex items-center justify-center">
+          <div className="lg:hidden flex items-center gap-2 mb-4 mt-6">
+            <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
               <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="text-xl font-display font-bold text-foreground">DealFlow</span>
+            <span className="text-lg font-display font-bold text-foreground">DealFlow</span>
           </div>
 
           <div>

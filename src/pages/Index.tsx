@@ -65,17 +65,17 @@ const Index = () => {
     <div className="dark min-h-screen bg-background text-foreground">
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="container mx-auto flex h-16 items-center justify-between px-6">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
           <Link to="/" className="flex items-center gap-2">
-            <img src={logoWolf} alt="DealFlow" className="h-12 w-12" />
-            <span className="font-display text-xl font-bold text-gradient">DealFlow</span>
+            <img src={logoWolf} alt="DealFlow" className="h-10 w-10 sm:h-12 sm:w-12" />
+            <span className="font-display text-lg sm:text-xl font-bold text-gradient">DealFlow</span>
           </Link>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Link to="/login">
-              <Button variant="ghost" size="sm">Connexion</Button>
+              <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">Connexion</Button>
             </Link>
             <Link to="/register">
-              <Button size="sm" className="gradient-primary border-0">
+              <Button size="sm" className="gradient-primary border-0 text-xs sm:text-sm px-3 sm:px-4">
                 S'inscrire
               </Button>
             </Link>
@@ -128,7 +128,7 @@ const Index = () => {
               <ArrowRight className="h-4 w-4 text-muted-foreground hidden sm:block" />
               <ChevronDown className="h-4 w-4 text-muted-foreground sm:hidden" />
               <span className="inline-flex items-center gap-2 rounded-full bg-primary/15 border border-primary/25 px-4 py-2 font-medium text-primary">
-                <TrendingUp className="h-4 w-4" /> 5 à 10% chaque mois
+                <TrendingUp className="h-4 w-4" /> 5 à 10% chaque jour
               </span>
             </div>
             <p className="mt-4 text-muted-foreground text-center text-base">
