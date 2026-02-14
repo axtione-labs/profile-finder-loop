@@ -276,6 +276,7 @@ export type Database = {
       profiles: {
         Row: {
           admin_comment: string | null
+          blocked: boolean
           company: string | null
           created_at: string
           first_name: string
@@ -287,6 +288,7 @@ export type Database = {
         }
         Insert: {
           admin_comment?: string | null
+          blocked?: boolean
           company?: string | null
           created_at?: string
           first_name?: string
@@ -298,6 +300,7 @@ export type Database = {
         }
         Update: {
           admin_comment?: string | null
+          blocked?: boolean
           company?: string | null
           created_at?: string
           first_name?: string

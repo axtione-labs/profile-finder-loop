@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserPlus, Search, Trash2, FileUp, ExternalLink } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { UserPlus, Search, Trash2, FileUp, ExternalLink, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { useCandidates, useCreateCandidate, useUpdateCandidate, useDeleteCandidate, type Candidate } from "@/hooks/useCandidates";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,13 +30,19 @@ const AdminSourcing = () => {
   const deleteCandidate = useDeleteCandidate();
   const [search, setSearch] = useState("");
   const [addOpen, setAddOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editCandidate, setEditCandidate] = useState<any>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [statusConfirm, setStatusConfirm] = useState<{ id: string; status: string } | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const editFileRef = useRef<HTMLInputElement>(null);
   const [newCandidate, setNewCandidate] = useState({
     first_name: "", last_name: "", phone: "", position: "",
     experience: "", stack: "", tjm: "", availability: "",
   });
   const [cvFile, setCvFile] = useState<File | null>(null);
+  const [editCvFile, setEditCvFile] = useState<File | null>(null);
 
   const filtered = candidates.filter(c => {
     const fullName = `${c.first_name} ${c.last_name}`.toLowerCase();
@@ -44,15 +52,71 @@ const AdminSourcing = () => {
   });
 
   const handleUpdateStatus = (id: string, status: string) => {
-    updateCandidate.mutate({ id, status }, {
-      onSuccess: () => toast.success(`Statut candidat mis à jour : ${status}`),
+    setStatusConfirm({ id, status });
+  };
+
+  const confirmStatusUpdate = () => {
+    if (!statusConfirm) return;
+    updateCandidate.mutate({ id: statusConfirm.id, status: statusConfirm.status }, {
+      onSuccess: () => toast.success(`Statut mis à jour : ${statusConfirm.status}`),
+    });
+    setStatusConfirm(null);
+  };
+
+  const handleDelete = () => {
+    if (!deleteConfirmId) return;
+    deleteCandidate.mutate(deleteConfirmId, {
+      onSuccess: () => setDeleteConfirmId(null),
     });
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm("Supprimer ce candidat ?")) {
-      deleteCandidate.mutate(id);
+  const openEdit = (c: Candidate) => {
+    setEditCandidate({
+      ...c,
+      stack: c.stack.join(", "),
+    });
+    setEditCvFile(null);
+    setEditOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editCandidate) return;
+
+    let cv_url = editCandidate.cv_url;
+
+    if (editCvFile) {
+      setUploading(true);
+      const fileName = `${Date.now()}_${editCvFile.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from("cvs")
+        .upload(fileName, editCvFile, { contentType: editCvFile.type });
+      setUploading(false);
+      if (uploadError) {
+        toast.error("Erreur upload CV: " + uploadError.message);
+        return;
+      }
+      const { data: urlData } = supabase.storage.from("cvs").getPublicUrl(fileName);
+      cv_url = urlData.publicUrl;
     }
+
+    updateCandidate.mutate({
+      id: editCandidate.id,
+      first_name: editCandidate.first_name,
+      last_name: editCandidate.last_name,
+      name: `${editCandidate.first_name} ${editCandidate.last_name}`,
+      phone: editCandidate.phone,
+      position: editCandidate.position,
+      experience: editCandidate.experience,
+      availability: editCandidate.availability,
+      stack: editCandidate.stack.split(",").map((s: string) => s.trim()).filter(Boolean),
+      tjm: parseFloat(editCandidate.tjm) || 0,
+      cv_url,
+    }, {
+      onSuccess: () => {
+        toast.success("Candidat mis à jour");
+        setEditOpen(false);
+      },
+    });
   };
 
   const handleAdd = async () => {
@@ -67,7 +131,6 @@ const AdminSourcing = () => {
         .from("cvs")
         .upload(fileName, cvFile, { contentType: cvFile.type });
       setUploading(false);
-
       if (uploadError) {
         toast.error("Erreur upload CV: " + uploadError.message);
         return;
@@ -96,6 +159,11 @@ const AdminSourcing = () => {
         setCvFile(null);
       },
     });
+  };
+
+  const getStatusBadge = (status: string) => {
+    const color = Object.entries(statusColor).find(([key]) => status.startsWith(key))?.[1] || "bg-secondary text-muted-foreground";
+    return <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${color}`}>{status}</span>;
   };
 
   return (
@@ -158,13 +226,7 @@ const AdminSourcing = () => {
                 <div>
                   <Label>CV (PDF)</Label>
                   <div className="mt-1.5 flex items-center gap-2">
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".pdf"
-                      className="hidden"
-                      onChange={e => setCvFile(e.target.files?.[0] || null)}
-                    />
+                    <input ref={fileInputRef} type="file" accept=".pdf" className="hidden" onChange={e => setCvFile(e.target.files?.[0] || null)} />
                     <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
                       <FileUp className="mr-2 h-4 w-4" /> {cvFile ? cvFile.name : "Choisir un fichier"}
                     </Button>
@@ -185,68 +247,184 @@ const AdminSourcing = () => {
         </div>
 
         <motion.div
-          className="space-y-4"
+          className="overflow-x-auto rounded-xl border border-border/50"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
         >
           {isLoading ? (
             <div className="text-center text-muted-foreground py-12">Chargement...</div>
           ) : filtered.length === 0 ? (
-            <div className="gradient-card rounded-xl border border-border/50 p-8 text-center text-muted-foreground">
-              Aucun candidat trouvé.
-            </div>
+            <div className="py-12 text-center text-muted-foreground">Aucun candidat trouvé.</div>
           ) : (
-            filtered.map((candidate) => (
-              <div key={candidate.id} className="gradient-card rounded-xl border border-border/50 p-5">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">{candidate.first_name} {candidate.last_name}</span>
-                      <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[candidate.status] || "bg-secondary text-muted-foreground"}`}>
-                        {candidate.status}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {candidate.position || "—"} · {candidate.experience} · {candidate.tjm}€/jour
-                      {candidate.availability && ` · Dispo: ${candidate.availability}`}
-                    </p>
-                    {candidate.phone && (
-                      <p className="text-xs text-muted-foreground mt-0.5">📞 {candidate.phone}</p>
-                    )}
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {candidate.stack.map(t => (
-                        <Badge key={t} variant="outline" className="text-xs">{t}</Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {candidate.cv_url && (
-                      <a href={candidate.cv_url} target="_blank" rel="noopener noreferrer">
-                        <Button variant="outline" size="sm">
-                          <ExternalLink className="mr-1 h-3 w-3" /> CV
-                        </Button>
-                      </a>
-                    )}
-                    <Select value={candidate.status} onValueChange={(v) => handleUpdateStatus(candidate.id, v)}>
-                      <SelectTrigger className="h-8 w-[140px] bg-background/50 text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {candidateStatuses.map(s => (
-                          <SelectItem key={s} value={s}>{s}</SelectItem>
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-secondary/30">
+                  <TableHead>Nom</TableHead>
+                  <TableHead>Poste</TableHead>
+                  <TableHead>Expérience</TableHead>
+                  <TableHead>TJM</TableHead>
+                  <TableHead>Disponibilité</TableHead>
+                  <TableHead>Stack</TableHead>
+                  <TableHead>Téléphone</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead>CV</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((candidate) => (
+                  <TableRow key={candidate.id}>
+                    <TableCell className="font-medium whitespace-nowrap">{candidate.first_name} {candidate.last_name}</TableCell>
+                    <TableCell>{candidate.position || "—"}</TableCell>
+                    <TableCell>{candidate.experience || "—"}</TableCell>
+                    <TableCell className="font-medium">{candidate.tjm}€/j</TableCell>
+                    <TableCell>{candidate.availability || "—"}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1 max-w-[200px]">
+                        {candidate.stack.map(t => (
+                          <Badge key={t} variant="outline" className="text-xs">{t}</Badge>
                         ))}
-                      </SelectContent>
-                    </Select>
-                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleDelete(candidate.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{candidate.phone || "—"}</TableCell>
+                    <TableCell>{getStatusBadge(candidate.status)}</TableCell>
+                    <TableCell>
+                      {candidate.cv_url ? (
+                        <a href={candidate.cv_url} target="_blank" rel="noopener noreferrer">
+                          <Button variant="outline" size="sm">
+                            <ExternalLink className="mr-1 h-3 w-3" /> CV
+                          </Button>
+                        </a>
+                      ) : "—"}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Select value={candidate.status} onValueChange={(v) => handleUpdateStatus(candidate.id, v)}>
+                          <SelectTrigger className="h-7 w-[130px] bg-background/50 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {candidateStatuses.map(s => (
+                              <SelectItem key={s} value={s}>{s}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button variant="ghost" size="sm" onClick={() => openEdit(candidate)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteConfirmId(candidate.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </motion.div>
       </div>
+
+      {/* Edit Candidate Dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-display">Modifier le candidat</DialogTitle>
+          </DialogHeader>
+          {editCandidate && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Prénom</Label>
+                  <Input className="mt-1.5" value={editCandidate.first_name} onChange={e => setEditCandidate((c: any) => ({ ...c, first_name: e.target.value }))} />
+                </div>
+                <div>
+                  <Label>Nom</Label>
+                  <Input className="mt-1.5" value={editCandidate.last_name} onChange={e => setEditCandidate((c: any) => ({ ...c, last_name: e.target.value }))} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Téléphone</Label>
+                  <Input className="mt-1.5" value={editCandidate.phone || ""} onChange={e => setEditCandidate((c: any) => ({ ...c, phone: e.target.value }))} />
+                </div>
+                <div>
+                  <Label>Poste</Label>
+                  <Input className="mt-1.5" value={editCandidate.position} onChange={e => setEditCandidate((c: any) => ({ ...c, position: e.target.value }))} />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <Label>Expérience</Label>
+                  <Input className="mt-1.5" value={editCandidate.experience} onChange={e => setEditCandidate((c: any) => ({ ...c, experience: e.target.value }))} />
+                </div>
+                <div>
+                  <Label>TJM (€)</Label>
+                  <Input className="mt-1.5" type="number" value={editCandidate.tjm} onChange={e => setEditCandidate((c: any) => ({ ...c, tjm: e.target.value }))} />
+                </div>
+                <div>
+                  <Label>Disponibilité</Label>
+                  <Input className="mt-1.5" value={editCandidate.availability} onChange={e => setEditCandidate((c: any) => ({ ...c, availability: e.target.value }))} />
+                </div>
+              </div>
+              <div>
+                <Label>Stack (séparées par des virgules)</Label>
+                <Input className="mt-1.5" value={editCandidate.stack} onChange={e => setEditCandidate((c: any) => ({ ...c, stack: e.target.value }))} />
+              </div>
+              <div>
+                <Label>CV (PDF)</Label>
+                <div className="mt-1.5 flex items-center gap-2">
+                  <input ref={editFileRef} type="file" accept=".pdf" className="hidden" onChange={e => setEditCvFile(e.target.files?.[0] || null)} />
+                  <Button type="button" variant="outline" size="sm" onClick={() => editFileRef.current?.click()}>
+                    <FileUp className="mr-2 h-4 w-4" /> {editCvFile ? editCvFile.name : editCandidate.cv_url ? "Remplacer le CV" : "Ajouter un CV"}
+                  </Button>
+                  {editCvFile && <span className="text-xs text-muted-foreground">{(editCvFile.size / 1024).toFixed(0)} Ko</span>}
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setEditOpen(false)}>Annuler</Button>
+                <Button onClick={handleSaveEdit} disabled={uploading}>
+                  {uploading ? "Upload..." : "Enregistrer"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer ce candidat ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Le candidat sera définitivement supprimé.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Status Change Confirmation */}
+      <AlertDialog open={!!statusConfirm} onOpenChange={(open) => !open && setStatusConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Changer le statut ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Le statut du candidat passera à « {statusConfirm?.status} ».
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmStatusUpdate}>Confirmer</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 };
