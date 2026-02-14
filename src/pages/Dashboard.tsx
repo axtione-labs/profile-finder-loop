@@ -78,6 +78,11 @@ const Dashboard = () => {
                 <Plus className="mr-1.5 h-4 w-4" /> Nouveau besoin
               </Button>
             </Link>
+            <Link to="/settings">
+              <Button size="sm" variant="ghost">
+                <Settings className="h-4 w-4" />
+              </Button>
+            </Link>
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-sm font-semibold text-primary">
               {initials}
             </div>
