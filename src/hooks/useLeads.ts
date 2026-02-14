@@ -21,9 +21,11 @@ export interface Lead {
   description: string;
   status: string;
   recruiter: string;
+  contact_name: string;
+  contact_phone: string;
+  contact_email: string;
   created_at: string;
   updated_at: string;
-  // Joined
   apporteur_name?: string;
 }
 
@@ -49,10 +51,10 @@ export const useCreateLead = () => {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (lead: Omit<Lead, "id" | "user_id" | "created_at" | "updated_at" | "status" | "recruiter" | "apporteur_name">) => {
+    mutationFn: async (lead: Omit<Lead, "id" | "user_id" | "created_at" | "updated_at" | "status" | "recruiter" | "apporteur_name" | "margin">) => {
       const { error } = await supabase
         .from("leads" as any)
-        .insert({ ...lead, user_id: user!.id } as any);
+        .insert({ ...lead, user_id: user!.id, margin: 0 } as any);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -76,6 +78,25 @@ export const useUpdateLead = () => {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["leads"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+};
+
+export const useDeleteLead = () => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("leads" as any)
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["leads"] });
+      toast.success("Besoin supprimé");
     },
     onError: (e: any) => toast.error(e.message),
   });

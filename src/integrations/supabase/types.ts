@@ -16,36 +16,51 @@ export type Database = {
     Tables: {
       candidates: {
         Row: {
+          availability: string
           created_at: string
           cv_url: string | null
           experience: string
+          first_name: string
           id: string
-          lead_id: string
+          last_name: string
+          lead_id: string | null
           name: string
+          phone: string | null
+          position: string
           stack: string[]
           status: string
           tjm: number
           updated_at: string
         }
         Insert: {
+          availability?: string
           created_at?: string
           cv_url?: string | null
           experience?: string
+          first_name?: string
           id?: string
-          lead_id: string
+          last_name?: string
+          lead_id?: string | null
           name?: string
+          phone?: string | null
+          position?: string
           stack?: string[]
           status?: string
           tjm?: number
           updated_at?: string
         }
         Update: {
+          availability?: string
           created_at?: string
           cv_url?: string | null
           experience?: string
+          first_name?: string
           id?: string
-          lead_id?: string
+          last_name?: string
+          lead_id?: string | null
           name?: string
+          phone?: string | null
+          position?: string
           stack?: string[]
           status?: string
           tjm?: number
@@ -63,6 +78,7 @@ export type Database = {
       }
       commissions: {
         Row: {
+          admin_amount: number
           amount: number
           apporteur_id: string
           created_at: string
@@ -73,6 +89,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          admin_amount?: number
           amount?: number
           apporteur_id: string
           created_at?: string
@@ -83,6 +100,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          admin_amount?: number
           amount?: number
           apporteur_id?: string
           created_at?: string
@@ -105,6 +123,9 @@ export type Database = {
       leads: {
         Row: {
           client: string
+          contact_email: string | null
+          contact_name: string
+          contact_phone: string | null
           created_at: string
           description: string
           duration: string
@@ -126,6 +147,9 @@ export type Database = {
         }
         Insert: {
           client?: string
+          contact_email?: string | null
+          contact_name?: string
+          contact_phone?: string | null
           created_at?: string
           description?: string
           duration?: string
@@ -147,6 +171,9 @@ export type Database = {
         }
         Update: {
           client?: string
+          contact_email?: string | null
+          contact_name?: string
+          contact_phone?: string | null
           created_at?: string
           description?: string
           duration?: string
@@ -181,6 +208,7 @@ export type Database = {
           start_date: string | null
           status: string
           tjm: number
+          tjm_client: number
           updated_at: string
         }
         Insert: {
@@ -195,6 +223,7 @@ export type Database = {
           start_date?: string | null
           status?: string
           tjm?: number
+          tjm_client?: number
           updated_at?: string
         }
         Update: {
@@ -209,6 +238,7 @@ export type Database = {
           start_date?: string | null
           status?: string
           tjm?: number
+          tjm_client?: number
           updated_at?: string
         }
         Relationships: [

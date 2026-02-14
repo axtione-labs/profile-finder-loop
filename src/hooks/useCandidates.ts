@@ -5,8 +5,13 @@ import { toast } from "sonner";
 
 export interface Candidate {
   id: string;
-  lead_id: string;
+  lead_id: string | null;
   name: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  position: string;
+  availability: string;
   experience: string;
   stack: string[];
   tjm: number;
@@ -64,6 +69,25 @@ export const useUpdateCandidate = () => {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["candidates"] });
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+};
+
+export const useDeleteCandidate = () => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("candidates" as any)
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["candidates"] });
+      toast.success("Candidat supprimé");
     },
     onError: (e: any) => toast.error(e.message),
   });

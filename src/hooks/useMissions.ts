@@ -11,6 +11,7 @@ export interface Mission {
   consultant_name: string;
   apporteur_id: string;
   tjm: number;
+  tjm_client: number;
   duration: string;
   status: string;
   start_date: string;
@@ -23,6 +24,7 @@ export interface Commission {
   apporteur_id: string;
   percentage: number;
   amount: number;
+  admin_amount: number;
   status: string;
   created_at: string;
 }
@@ -89,8 +91,9 @@ export const useCreateMission = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (mission: Omit<Mission, "id" | "created_at">) => {
-      const { error } = await supabase.from("missions" as any).insert(mission as any);
+      const { data, error } = await supabase.from("missions" as any).insert(mission as any).select();
       if (error) throw error;
+      return (data as any)?.[0];
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["missions"] });

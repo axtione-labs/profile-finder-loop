@@ -14,6 +14,7 @@ import AdminOverview from "./pages/admin/AdminOverview";
 import AdminLeads from "./pages/admin/AdminLeads";
 import AdminSourcing from "./pages/admin/AdminSourcing";
 import AdminMissions from "./pages/admin/AdminMissions";
+import AdminClients from "./pages/admin/AdminClients";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/admin/sourcing" element={<ProtectedRoute requireAdmin><AdminSourcing /></ProtectedRoute>} />
             <Route path="/admin/missions" element={<ProtectedRoute requireAdmin><AdminMissions /></ProtectedRoute>} />
             <Route path="/admin/commissions" element={<ProtectedRoute requireAdmin><AdminMissions /></ProtectedRoute>} />
+            <Route path="/admin/clients" element={<ProtectedRoute requireAdmin><AdminClients /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

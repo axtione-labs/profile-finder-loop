@@ -6,9 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, Eye } from "lucide-react";
+import { Search, Eye, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { useLeads, useUpdateLead, type Lead } from "@/hooks/useLeads";
+import { useLeads, useUpdateLead, useDeleteLead, type Lead } from "@/hooks/useLeads";
 import { useProfiles } from "@/hooks/useProfiles";
 
 type LeadStatus = "Déclaré" | "À qualifier" | "Qualifié" | "En sourcing" | "Profil trouvé" | "Envoyé client" | "Négociation" | "Gagné" | "Perdu";
@@ -31,6 +31,7 @@ const AdminLeads = () => {
   const { data: leads = [], isLoading } = useLeads();
   const { data: profiles = [] } = useProfiles();
   const updateLead = useUpdateLead();
+  const deleteLead = useDeleteLead();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
@@ -55,15 +56,10 @@ const AdminLeads = () => {
     });
   };
 
-  const handleAssignRecruiter = (id: string, recruiter: string) => {
-    const lead = leads.find(l => l.id === id);
-    updateLead.mutate({
-      id,
-      recruiter,
-      status: lead?.status === "Déclaré" || lead?.status === "À qualifier" ? "Qualifié" : lead?.status,
-    }, {
-      onSuccess: () => toast.success(`Recruteur assigné : ${recruiter}`),
-    });
+  const handleDelete = (id: string) => {
+    if (confirm("Supprimer ce besoin ?")) {
+      deleteLead.mutate(id);
+    }
   };
 
   return (
@@ -117,7 +113,6 @@ const AdminLeads = () => {
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Apporteur</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">TJM</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Statut</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Recruteur</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Actions</th>
                 </tr>
               </thead>
@@ -148,23 +143,14 @@ const AdminLeads = () => {
                       </Select>
                     </td>
                     <td className="px-4 py-3">
-                      <Input
-                        value={lead.recruiter}
-                        placeholder="Assigner"
-                        className="h-7 w-[120px] bg-background/50 text-xs"
-                        onBlur={(e) => {
-                          if (e.target.value !== lead.recruiter) {
-                            handleAssignRecruiter(lead.id, e.target.value);
-                          }
-                        }}
-                        onChange={() => {}}
-                        defaultValue={lead.recruiter}
-                      />
-                    </td>
-                    <td className="px-4 py-3">
-                      <Button variant="ghost" size="sm" onClick={() => setSelectedLead(lead)}>
-                        <Eye className="h-4 w-4" />
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => setSelectedLead(lead)}>
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleDelete(lead.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -194,6 +180,12 @@ const AdminLeads = () => {
                   <div><span className="text-muted-foreground">Durée :</span> <span>{selectedLead.duration}</span></div>
                   <div><span className="text-muted-foreground">Priorité :</span> <span>{selectedLead.priority === "urgent" ? "🔴 Urgent" : "Normal"}</span></div>
                 </div>
+                {selectedLead.contact_name && (
+                  <div className="border-t border-border/30 pt-3">
+                    <span className="text-muted-foreground font-medium">Contact recrutement :</span>
+                    <p className="mt-1">{selectedLead.contact_name} {selectedLead.contact_phone && `· ${selectedLead.contact_phone}`} {selectedLead.contact_email && `· ${selectedLead.contact_email}`}</p>
+                  </div>
+                )}
                 <div>
                   <span className="text-muted-foreground">Stack :</span>
                   <div className="mt-1 flex flex-wrap gap-1.5">

@@ -9,15 +9,20 @@ import { Input } from "@/components/ui/input";
 import { TrendingUp, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useMissions, useCommissions, useUpdateCommission, useCreateMission, useCreateCommission } from "@/hooks/useMissions";
+import { useMissions, useCommissions, useUpdateCommission, useCreateMission, useCreateCommission, useUpdateMission } from "@/hooks/useMissions";
 import { useLeads } from "@/hooks/useLeads";
 import { useCandidates } from "@/hooks/useCandidates";
 import { useProfiles } from "@/hooks/useProfiles";
 
+const missionStatuses = ["Validé apporteur", "Non validé apporteur", "CV envoyé client", "Perdu", "Gagné"];
+
 const missionStatusColor: Record<string, string> = {
+  "Validé apporteur": "bg-success/15 text-success",
+  "Non validé apporteur": "bg-destructive/15 text-destructive",
+  "CV envoyé client": "bg-primary/15 text-primary",
+  "Perdu": "bg-destructive/15 text-destructive",
+  "Gagné": "bg-success/15 text-success",
   "En cours": "bg-primary/15 text-primary",
-  "Terminée": "bg-success/15 text-success",
-  "Annulée": "bg-destructive/15 text-destructive",
 };
 
 const commStatusColor: Record<string, string> = {
@@ -33,11 +38,12 @@ const AdminMissions = () => {
   const { data: candidates = [] } = useCandidates();
   const { data: profiles = [] } = useProfiles();
   const updateCommission = useUpdateCommission();
+  const updateMission = useUpdateMission();
   const createMission = useCreateMission();
   const createCommission = useCreateCommission();
 
   const [missionOpen, setMissionOpen] = useState(false);
-  const [newMission, setNewMission] = useState({ lead_id: "", candidate_id: "", duration: "", percentage: "10" });
+  const [newMission, setNewMission] = useState({ lead_id: "", candidate_id: "", duration: "", tjm_client: "", commission_apporteur: "" });
 
   const getApporteurName = (userId: string) => {
     const p = profiles.find(pr => pr.user_id === userId);
@@ -50,50 +56,58 @@ const AdminMissions = () => {
     });
   };
 
-  const wonLeads = leads.filter(l => l.status === "Gagné");
-  const retainedCandidates = candidates.filter(c => c.status === "Retenu");
+  const handleUpdateMissionStatus = (id: string, status: string) => {
+    updateMission.mutate({ id, status }, {
+      onSuccess: () => toast.success(`Mission : ${status}`),
+    });
+  };
 
-  const selectedLead = leads.find(l => l.id === newMission.lead_id);
-  const leadCandidates = retainedCandidates.filter(c => c.lead_id === newMission.lead_id);
+  // All leads that are qualified+ for mission assignment
+  const eligibleLeads = leads.filter(l => !["Déclaré", "Perdu"].includes(l.status));
+  // All candidates available
+  const availableCandidates = candidates.filter(c => c.status === "Disponible" || c.status === "En process");
 
-  const handleCreateMission = () => {
+  const handleCreateMission = async () => {
     if (!newMission.lead_id || !newMission.candidate_id) return;
     const lead = leads.find(l => l.id === newMission.lead_id);
     const candidate = candidates.find(c => c.id === newMission.candidate_id);
     if (!lead || !candidate) return;
 
-    createMission.mutate({
+    const tjmClient = parseFloat(newMission.tjm_client) || lead.tjm;
+    const commissionApporteur = parseFloat(newMission.commission_apporteur) || 0;
+    const adminMargin = tjmClient - commissionApporteur - candidate.tjm;
+
+    const mission = await createMission.mutateAsync({
       lead_id: lead.id,
       candidate_id: candidate.id,
       client: lead.client,
-      consultant_name: candidate.name,
+      consultant_name: `${candidate.first_name} ${candidate.last_name}`,
       apporteur_id: lead.user_id,
       tjm: candidate.tjm,
+      tjm_client: tjmClient,
       duration: newMission.duration || lead.duration,
-      status: "En cours",
+      status: "CV envoyé client",
       start_date: new Date().toISOString(),
-    }, {
-      onSuccess: () => {
-        // Also create commission
-        const pct = parseFloat(newMission.percentage) || 10;
-        const durationMonths = parseInt(newMission.duration) || 6;
-        const amount = candidate.tjm * 22 * durationMonths * (pct / 100);
-        createCommission.mutate({
-          mission_id: "", // will be set after
-          apporteur_id: lead.user_id,
-          percentage: pct,
-          amount: Math.round(amount),
-          status: "À générer",
-        });
-        setMissionOpen(false);
-        setNewMission({ lead_id: "", candidate_id: "", duration: "", percentage: "10" });
-      },
     });
+
+    if (mission?.id) {
+      createCommission.mutate({
+        mission_id: mission.id,
+        apporteur_id: lead.user_id,
+        percentage: 0,
+        amount: commissionApporteur,
+        admin_amount: Math.max(0, adminMargin),
+        status: "À générer",
+      });
+    }
+
+    setMissionOpen(false);
+    setNewMission({ lead_id: "", candidate_id: "", duration: "", tjm_client: "", commission_apporteur: "" });
   };
 
-  const totalCommissions = commissions.reduce((sum, c) => sum + c.amount, 0);
+  const totalAdminCommissions = commissions.reduce((sum, c) => sum + (c.admin_amount || 0), 0);
+  const totalApporteurCommissions = commissions.reduce((sum, c) => sum + c.amount, 0);
   const paidCommissions = commissions.filter(c => c.status === "Payée").reduce((sum, c) => sum + c.amount, 0);
-  const pendingCommissions = totalCommissions - paidCommissions;
 
   return (
     <AdminLayout>
@@ -115,35 +129,44 @@ const AdminMissions = () => {
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label>Lead gagné</Label>
-                  <Select value={newMission.lead_id} onValueChange={v => setNewMission(p => ({ ...p, lead_id: v, candidate_id: "" }))}>
+                  <Label>Besoin associé</Label>
+                  <Select value={newMission.lead_id} onValueChange={v => setNewMission(p => ({ ...p, lead_id: v }))}>
                     <SelectTrigger className="mt-1.5 bg-background/50"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
                     <SelectContent>
-                      {wonLeads.map(l => <SelectItem key={l.id} value={l.id}>{l.position} — {l.client}</SelectItem>)}
+                      {eligibleLeads.map(l => <SelectItem key={l.id} value={l.id}>{l.position} — {l.client}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
-                {newMission.lead_id && (
-                  <div>
-                    <Label>Consultant retenu</Label>
-                    <Select value={newMission.candidate_id} onValueChange={v => setNewMission(p => ({ ...p, candidate_id: v }))}>
-                      <SelectTrigger className="mt-1.5 bg-background/50"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
-                      <SelectContent>
-                        {leadCandidates.map(c => <SelectItem key={c.id} value={c.id}>{c.name} — {c.tjm}€</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
+                <div>
+                  <Label>Candidat</Label>
+                  <Select value={newMission.candidate_id} onValueChange={v => setNewMission(p => ({ ...p, candidate_id: v }))}>
+                    <SelectTrigger className="mt-1.5 bg-background/50"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                    <SelectContent>
+                      {availableCandidates.map(c => <SelectItem key={c.id} value={c.id}>{c.first_name} {c.last_name} — {c.tjm}€</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label>Durée (mois)</Label>
-                    <Input className="mt-1.5 bg-background/50" type="number" value={newMission.duration} onChange={e => setNewMission(p => ({ ...p, duration: e.target.value }))} placeholder="6" />
+                    <Label>TJM client final (€)</Label>
+                    <Input className="mt-1.5 bg-background/50" type="number" value={newMission.tjm_client} onChange={e => setNewMission(p => ({ ...p, tjm_client: e.target.value }))} placeholder="600" />
                   </div>
                   <div>
-                    <Label>Commission (%)</Label>
-                    <Input className="mt-1.5 bg-background/50" type="number" value={newMission.percentage} onChange={e => setNewMission(p => ({ ...p, percentage: e.target.value }))} placeholder="10" />
+                    <Label>Commission apporteur (€/j)</Label>
+                    <Input className="mt-1.5 bg-background/50" type="number" value={newMission.commission_apporteur} onChange={e => setNewMission(p => ({ ...p, commission_apporteur: e.target.value }))} placeholder="50" />
                   </div>
                 </div>
+                <div>
+                  <Label>Durée (mois)</Label>
+                  <Input className="mt-1.5 bg-background/50" type="number" value={newMission.duration} onChange={e => setNewMission(p => ({ ...p, duration: e.target.value }))} placeholder="6" />
+                </div>
+                {newMission.tjm_client && newMission.commission_apporteur && newMission.candidate_id && (
+                  <div className="rounded-lg bg-secondary/30 p-3 text-sm space-y-1">
+                    <p>TJM candidat : <strong>{candidates.find(c => c.id === newMission.candidate_id)?.tjm || 0}€</strong></p>
+                    <p>Commission apporteur : <strong>{newMission.commission_apporteur}€/j</strong></p>
+                    <p>Marge admin : <strong>{(parseFloat(newMission.tjm_client) - parseFloat(newMission.commission_apporteur) - (candidates.find(c => c.id === newMission.candidate_id)?.tjm || 0)).toFixed(0)}€/j</strong></p>
+                  </div>
+                )}
                 <Button onClick={handleCreateMission} disabled={createMission.isPending} className="gradient-primary border-0 w-full">
                   {createMission.isPending ? "Création..." : "Créer"}
                 </Button>
@@ -159,13 +182,13 @@ const AdminMissions = () => {
         >
           <div className="gradient-card rounded-xl border border-border/50 p-5">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <TrendingUp className="h-4 w-4" /> Total commissions
+              <TrendingUp className="h-4 w-4" /> Ma marge totale
             </div>
-            <div className="mt-2 font-display text-2xl font-bold text-gradient">{totalCommissions.toLocaleString("fr-FR")} €</div>
+            <div className="mt-2 font-display text-2xl font-bold text-gradient">{totalAdminCommissions.toLocaleString("fr-FR")} €</div>
           </div>
           <div className="gradient-card rounded-xl border border-border/50 p-5">
-            <div className="text-sm text-muted-foreground">En attente</div>
-            <div className="mt-2 font-display text-2xl font-bold text-warning">{pendingCommissions.toLocaleString("fr-FR")} €</div>
+            <div className="text-sm text-muted-foreground">Commissions apporteurs</div>
+            <div className="mt-2 font-display text-2xl font-bold text-warning">{totalApporteurCommissions.toLocaleString("fr-FR")} €</div>
           </div>
           <div className="gradient-card rounded-xl border border-border/50 p-5">
             <div className="text-sm text-muted-foreground">Payées</div>
@@ -196,8 +219,8 @@ const AdminMissions = () => {
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">Consultant</th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">Client</th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">Apporteur</th>
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">TJM</th>
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Durée</th>
+                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">TJM cand.</th>
+                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">TJM client</th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">Statut</th>
                     </tr>
                   </thead>
@@ -208,11 +231,16 @@ const AdminMissions = () => {
                         <td className="px-4 py-3 text-muted-foreground">{m.client}</td>
                         <td className="px-4 py-3 text-muted-foreground">{getApporteurName(m.apporteur_id)}</td>
                         <td className="px-4 py-3 font-medium">{m.tjm}€</td>
-                        <td className="px-4 py-3 text-muted-foreground">{m.duration}</td>
+                        <td className="px-4 py-3 font-medium">{m.tjm_client}€</td>
                         <td className="px-4 py-3">
-                          <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${missionStatusColor[m.status] || ""}`}>
-                            {m.status}
-                          </span>
+                          <Select value={m.status} onValueChange={(v) => handleUpdateMissionStatus(m.id, v)}>
+                            <SelectTrigger className={`h-7 w-[170px] border text-xs font-medium ${missionStatusColor[m.status] || "bg-secondary"}`}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {missionStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
                         </td>
                       </tr>
                     ))}
@@ -237,9 +265,9 @@ const AdminMissions = () => {
                   <thead>
                     <tr className="border-b border-border/50 bg-secondary/30">
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">Apporteur</th>
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">%</th>
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Montant</th>
-                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Statut paiement</th>
+                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Comm. apporteur</th>
+                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Marge admin</th>
+                      <th className="px-4 py-3 text-left font-medium text-muted-foreground">Statut</th>
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">Action</th>
                     </tr>
                   </thead>
@@ -247,8 +275,8 @@ const AdminMissions = () => {
                     {commissions.map((c) => (
                       <tr key={c.id} className="border-b border-border/30 hover:bg-secondary/20 transition-colors">
                         <td className="px-4 py-3 text-muted-foreground">{getApporteurName(c.apporteur_id)}</td>
-                        <td className="px-4 py-3">{c.percentage}%</td>
-                        <td className="px-4 py-3 font-semibold text-gradient">{c.amount.toLocaleString("fr-FR")}€</td>
+                        <td className="px-4 py-3 font-semibold">{c.amount.toLocaleString("fr-FR")}€</td>
+                        <td className="px-4 py-3 font-semibold text-gradient">{(c.admin_amount || 0).toLocaleString("fr-FR")}€</td>
                         <td className="px-4 py-3">
                           <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${commStatusColor[c.status] || ""}`}>
                             {c.status}
