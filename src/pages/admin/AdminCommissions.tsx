@@ -165,29 +165,37 @@ const AdminCommissions = () => {
                       <td className="px-4 py-3 font-medium">{getApporteurName(c.apporteur_id)}</td>
                       <td className="px-4 py-3 text-muted-foreground">{mission?.consultant_name || "—"}</td>
                       <td className="px-4 py-3">
-                        <Input
-                          type="number"
-                          className="h-7 w-20 bg-background/50 text-xs"
-                          value={c.days_worked || 0}
-                          onChange={(e) => handleUpdateDaysWorked(c.id, parseFloat(e.target.value) || 0)}
-                          min={0}
-                          max={31}
-                        />
+                        {c.status === "Payée" ? (
+                          <span className="text-xs font-medium">{c.days_worked}</span>
+                        ) : (
+                          <Input
+                            type="number"
+                            className="h-7 w-20 bg-background/50 text-xs"
+                            value={c.days_worked || 0}
+                            onChange={(e) => handleUpdateDaysWorked(c.id, parseFloat(e.target.value) || 0)}
+                            min={0}
+                            max={31}
+                          />
+                        )}
                       </td>
                       <td className="px-4 py-3 font-medium">{c.amount.toLocaleString("fr-FR")} €</td>
                       <td className="px-4 py-3 font-semibold">{(c.days_worked * c.amount).toLocaleString("fr-FR")} €</td>
                       <td className="px-4 py-3 font-semibold text-gradient">{(c.days_worked * c.admin_amount).toLocaleString("fr-FR")} €</td>
                       <td className="px-4 py-3">
-                        <Select value={c.status} onValueChange={(v) => handleUpdateStatus(c.id, v)}>
-                          <SelectTrigger className={`h-7 w-[120px] border text-xs font-medium ${commStatusColor[c.status] || ""}`}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="À générer">À générer</SelectItem>
-                            <SelectItem value="Générée">Générée</SelectItem>
-                            <SelectItem value="Payée">Payée</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        {c.status === "Payée" ? (
+                          <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${commStatusColor["Payée"]}`}>Payée</span>
+                        ) : (
+                          <Select value={c.status} onValueChange={(v) => handleUpdateStatus(c.id, v)}>
+                            <SelectTrigger className={`h-7 w-[120px] border text-xs font-medium ${commStatusColor[c.status] || ""}`}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="À générer">À générer</SelectItem>
+                              <SelectItem value="Générée">Générée</SelectItem>
+                              <SelectItem value="Payée">Payée</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
                       </td>
                     </tr>
                   );
