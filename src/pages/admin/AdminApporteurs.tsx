@@ -4,9 +4,10 @@ import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, UserCheck, Phone, Building2, Eye } from "lucide-react";
+import { Search, UserCheck, Phone, Building2, Eye, Trash2, ShieldOff, ShieldCheck } from "lucide-react";
 import { useProfiles } from "@/hooks/useProfiles";
 import { useLeads } from "@/hooks/useLeads";
 import { useMissions, useCommissions } from "@/hooks/useMissions";
@@ -23,6 +24,8 @@ const AdminApporteurs = () => {
   const [selectedProfile, setSelectedProfile] = useState<any>(null);
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({ first_name: "", last_name: "", phone: "", company: "", admin_comment: "" });
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [blockConfirm, setBlockConfirm] = useState<{ id: string; blocked: boolean } | null>(null);
   const queryClient = useQueryClient();
 
   const filtered = profiles.filter(p => {
@@ -75,6 +78,37 @@ const AdminApporteurs = () => {
     setSelectedProfile({ ...selectedProfile, ...editForm });
   };
 
+  const handleDelete = async () => {
+    if (!deleteConfirmId) return;
+    const { error } = await supabase
+      .from("profiles")
+      .delete()
+      .eq("id", deleteConfirmId);
+    if (error) {
+      toast.error("Erreur suppression: " + error.message);
+    } else {
+      toast.success("Apporteur supprimé");
+      queryClient.invalidateQueries({ queryKey: ["profiles"] });
+    }
+    setDeleteConfirmId(null);
+  };
+
+  const handleToggleBlock = async () => {
+    if (!blockConfirm) return;
+    const newBlocked = !blockConfirm.blocked;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ blocked: newBlocked } as any)
+      .eq("id", blockConfirm.id);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success(newBlocked ? "Compte bloqué" : "Compte débloqué");
+      queryClient.invalidateQueries({ queryKey: ["profiles"] });
+    }
+    setBlockConfirm(null);
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -104,6 +138,7 @@ const AdminApporteurs = () => {
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Missions</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Gagné</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">En attente</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Statut</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Actions</th>
                 </tr>
               </thead>
@@ -129,9 +164,29 @@ const AdminApporteurs = () => {
                       <td className="px-4 py-3 font-medium text-success">{stats.totalEarned.toLocaleString("fr-FR")} €</td>
                       <td className="px-4 py-3 text-warning">{stats.totalPending.toLocaleString("fr-FR")} €</td>
                       <td className="px-4 py-3">
-                        <Button variant="ghost" size="sm" onClick={() => openDetail(p)}>
-                          <Eye className="h-4 w-4" />
-                        </Button>
+                        {p.blocked ? (
+                          <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-xs font-medium text-destructive">Bloqué</span>
+                        ) : (
+                          <span className="rounded-full bg-success/15 px-2 py-0.5 text-xs font-medium text-success">Actif</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => openDetail(p)}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setBlockConfirm({ id: p.id, blocked: p.blocked })}
+                            title={p.blocked ? "Débloquer" : "Bloquer"}
+                          >
+                            {p.blocked ? <ShieldCheck className="h-4 w-4 text-success" /> : <ShieldOff className="h-4 w-4 text-warning" />}
+                          </Button>
+                          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteConfirmId(p.id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -228,6 +283,44 @@ const AdminApporteurs = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer cet apporteur ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Le profil de l'apporteur sera définitivement supprimé.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Block/Unblock Confirmation */}
+      <AlertDialog open={!!blockConfirm} onOpenChange={(open) => !open && setBlockConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{blockConfirm?.blocked ? "Débloquer ce compte ?" : "Bloquer ce compte ?"}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {blockConfirm?.blocked
+                ? "L'apporteur pourra à nouveau accéder à son espace."
+                : "L'apporteur ne pourra plus accéder à son espace tant que le compte est bloqué."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleToggleBlock}>
+              {blockConfirm?.blocked ? "Débloquer" : "Bloquer"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 };

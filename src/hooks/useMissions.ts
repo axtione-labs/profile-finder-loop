@@ -125,14 +125,11 @@ export const useDeleteMission = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      // Delete related commissions first
-      await supabase.from("commissions" as any).delete().eq("mission_id", id);
       const { error } = await supabase.from("missions" as any).delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["missions"] });
-      qc.invalidateQueries({ queryKey: ["commissions"] });
       toast.success("Mission supprimée");
     },
     onError: (e: any) => toast.error(e.message),

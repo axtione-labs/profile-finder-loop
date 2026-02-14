@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -50,10 +51,18 @@ const AdminMissions = () => {
     return p ? `${p.first_name} ${p.last_name}` : "—";
   };
 
+  const [statusConfirm, setStatusConfirm] = useState<{ id: string; status: string } | null>(null);
+
   const handleUpdateMissionStatus = (id: string, status: string) => {
-    updateMission.mutate({ id, status }, {
-      onSuccess: () => toast.success(`Mission : ${status}`),
+    setStatusConfirm({ id, status });
+  };
+
+  const confirmStatusUpdate = () => {
+    if (!statusConfirm) return;
+    updateMission.mutate({ id: statusConfirm.id, status: statusConfirm.status }, {
+      onSuccess: () => toast.success(`Mission : ${statusConfirm.status}`),
     });
+    setStatusConfirm(null);
   };
 
   // Only leads with status "Profil trouvé" can be assigned to a mission
@@ -139,13 +148,16 @@ const AdminMissions = () => {
   };
 
   const handleDelete = (id: string) => {
-    // Also free the candidate
+    // Free the candidate
     const mission = missions.find(m => m.id === id);
     if (mission) {
       updateCandidate.mutate({ id: mission.candidate_id, status: "Disponible" });
     }
     deleteMission.mutate(id, {
-      onSuccess: () => setDeleteConfirm(null),
+      onSuccess: () => {
+        toast.success("Mission supprimée");
+        setDeleteConfirm(null);
+      },
     });
   };
 
@@ -333,20 +345,38 @@ const AdminMissions = () => {
       </Dialog>
 
       {/* Delete Confirmation */}
-      <Dialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Supprimer la mission</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            Êtes-vous sûr ? Les commissions associées seront aussi supprimées et le candidat sera libéré.
-          </p>
-          <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setDeleteConfirm(null)}>Annuler</Button>
-            <Button variant="destructive" onClick={() => deleteConfirm && handleDelete(deleteConfirm)}>Supprimer</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer cette mission ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              La mission sera supprimée et le candidat sera libéré. Les commissions associées seront conservées.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deleteConfirm && handleDelete(deleteConfirm)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Status Change Confirmation */}
+      <AlertDialog open={!!statusConfirm} onOpenChange={(open) => !open && setStatusConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Changer le statut ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Le statut de la mission passera à « {statusConfirm?.status} ».
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmStatusUpdate}>Confirmer</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 };

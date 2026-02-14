@@ -9,6 +9,8 @@ export interface Profile {
   last_name: string;
   company: string | null;
   phone: string | null;
+  admin_comment: string | null;
+  blocked: boolean;
 }
 
 export const useProfiles = () => {
