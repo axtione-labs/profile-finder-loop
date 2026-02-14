@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Zap, TrendingUp, Shield, Clock, Calculator, ChevronDown, X, Rocket } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import logoWolf from "@/assets/logo-wolf.png";
 
 const steps = [
   { icon: Zap, title: "Détectez", desc: "Vous identifiez un besoin IT chez un client" },
@@ -28,6 +30,23 @@ const faqs = [
   { q: "Puis-je suivre l'état de mes leads ?", a: "Oui, votre tableau de bord vous donne une visibilité complète : statut du lead, avancement du sourcing, et détail de vos commissions." },
 ];
 
+// Fake animated data for the dashboard preview
+const generateGrowthData = (seed: number) => {
+  const months = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
+  return months.map((m, i) => ({
+    month: m,
+    gains: Math.round((300 + i * 420 + Math.sin(i + seed) * 200) * (1 + seed * 0.05)),
+    leads: Math.round(2 + i * 1.5 + Math.cos(i + seed) * 1.5),
+  }));
+};
+
+const barData = [
+  { name: "Sem 1", value: 1200 },
+  { name: "Sem 2", value: 1800 },
+  { name: "Sem 3", value: 2400 },
+  { name: "Sem 4", value: 3100 },
+];
+
 const Index = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
@@ -43,13 +62,34 @@ const Index = () => {
   const tenLeadsMonthly = monthlyCommission * 10;
   const tenLeadsYearly = yearlyCommission * 10;
 
+  // Animated dashboard counter
+  const [tick, setTick] = useState(0);
+  const [animatedTotal, setAnimatedTotal] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => setTick(t => t + 1), 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const target = 42750 + tick * 1250;
+    const step = Math.ceil((target - animatedTotal) / 20);
+    if (animatedTotal < target) {
+      const timer = setTimeout(() => setAnimatedTotal(prev => Math.min(prev + step, target)), 30);
+      return () => clearTimeout(timer);
+    }
+  }, [tick, animatedTotal]);
+
+  const chartData = generateGrowthData(tick % 5);
+
   return (
     <div className="dark min-h-screen bg-background text-foreground">
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto flex h-16 items-center justify-between px-6">
-          <Link to="/" className="font-display text-xl font-bold text-gradient">
-            DealFlow
+          <Link to="/" className="flex items-center gap-2">
+            <img src={logoWolf} alt="DealFlow" className="h-9 w-9" />
+            <span className="font-display text-xl font-bold text-gradient">DealFlow</span>
           </Link>
           <div className="flex items-center gap-4">
             <Link to="/login">
@@ -76,19 +116,19 @@ const Index = () => {
             transition={{ duration: 0.6 }}
           >
             <span className="mb-6 inline-block rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-              Plateforme d'apport d'affaires IT
+              🐺 La meute qui chasse vos commissions
             </span>
           </motion.div>
 
           <motion.h1
-            className="mx-auto mt-6 max-w-3xl font-display text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl"
+            className="mx-auto mt-6 max-w-4xl font-display text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            Vous connaissez un{" "}
-            <span className="text-gradient">besoin IT</span> ?{" "}
-            Déclarez-le, on s'occupe du reste.
+            Votre réseau vaut de l'<span className="text-gradient">or</span>.{" "}
+            Transformez chaque contact en{" "}
+            <span className="text-gradient">revenu passif</span>.
           </motion.h1>
 
           <motion.p
@@ -97,7 +137,7 @@ const Index = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            Déclarez un besoin en 2 minutes. Nous trouvons le profil. Vous touchez entre 5% et 10% de commission. Sans recruter.
+            Un besoin IT détecté → 2 min pour le déclarer → nous trouvons le profil → vous touchez 5 à 10% de commission. Chaque mois. Sans recruter.
           </motion.p>
 
           <motion.div
@@ -106,9 +146,9 @@ const Index = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <Link to="/declare">
+            <Link to="/register">
               <Button size="lg" className="gradient-primary glow-primary border-0 px-8 text-base font-semibold">
-                Déclarer un besoin
+                Rejoindre la meute
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
@@ -136,41 +176,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="py-24">
-        <div className="container mx-auto px-6">
-          <motion.div
-            className="text-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="font-display text-3xl font-bold">Comment ça marche</h2>
-            <p className="mt-3 text-muted-foreground">4 étapes pour transformer un contact en commission</p>
-          </motion.div>
-
-          <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {steps.map((step, i) => (
-              <motion.div
-                key={step.title}
-                className="gradient-card rounded-xl border border-border/50 p-6"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg gradient-primary">
-                  <step.icon className="h-5 w-5 text-primary-foreground" />
-                </div>
-                <div className="mt-4 font-display text-lg font-semibold">{step.title}</div>
-                <p className="mt-2 text-sm text-muted-foreground">{step.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Commission Simulator */}
+      {/* Commission Simulator - MOVED UP */}
       <section className="py-24 border-t border-border/50">
         <div className="container mx-auto px-6">
           <motion.div
@@ -206,27 +212,16 @@ const Index = () => {
               <div className="space-y-2">
                 <Label className="text-foreground">Votre taux de commission</Label>
                 <div className="flex gap-3">
-                  <Button
-                    variant={simRate === 5 ? "default" : "outline"}
-                    className={simRate === 5 ? "gradient-primary border-0 flex-1" : "flex-1"}
-                    onClick={() => setSimRate(5)}
-                  >
-                    5%
-                  </Button>
-                  <Button
-                    variant={simRate === 7 ? "default" : "outline"}
-                    className={simRate === 7 ? "gradient-primary border-0 flex-1" : "flex-1"}
-                    onClick={() => setSimRate(7)}
-                  >
-                    7%
-                  </Button>
-                  <Button
-                    variant={simRate === 10 ? "default" : "outline"}
-                    className={simRate === 10 ? "gradient-primary border-0 flex-1" : "flex-1"}
-                    onClick={() => setSimRate(10)}
-                  >
-                    10%
-                  </Button>
+                  {[5, 7, 10].map(rate => (
+                    <Button
+                      key={rate}
+                      variant={simRate === rate ? "default" : "outline"}
+                      className={simRate === rate ? "gradient-primary border-0 flex-1" : "flex-1"}
+                      onClick={() => setSimRate(rate)}
+                    >
+                      {rate}%
+                    </Button>
+                  ))}
                 </div>
               </div>
             </div>
@@ -258,6 +253,150 @@ const Index = () => {
               </Button>
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Animated Dashboard Preview */}
+      <section className="py-24 border-t border-border/50 overflow-hidden">
+        <div className="container mx-auto px-6">
+          <motion.div
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="font-display text-3xl font-bold">
+              Un dashboard qui <span className="text-gradient">fait plaisir</span>
+            </h2>
+            <p className="mt-3 text-muted-foreground">Suivez vos gains en temps réel et regardez-les monter</p>
+          </motion.div>
+
+          <motion.div
+            className="mx-auto max-w-4xl gradient-card rounded-2xl border border-border/50 p-6 sm:p-8"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+          >
+            {/* Top stats row */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+              <div className="rounded-xl bg-background/40 border border-border/30 p-4">
+                <p className="text-xs text-muted-foreground">Total gagné</p>
+                <motion.p
+                  className="mt-1 font-display text-xl sm:text-2xl font-bold text-gradient"
+                  key={animatedTotal}
+                >
+                  {animatedTotal.toLocaleString("fr-FR")}€
+                </motion.p>
+              </div>
+              <div className="rounded-xl bg-background/40 border border-border/30 p-4">
+                <p className="text-xs text-muted-foreground">Ce mois</p>
+                <p className="mt-1 font-display text-xl sm:text-2xl font-bold text-success">
+                  +{(3100 + tick * 150).toLocaleString("fr-FR")}€
+                </p>
+              </div>
+              <div className="rounded-xl bg-background/40 border border-border/30 p-4">
+                <p className="text-xs text-muted-foreground">Leads actifs</p>
+                <p className="mt-1 font-display text-xl sm:text-2xl font-bold text-foreground">{7 + (tick % 3)}</p>
+              </div>
+              <div className="rounded-xl bg-background/40 border border-primary/20 p-4">
+                <p className="text-xs text-muted-foreground">Missions</p>
+                <p className="mt-1 font-display text-xl sm:text-2xl font-bold text-primary">{3 + Math.floor(tick / 2)}</p>
+              </div>
+            </div>
+
+            {/* Charts */}
+            <div className="grid gap-6 lg:grid-cols-5">
+              <div className="lg:col-span-3 rounded-xl bg-background/30 border border-border/30 p-4">
+                <p className="text-sm font-medium text-muted-foreground mb-4">📈 Évolution des gains</p>
+                <ResponsiveContainer width="100%" height={220}>
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="gainGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="hsl(173, 80%, 45%)" stopOpacity={0.4} />
+                        <stop offset="100%" stopColor="hsl(173, 80%, 45%)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="month" tick={{ fill: 'hsl(215, 15%, 55%)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: 'hsl(215, 15%, 55%)', fontSize: 11 }} axisLine={false} tickLine={false} width={45} />
+                    <Tooltip
+                      contentStyle={{ background: 'hsl(224, 25%, 12%)', border: '1px solid hsl(224, 20%, 20%)', borderRadius: 8, fontSize: 12 }}
+                      labelStyle={{ color: 'hsl(210, 20%, 95%)' }}
+                      formatter={(v: number) => [`${v.toLocaleString("fr-FR")}€`, "Gains"]}
+                    />
+                    <Area type="monotone" dataKey="gains" stroke="hsl(173, 80%, 45%)" fill="url(#gainGradient)" strokeWidth={2.5} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="lg:col-span-2 rounded-xl bg-background/30 border border-border/30 p-4">
+                <p className="text-sm font-medium text-muted-foreground mb-4">💰 Revenus hebdo</p>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={barData.map((d, i) => ({ ...d, value: d.value + tick * 80 * (i + 1) }))}>
+                    <XAxis dataKey="name" tick={{ fill: 'hsl(215, 15%, 55%)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: 'hsl(215, 15%, 55%)', fontSize: 11 }} axisLine={false} tickLine={false} width={45} />
+                    <Tooltip
+                      contentStyle={{ background: 'hsl(224, 25%, 12%)', border: '1px solid hsl(224, 20%, 20%)', borderRadius: 8, fontSize: 12 }}
+                      formatter={(v: number) => [`${v.toLocaleString("fr-FR")}€`, "Revenu"]}
+                    />
+                    <Bar dataKey="value" fill="hsl(173, 80%, 45%)" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Fake notification */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={tick}
+                className="mt-6 flex items-center gap-3 rounded-lg border border-success/20 bg-success/5 px-4 py-3"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.4 }}
+              >
+                <span className="text-success text-lg">💸</span>
+                <span className="text-sm text-success font-medium">
+                  Nouvelle commission créditée : +{(250 + tick * 50).toLocaleString("fr-FR")}€
+                </span>
+                <span className="ml-auto text-xs text-muted-foreground">à l'instant</span>
+              </motion.div>
+            </AnimatePresence>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="py-24 border-t border-border/50">
+        <div className="container mx-auto px-6">
+          <motion.div
+            className="text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="font-display text-3xl font-bold">Comment ça marche</h2>
+            <p className="mt-3 text-muted-foreground">4 étapes pour transformer un contact en commission</p>
+          </motion.div>
+
+          <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {steps.map((step, i) => (
+              <motion.div
+                key={step.title}
+                className="gradient-card rounded-xl border border-border/50 p-6"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg gradient-primary">
+                  <step.icon className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <div className="mt-4 font-display text-lg font-semibold">{step.title}</div>
+                <p className="mt-2 text-sm text-muted-foreground">{step.desc}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -386,7 +525,7 @@ const Index = () => {
           </p>
           <Link to="/register">
             <Button size="lg" className="gradient-primary glow-primary mt-8 border-0 px-8 text-base font-semibold">
-              Commencer maintenant
+              Rejoindre la meute 🐺
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
