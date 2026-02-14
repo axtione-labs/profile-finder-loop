@@ -39,6 +39,12 @@ const Register = () => {
     if (error) {
       toast.error(error.message);
     } else {
+      // Send welcome email via edge function (fire and forget)
+      fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-welcome-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+        body: JSON.stringify({ record: { first_name: firstName, last_name: lastName, email } }),
+      }).catch(() => {});
       toast.success("Vérifiez votre email pour confirmer votre compte.");
       navigate("/login");
     }
