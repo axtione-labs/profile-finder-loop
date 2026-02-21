@@ -174,6 +174,7 @@ export type Database = {
       leads: {
         Row: {
           admin_comment: string | null
+          admin_margin: number
           client: string
           contact_email: string | null
           contact_name: string
@@ -185,6 +186,7 @@ export type Database = {
           id: string
           location: string
           margin: number
+          margin_status: string
           position: string
           priority: string
           recruiter: string
@@ -200,6 +202,7 @@ export type Database = {
         }
         Insert: {
           admin_comment?: string | null
+          admin_margin?: number
           client?: string
           contact_email?: string | null
           contact_name?: string
@@ -211,6 +214,7 @@ export type Database = {
           id?: string
           location?: string
           margin?: number
+          margin_status?: string
           position?: string
           priority?: string
           recruiter?: string
@@ -226,6 +230,7 @@ export type Database = {
         }
         Update: {
           admin_comment?: string | null
+          admin_margin?: number
           client?: string
           contact_email?: string | null
           contact_name?: string
@@ -237,6 +242,7 @@ export type Database = {
           id?: string
           location?: string
           margin?: number
+          margin_status?: string
           position?: string
           priority?: string
           recruiter?: string

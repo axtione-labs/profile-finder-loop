@@ -8,15 +8,129 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, Eye, Trash2, Pencil } from "lucide-react";
+import { Search, Eye, Trash2, Pencil, Check, X, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useLeads, useUpdateLead, type Lead } from "@/hooks/useLeads";
 import { useMissions, useDeleteMission } from "@/hooks/useMissions";
 import { useUpdateCandidate } from "@/hooks/useCandidates";
-import { useProfiles } from "@/hooks/useProfiles";
+import { useProfiles, type Profile } from "@/hooks/useProfiles";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useQueryClient } from "@tanstack/react-query";
+
+const marginStatusLabel = (status: string) => {
+  switch (status) {
+    case "accepted": return "✅ Acceptée";
+    case "refused": return "❌ Refusée";
+    case "adapted": return "🔄 Ajustée";
+    default: return "⏳ En attente";
+  }
+};
+
+const marginStatusColor: Record<string, string> = {
+  pending: "bg-warning/15 text-warning border-warning/30",
+  accepted: "bg-success/15 text-success border-success/30",
+  refused: "bg-destructive/15 text-destructive border-destructive/30",
+  adapted: "bg-primary/15 text-primary border-primary/30",
+};
+
+const sendMarginEmail = async (lead: Lead, marginStatus: string, adminMargin: number, profiles: Profile[]) => {
+  const profile = profiles.find(p => p.user_id === lead.user_id);
+  if (!profile) return;
+  try {
+    await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-margin-email`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+      body: JSON.stringify({
+        userId: lead.user_id,
+        firstName: profile.first_name,
+        position: lead.position,
+        client: lead.client,
+        marginStatus,
+        requestedMargin: lead.margin,
+        adminMargin,
+      }),
+    });
+  } catch (e) {
+    console.error("Failed to send margin email:", e);
+  }
+};
+
+interface MarginCellProps {
+  lead: Lead;
+  profiles: Profile[];
+  updateLead: ReturnType<typeof useUpdateLead>;
+}
+
+const MarginCell = ({ lead, profiles, updateLead }: MarginCellProps) => {
+  const [adaptValue, setAdaptValue] = useState("");
+  const [showAdapt, setShowAdapt] = useState(false);
+  const status = (lead as any).margin_status || "pending";
+
+  const handleMarginAction = (action: "accepted" | "refused" | "adapted", adminMargin?: number) => {
+    const updates: any = { id: lead.id, margin_status: action };
+    if (action === "adapted" && adminMargin !== undefined) {
+      updates.admin_margin = adminMargin;
+    }
+    updateLead.mutate(updates, {
+      onSuccess: () => {
+        toast.success(`Marge ${action === "accepted" ? "acceptée" : action === "refused" ? "refusée" : "ajustée"}`);
+        sendMarginEmail(lead, action, adminMargin || lead.margin, profiles);
+        setShowAdapt(false);
+      },
+    });
+  };
+
+  if (status !== "pending") {
+    return (
+      <div className="text-xs">
+        <Badge variant="outline" className={`${marginStatusColor[status] || ""}`}>
+          {marginStatusLabel(status)}
+        </Badge>
+        <div className="mt-0.5 text-muted-foreground">
+          {lead.margin}€/j{status === "adapted" ? ` → ${(lead as any).admin_margin}€/j` : ""}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="text-xs space-y-1">
+      <div className="font-medium">{lead.margin}€/jour</div>
+      {showAdapt ? (
+        <div className="flex items-center gap-1">
+          <Input
+            type="number"
+            placeholder="Nouvelle marge"
+            value={adaptValue}
+            onChange={e => setAdaptValue(e.target.value)}
+            className="h-7 w-20 text-xs"
+          />
+          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => {
+            const val = parseFloat(adaptValue);
+            if (val > 0) handleMarginAction("adapted", val);
+          }}><Check className="h-3 w-3" /></Button>
+          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setShowAdapt(false)}><X className="h-3 w-3" /></Button>
+        </div>
+      ) : (
+        <div className="flex gap-0.5">
+          <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-success hover:text-success" onClick={() => handleMarginAction("accepted")} title="Accepter">
+            <Check className="h-3.5 w-3.5" />
+          </Button>
+          <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-destructive hover:text-destructive" onClick={() => handleMarginAction("refused")} title="Refuser">
+            <X className="h-3.5 w-3.5" />
+          </Button>
+          <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-primary hover:text-primary" onClick={() => setShowAdapt(true)} title="Adapter">
+            <RefreshCw className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 type LeadStatus = "Déclaré" | "À qualifier" | "Qualifié" | "En sourcing" | "Profil trouvé" | "Envoyé client";
 
@@ -156,6 +270,7 @@ const AdminLeads = () => {
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Client</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Apporteur</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">TJM</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Marge</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Statut</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Actions</th>
                 </tr>
@@ -176,6 +291,9 @@ const AdminLeads = () => {
                     <td className="px-4 py-3 text-muted-foreground">{lead.client}</td>
                     <td className="px-4 py-3 text-muted-foreground">{getApporteurName(lead.user_id)}</td>
                     <td className="px-4 py-3 font-medium">{lead.tjm}€</td>
+                    <td className="px-4 py-3">
+                      <MarginCell lead={lead} profiles={profiles} updateLead={updateLead} />
+                    </td>
                     <td className="px-4 py-3">
                       <Select value={lead.status} onValueChange={(v) => handleUpdateStatus(lead.id, v)}>
                         <SelectTrigger className={`h-7 w-[130px] border text-xs font-medium ${statusColor[lead.status] || ""}`}>
@@ -224,6 +342,8 @@ const AdminLeads = () => {
                   <div><span className="text-muted-foreground">Localisation :</span> <span>{selectedLead.location}</span></div>
                   <div><span className="text-muted-foreground">Mode :</span> <span>{selectedLead.remote}</span></div>
                   <div><span className="text-muted-foreground">TJM :</span> <span className="font-medium">{selectedLead.tjm}€</span></div>
+                  <div><span className="text-muted-foreground">Marge souhaitée :</span> <span className="font-medium">{selectedLead.margin}€/jour</span></div>
+                  <div><span className="text-muted-foreground">Statut marge :</span> <span className="font-medium">{marginStatusLabel((selectedLead as any).margin_status)}</span></div>
                   <div><span className="text-muted-foreground">Durée :</span> <span>{selectedLead.duration}</span></div>
                   <div><span className="text-muted-foreground">Priorité :</span> <span>{selectedLead.priority === "urgent" ? "🔴 Urgent" : "Normal"}</span></div>
                 </div>
