@@ -1,13 +1,20 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { motion } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { TrendingUp, Calendar, Coins } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { TrendingUp, Calendar, Coins, Upload, FileText, AlertTriangle, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { useCommissions, useUpdateCommission, useMissions } from "@/hooks/useMissions";
 import { useProfiles } from "@/hooks/useProfiles";
+import { useAllDocuments } from "@/hooks/useDocuments";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 const commStatusColor: Record<string, string> = {
@@ -22,8 +29,13 @@ const AdminCommissions = () => {
   const { data: commissions = [], isLoading } = useCommissions();
   const { data: missions = [] } = useMissions();
   const { data: profiles = [] } = useProfiles();
+  const { data: allDocuments = [] } = useAllDocuments();
   const updateCommission = useUpdateCommission();
+  const queryClient = useQueryClient();
 
+  const [payConfirm, setPayConfirm] = useState<string | null>(null);
+  const [invoiceUploadId, setInvoiceUploadId] = useState<string | null>(null);
+  const invoiceInputRef = useRef<HTMLInputElement>(null);
   const currentYear = new Date().getFullYear();
   const [filterYear, setFilterYear] = useState(String(currentYear));
 
@@ -35,9 +47,84 @@ const AdminCommissions = () => {
   const getMissionInfo = (missionId: string) => missions.find(m => m.id === missionId);
 
   const handleUpdateStatus = (id: string, status: string) => {
+    if (status === "Payée") {
+      // Check documents and invoice before paying
+      const commission = commissions.find(c => c.id === id);
+      if (!commission) return;
+
+      const userDocs = allDocuments.filter(d => d.user_id === commission.apporteur_id);
+      const rib = userDocs.find(d => d.type === "rib");
+      const kbis = userDocs.find(d => d.type === "kbis");
+      const idCard = userDocs.find(d => d.type === "id_card");
+
+      const missingDocs = [];
+      if (!rib || rib.status !== "validated") missingDocs.push("RIB");
+      if (!kbis || kbis.status !== "validated") missingDocs.push("KBIS");
+      if (!idCard || idCard.status !== "validated") missingDocs.push("Pièce d'identité");
+
+      if (missingDocs.length > 0) {
+        const hasAnyDoc = userDocs.length > 0;
+        if (hasAnyDoc) {
+          toast.error(`Documents non validés : ${missingDocs.join(", ")}. Veuillez les valider dans la section Apporteurs avant de payer.`);
+        } else {
+          toast.error(`L'apporteur n'a pas envoyé ses documents (${missingDocs.join(", ")}). Un email lui sera envoyé pour les demander.`);
+          // TODO: send email notification
+        }
+        return;
+      }
+
+      // Check invoice
+      if (!(commission as any).invoice_url) {
+        toast.error("Facture manquante. L'apporteur doit uploader sa facture avant le paiement.");
+        setInvoiceUploadId(id);
+        return;
+      }
+
+      setPayConfirm(id);
+      return;
+    }
     updateCommission.mutate({ id, status } as any, {
       onSuccess: () => toast.success(`Commission : ${status}`),
     });
+  };
+
+  const handleConfirmPay = () => {
+    if (!payConfirm) return;
+    updateCommission.mutate({ id: payConfirm, status: "Payée" } as any, {
+      onSuccess: () => {
+        toast.success("Commission marquée comme payée");
+        setPayConfirm(null);
+      },
+    });
+  };
+
+  const handleInvoiceUpload = async (commissionId: string, file: File) => {
+    const commission = commissions.find(c => c.id === commissionId);
+    if (!commission) return;
+
+    const fileExt = file.name.split(".").pop();
+    const filePath = `${commission.apporteur_id}/invoices/${commissionId}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("documents")
+      .upload(filePath, file, { upsert: true });
+    if (uploadError) {
+      toast.error("Erreur upload facture: " + uploadError.message);
+      return;
+    }
+
+    const { error: dbError } = await supabase
+      .from("commissions" as any)
+      .update({ invoice_url: filePath } as any)
+      .eq("id", commissionId);
+    if (dbError) {
+      toast.error("Erreur: " + dbError.message);
+      return;
+    }
+
+    toast.success("Facture uploadée avec succès");
+    queryClient.invalidateQueries({ queryKey: ["commissions"] });
+    setInvoiceUploadId(null);
   };
 
   const handleUpdateDaysWorked = (id: string, days: number) => {
@@ -149,10 +236,10 @@ const AdminCommissions = () => {
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Mois</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Apporteur</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Consultant</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Jours travaillés</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Comm/jour</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Jours</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Total comm.</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Marge admin</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Facture</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Statut</th>
                 </tr>
               </thead>
@@ -178,9 +265,24 @@ const AdminCommissions = () => {
                           />
                         )}
                       </td>
-                      <td className="px-4 py-3 font-medium">{c.amount.toLocaleString("fr-FR")} €</td>
                       <td className="px-4 py-3 font-semibold">{(c.days_worked * c.amount).toLocaleString("fr-FR")} €</td>
                       <td className="px-4 py-3 font-semibold text-gradient">{(c.days_worked * c.admin_amount).toLocaleString("fr-FR")} €</td>
+                      <td className="px-4 py-3">
+                        {(c as any).invoice_url ? (
+                          <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs text-success" onClick={() => {
+                            const { data } = supabase.storage.from("documents").getPublicUrl((c as any).invoice_url);
+                            window.open(data.publicUrl, "_blank");
+                          }}>
+                            <Eye className="h-3 w-3" /> Voir
+                          </Button>
+                        ) : c.status === "Générée" ? (
+                          <Button variant="outline" size="sm" className="h-7 gap-1 text-xs" onClick={() => setInvoiceUploadId(c.id)}>
+                            <Upload className="h-3 w-3" /> Uploader
+                          </Button>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </td>
                       <td className="px-4 py-3">
                         {c.status === "Payée" ? (
                           <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${commStatusColor["Payée"]}`}>Payée</span>
@@ -205,6 +307,54 @@ const AdminCommissions = () => {
           )}
         </motion.div>
       </div>
+
+      {/* Pay Confirmation */}
+      <AlertDialog open={!!payConfirm} onOpenChange={(open) => !open && setPayConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer le paiement ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette commission sera marquée comme payée. Les documents de l'apporteur sont validés et la facture est présente. Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmPay} className="gradient-primary border-0">Confirmer le paiement</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Invoice Upload Dialog */}
+      <Dialog open={!!invoiceUploadId} onOpenChange={(open) => !open && setInvoiceUploadId(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              Uploader la facture
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            L'apporteur doit fournir sa facture avant le paiement de la commission.
+          </p>
+          <input
+            ref={invoiceInputRef}
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file && invoiceUploadId) {
+                handleInvoiceUpload(invoiceUploadId, file);
+              }
+              e.target.value = "";
+            }}
+          />
+          <Button className="gradient-primary border-0 w-full" onClick={() => invoiceInputRef.current?.click()}>
+            <Upload className="h-4 w-4 mr-2" />
+            Sélectionner la facture
+          </Button>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 };

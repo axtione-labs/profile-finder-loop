@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Zap, TrendingUp, Shield, Clock, Calculator, ChevronDown, X, Rocket, Code, Server, FolderKanban, Database, Cloud, Cpu, BookOpen, HelpCircle, Mail, Send } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -73,14 +73,6 @@ const contactRoles = [
 const Index = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const { user } = useAuth();
-  const navigate = useNavigate();
-
-  // Redirect logged-in users
-  useEffect(() => {
-    if (user) {
-      navigate("/dashboard", { replace: true });
-    }
-  }, [user, navigate]);
 
   // Simulator state
   const [simTjm, setSimTjm] = useState(500);
@@ -141,14 +133,26 @@ const Index = () => {
             <a href="#blog" className="hidden sm:inline-block text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</a>
             <a href="#faq" className="hidden sm:inline-block text-sm text-muted-foreground hover:text-foreground transition-colors">FAQ</a>
             <a href="#contact" className="hidden sm:inline-block text-sm text-muted-foreground hover:text-foreground transition-colors">Contact</a>
-            <Link to="/login">
-              <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">Connexion</Button>
-            </Link>
-            <Link to="/register">
-              <Button size="sm" className="gradient-primary border-0 text-xs sm:text-sm px-3 sm:px-4">
-                S'inscrire
-              </Button>
-            </Link>
+            {user ? (
+              <>
+                <Link to="/dashboard">
+                  <Button size="sm" className="gradient-primary border-0 text-xs sm:text-sm px-3 sm:px-4">
+                    Mon Dashboard
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">Connexion</Button>
+                </Link>
+                <Link to="/register">
+                  <Button size="sm" className="gradient-primary border-0 text-xs sm:text-sm px-3 sm:px-4">
+                    S'inscrire
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -190,7 +194,33 @@ const Index = () => {
               </span>
             </div>
             <p className="mt-4 text-muted-foreground text-center text-base">
-              On trouve le profil. Vous touchez la commission. <span className="text-foreground font-semibold">Sans recruter.</span>
+              On trouve le profil. Vous touchez la commission.{" "}
+              <motion.span
+                className="relative inline-block text-foreground font-extrabold text-lg sm:text-xl"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.8, type: "spring", stiffness: 200 }}
+              >
+                <motion.span
+                  className="absolute -inset-x-2 -inset-y-1 rounded-lg bg-primary/20 -z-10"
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ duration: 0.4, delay: 1.2 }}
+                  style={{ originX: 0 }}
+                />
+                <motion.span
+                  animate={{ 
+                    textShadow: [
+                      "0 0 0px hsl(var(--primary))",
+                      "0 0 20px hsl(var(--primary))",
+                      "0 0 0px hsl(var(--primary))"
+                    ]
+                  }}
+                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                >
+                  Sans recruter.
+                </motion.span>
+              </motion.span>
             </p>
           </motion.div>
 

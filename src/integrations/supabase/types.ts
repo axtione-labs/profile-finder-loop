@@ -86,6 +86,7 @@ export type Database = {
           created_at: string
           days_worked: number
           id: string
+          invoice_url: string | null
           mission_id: string | null
           percentage: number
           status: string
@@ -100,6 +101,7 @@ export type Database = {
           created_at?: string
           days_worked?: number
           id?: string
+          invoice_url?: string | null
           mission_id?: string | null
           percentage?: number
           status?: string
@@ -114,6 +116,7 @@ export type Database = {
           created_at?: string
           days_worked?: number
           id?: string
+          invoice_url?: string | null
           mission_id?: string | null
           percentage?: number
           status?: string
@@ -128,6 +131,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      documents: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_url: string
+          id: string
+          status: string
+          type: string
+          updated_at: string
+          user_id: string
+          validated_at: string | null
+          validated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          file_name?: string
+          file_url: string
+          id?: string
+          status?: string
+          type: string
+          updated_at?: string
+          user_id: string
+          validated_at?: string | null
+          validated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_url?: string
+          id?: string
+          status?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+          validated_at?: string | null
+          validated_by?: string | null
+        }
+        Relationships: []
       }
       leads: {
         Row: {
