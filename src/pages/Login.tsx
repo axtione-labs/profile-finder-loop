@@ -168,7 +168,7 @@ const Login = () => {
             className="w-full h-11 font-medium"
             onClick={async () => {
               await lovable.auth.signInWithOAuth("google", {
-                redirect_uri: window.location.origin,
+                redirect_uri: `${window.location.origin}/dashboard`,
               });
             }}
           >
