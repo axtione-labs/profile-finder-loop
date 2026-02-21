@@ -31,7 +31,7 @@ const DeclareLead = () => {
     client: "", sector: "", location: "", remote: "",
     contact_name: "", contact_phone: "", contact_email: "",
     position: "", seniority: "", stack: [] as string[], start_date: "", duration: "",
-    tjm: "", priority: "",
+    tjm: "", margin: "", priority: "",
     description: "",
   });
 
@@ -58,6 +58,7 @@ const DeclareLead = () => {
         start_date: form.start_date,
         duration: form.duration,
         tjm: parseFloat(form.tjm) || 0,
+        margin: parseFloat(form.margin) || 0,
         priority: form.priority || "normal",
         description: form.description,
       },
@@ -180,7 +181,7 @@ const DeclareLead = () => {
                   </div>
                   <div>
                     <Label>Démarrage</Label>
-                    <Input type="date" value={form.start_date} onChange={e => update("start_date", e.target.value)} className="mt-1.5 bg-background/50" />
+                    <Input type="date" min={new Date().toISOString().split("T")[0]} value={form.start_date} onChange={e => update("start_date", e.target.value)} className="mt-1.5 bg-background/50" />
                   </div>
                   <div>
                     <Label>Durée estimée</Label>
@@ -219,6 +220,11 @@ const DeclareLead = () => {
                 <div>
                   <Label>TJM proposé par le client (€)</Label>
                   <Input type="number" placeholder="Ex: 550" value={form.tjm} onChange={e => update("tjm", e.target.value)} className="mt-1.5 bg-background/50" />
+                </div>
+                <div>
+                  <Label>Marge souhaitée (€/jour)</Label>
+                  <Input type="number" placeholder="Ex: 50" value={form.margin} onChange={e => update("margin", e.target.value)} className="mt-1.5 bg-background/50" />
+                  <p className="text-xs text-muted-foreground mt-1">Marge par jour que vous souhaitez percevoir sur cette mission</p>
                 </div>
                 <div>
                   <Label>Priorité</Label>

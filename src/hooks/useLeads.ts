@@ -17,6 +17,8 @@ export interface Lead {
   duration: string;
   tjm: number;
   margin: number;
+  margin_status: string;
+  admin_margin: number;
   priority: string;
   description: string;
   status: string;
@@ -51,10 +53,10 @@ export const useCreateLead = () => {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (lead: Omit<Lead, "id" | "user_id" | "created_at" | "updated_at" | "status" | "recruiter" | "apporteur_name" | "margin">) => {
+    mutationFn: async (lead: Omit<Lead, "id" | "user_id" | "created_at" | "updated_at" | "status" | "recruiter" | "apporteur_name" | "margin_status" | "admin_margin">) => {
       const { error } = await supabase
         .from("leads" as any)
-        .insert({ ...lead, user_id: user!.id, margin: 0 } as any);
+        .insert({ ...lead, user_id: user!.id } as any);
       if (error) throw error;
     },
     onSuccess: () => {

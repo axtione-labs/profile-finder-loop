@@ -48,11 +48,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     let mounted = true;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
+        // If SSO user, ensure profile has name from OAuth metadata
+        const meta = session.user.user_metadata;
+        if (meta && (meta.full_name || meta.name || meta.given_name)) {
+          const firstName = meta.given_name || meta.full_name?.split(" ")[0] || "";
+          const lastName = meta.family_name || meta.full_name?.split(" ").slice(1).join(" ") || "";
+          if (firstName || lastName) {
+            // Update profile if names are empty
+            const { data: existingProfile } = await supabase
+              .from("profiles")
+              .select("first_name, last_name")
+              .eq("user_id", session.user.id)
+              .single();
+            if (existingProfile && !existingProfile.first_name && !existingProfile.last_name) {
+              await supabase
+                .from("profiles")
+                .update({ first_name: firstName, last_name: lastName })
+                .eq("user_id", session.user.id);
+            }
+          }
+        }
         setTimeout(() => {
           fetchUserData(session.user.id).then(() => {
             if (mounted) setLoading(false);
