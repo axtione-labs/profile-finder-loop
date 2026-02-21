@@ -8,10 +8,12 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, UserCheck, Phone, Building2, Eye, Trash2, ShieldOff, ShieldCheck, RotateCcw } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Search, UserCheck, Phone, Building2, Eye, Trash2, ShieldOff, ShieldCheck, RotateCcw, FileText, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { useProfiles } from "@/hooks/useProfiles";
 import { useLeads } from "@/hooks/useLeads";
 import { useMissions, useCommissions } from "@/hooks/useMissions";
+import { useAllDocuments, useValidateDocument, Document } from "@/hooks/useDocuments";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -21,6 +23,8 @@ const AdminApporteurs = () => {
   const { data: leads = [] } = useLeads();
   const { data: missions = [] } = useMissions();
   const { data: commissions = [] } = useCommissions();
+  const { data: allDocuments = [] } = useAllDocuments();
+  const validateDocument = useValidateDocument();
   const [search, setSearch] = useState("");
   const [selectedProfile, setSelectedProfile] = useState<any>(null);
   const [editMode, setEditMode] = useState(false);
@@ -57,6 +61,50 @@ const AdminApporteurs = () => {
       .filter(c => c.status !== "Payée")
       .reduce((s, c) => s + c.days_worked * c.amount, 0);
     return { leads: userLeads.length, missions: userMissions.length, totalEarned, totalPending };
+  };
+
+  const getDocStatus = (userId: string, type: Document["type"]) => {
+    return allDocuments.find(d => d.user_id === userId && d.type === type);
+  };
+
+  const DocStatusBadge = ({ doc }: { doc?: Document }) => {
+    if (!doc) return <span className="text-xs text-muted-foreground">—</span>;
+    const config = {
+      pending: { icon: Clock, label: "En attente", className: "border-warning/30 bg-warning/10 text-warning" },
+      validated: { icon: CheckCircle2, label: "Validé", className: "border-success/30 bg-success/10 text-success" },
+      rejected: { icon: XCircle, label: "Rejeté", className: "border-destructive/30 bg-destructive/10 text-destructive" },
+    }[doc.status];
+    return (
+      <div className="flex items-center gap-1">
+        <Badge variant="outline" className={`text-[10px] ${config.className}`}>
+          <config.icon className="h-2.5 w-2.5 mr-0.5" />
+          {config.label}
+        </Badge>
+        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={(e) => {
+          e.stopPropagation();
+          const { data } = supabase.storage.from("documents").getPublicUrl(doc.file_url);
+          window.open(data.publicUrl, "_blank");
+        }}>
+          <Eye className="h-3 w-3" />
+        </Button>
+        {doc.status !== "validated" && (
+          <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-success" onClick={(e) => {
+            e.stopPropagation();
+            validateDocument.mutate({ id: doc.id, status: "validated" });
+          }}>
+            <CheckCircle2 className="h-3 w-3" />
+          </Button>
+        )}
+        {doc.status !== "rejected" && (
+          <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-destructive" onClick={(e) => {
+            e.stopPropagation();
+            validateDocument.mutate({ id: doc.id, status: "rejected" });
+          }}>
+            <XCircle className="h-3 w-3" />
+          </Button>
+        )}
+      </div>
+    );
   };
 
   const openDetail = (profile: any) => {
@@ -176,11 +224,11 @@ const AdminApporteurs = () => {
                 <tr className="border-b border-border/50 bg-secondary/30">
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Nom</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Entreprise</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Téléphone</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Leads</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Missions</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Gagné</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">En attente</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">RIB</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">KBIS</th>
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Pièce d'identité</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">{tab === "trash" ? "Suppression dans" : "Statut"}</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Actions</th>
                 </tr>
@@ -198,15 +246,15 @@ const AdminApporteurs = () => {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">{p.company || "—"}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{p.phone || "—"}</td>
                       <td className="px-4 py-3">
                         <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary">{stats.leads}</span>
                       </td>
                       <td className="px-4 py-3">
                         <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs font-medium text-accent-foreground">{stats.missions}</span>
                       </td>
-                      <td className="px-4 py-3 font-medium text-success">{stats.totalEarned.toLocaleString("fr-FR")} €</td>
-                      <td className="px-4 py-3 text-warning">{stats.totalPending.toLocaleString("fr-FR")} €</td>
+                      <td className="px-4 py-3"><DocStatusBadge doc={getDocStatus(p.user_id, "rib")} /></td>
+                      <td className="px-4 py-3"><DocStatusBadge doc={getDocStatus(p.user_id, "kbis")} /></td>
+                      <td className="px-4 py-3"><DocStatusBadge doc={getDocStatus(p.user_id, "id_card")} /></td>
                       <td className="px-4 py-3">
                         {tab === "trash" && deletedAt ? (
                           <span className="rounded-full bg-warning/15 px-2 py-0.5 text-xs font-medium text-warning">

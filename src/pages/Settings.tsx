@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ArrowLeft, Save, User, Building, Phone, Mail, Lock, LogOut, Settings as SettingsIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import DocumentUploadSection from "@/components/DocumentUploadSection";
 
 const Settings = () => {
   const { user, profile, signOut } = useAuth();
@@ -174,6 +175,11 @@ const Settings = () => {
               </Button>
             </form>
           </div>
+
+          <Separator className="my-8" />
+
+          {/* Documents Section */}
+          <DocumentUploadSection />
         </motion.div>
       </div>
     </div>
