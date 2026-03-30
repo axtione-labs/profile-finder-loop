@@ -7,7 +7,7 @@ interface AdminLayoutProps {
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   return (
-    <div className="dark">
+    <div>
       <SidebarProvider>
         <div className="flex min-h-screen w-full bg-background text-foreground">
           <AdminSidebar />

@@ -160,7 +160,7 @@ const Index = () => {
       {/* Hero */}
       <section className="gradient-hero relative overflow-hidden pt-32 pb-20">
         <div className="absolute inset-0 opacity-30" style={{
-          backgroundImage: "radial-gradient(circle at 30% 50%, hsl(173 80% 45% / 0.15), transparent 50%), radial-gradient(circle at 70% 30%, hsl(190 80% 50% / 0.1), transparent 50%)"
+          backgroundImage: "radial-gradient(circle at 30% 50%, hsl(221 83% 53% / 0.12), transparent 50%), radial-gradient(circle at 70% 30%, hsl(250 80% 60% / 0.08), transparent 50%)"
         }} />
         <div className="container relative mx-auto px-6 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
