@@ -249,7 +249,7 @@ const DeclareLead = () => {
 
                 {/* Info popup */}
                 <TooltipProvider>
-                  <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+                  <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm text-primary">
                     <Info className="h-5 w-5 mt-0.5 shrink-0" />
                     <p>
                       La marge sera qualifiée pendant la réunion de qualification du besoin.
