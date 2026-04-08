@@ -54,10 +54,13 @@ export const useCreateLead = () => {
 
   return useMutation({
     mutationFn: async (lead: Omit<Lead, "id" | "user_id" | "created_at" | "updated_at" | "status" | "recruiter" | "apporteur_name" | "margin_status" | "admin_margin">) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("leads" as any)
-        .insert({ ...lead, user_id: user!.id } as any);
+        .insert({ ...lead, user_id: user!.id } as any)
+        .select("id")
+        .single();
       if (error) throw error;
+      return data as unknown as { id: string };
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["leads"] });
