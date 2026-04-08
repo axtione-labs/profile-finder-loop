@@ -14,7 +14,7 @@ import { useCreateLead } from "@/hooks/useLeads";
 const stepsConfig = [
   { icon: Building2, label: "Contexte" },
   { icon: Briefcase, label: "Mission" },
-  { icon: DollarSign, label: "Budget" },
+  { icon: DollarSign, label: "Budget & Commission" },
   { icon: FileText, label: "Fiche mission" },
 ];
 
