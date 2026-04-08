@@ -151,23 +151,25 @@ const DeclareLead = () => {
                     </Select>
                   </div>
                 </div>
-                <div className="border-t border-border/30 pt-4">
-                  <h3 className="text-sm font-semibold text-muted-foreground mb-3">Responsable recrutement côté client</h3>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="sm:col-span-2">
-                      <Label>Nom du responsable</Label>
-                      <Input placeholder="Ex: Marie Martin" value={form.contact_name} onChange={e => update("contact_name", e.target.value)} className="mt-1.5 bg-background/50" />
-                    </div>
-                    <div>
-                      <Label>Téléphone <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
-                      <Input placeholder="06 12 34 56 78" value={form.contact_phone} onChange={e => update("contact_phone", e.target.value)} className="mt-1.5 bg-background/50" />
-                    </div>
-                    <div>
-                      <Label>Email <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
-                      <Input type="email" placeholder="marie@client.com" value={form.contact_email} onChange={e => update("contact_email", e.target.value)} className="mt-1.5 bg-background/50" />
+                {!form.client_secret && (
+                  <div className="border-t border-border/30 pt-4">
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-3">Responsable recrutement côté client</h3>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="sm:col-span-2">
+                        <Label>Nom du responsable</Label>
+                        <Input placeholder="Ex: Marie Martin" value={form.contact_name} onChange={e => update("contact_name", e.target.value)} className="mt-1.5 bg-background/50" />
+                      </div>
+                      <div>
+                        <Label>Téléphone <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
+                        <Input placeholder="06 12 34 56 78" value={form.contact_phone} onChange={e => update("contact_phone", e.target.value)} className="mt-1.5 bg-background/50" />
+                      </div>
+                      <div>
+                        <Label>Email <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
+                        <Input type="email" placeholder="marie@client.com" value={form.contact_email} onChange={e => update("contact_email", e.target.value)} className="mt-1.5 bg-background/50" />
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
 
