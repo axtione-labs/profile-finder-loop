@@ -64,7 +64,7 @@ const DeclareLead = () => {
         stack: [],
         start_date: form.start_date,
         duration: form.duration,
-        tjm: 0,
+        tjm: parseFloat(form.tjm) || 0,
         margin: parseFloat(form.margin) || 5,
         priority: form.priority || "normal",
         description: form.description,
