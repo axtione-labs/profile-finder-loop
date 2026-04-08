@@ -70,24 +70,13 @@ const DeclareLead = () => {
         description: form.description,
       },
       {
-        onSuccess: (_, __, context) => {
-          // After lead creation, redirect to contract signing
-          // We need to get the created lead ID - refetch leads and get the latest
-          import("@/integrations/supabase/client").then(({ supabase }) => {
-            supabase
-              .from("leads" as any)
-              .select("id")
-              .order("created_at", { ascending: false })
-              .limit(1)
-              .then(({ data }) => {
-                const leadId = (data as any)?.[0]?.id;
-                if (leadId) {
-                  navigate(`/sign-contract?lead_id=${leadId}`);
-                } else {
-                  navigate("/dashboard");
-                }
-              });
-          });
+        onSuccess: (data) => {
+          const leadId = (data as any)?.id;
+          if (leadId) {
+            navigate(`/sign-contract?lead_id=${leadId}`);
+          } else {
+            navigate("/dashboard");
+          }
         },
       }
     );
