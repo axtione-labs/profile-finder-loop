@@ -20,6 +20,7 @@ import AdminMissions from "./pages/admin/AdminMissions";
 import AdminCommissions from "./pages/admin/AdminCommissions";
 import AdminClients from "./pages/admin/AdminClients";
 import AdminApporteurs from "./pages/admin/AdminApporteurs";
+import SignContract from "./pages/SignContract";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
