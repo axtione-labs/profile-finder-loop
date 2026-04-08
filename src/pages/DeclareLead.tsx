@@ -14,7 +14,7 @@ import { useCreateLead } from "@/hooks/useLeads";
 const stepsConfig = [
   { icon: Building2, label: "Contexte" },
   { icon: Briefcase, label: "Mission" },
-  { icon: DollarSign, label: "Budget" },
+  { icon: DollarSign, label: "Budget & Commission" },
   { icon: FileText, label: "Fiche mission" },
 ];
 
@@ -28,7 +28,7 @@ const DeclareLead = () => {
     contact_name: "", contact_phone: "", contact_email: "",
     position: "", seniority: "", start_date: "", duration: "",
     french_nationality_required: false,
-    margin: "5", priority: "",
+    tjm: "", margin: "5", priority: "",
     description: "",
   });
 
@@ -64,7 +64,7 @@ const DeclareLead = () => {
         stack: [],
         start_date: form.start_date,
         duration: form.duration,
-        tjm: 0,
+        tjm: parseFloat(form.tjm) || 0,
         margin: parseFloat(form.margin) || 5,
         priority: form.priority || "normal",
         description: form.description,
@@ -251,7 +251,19 @@ const DeclareLead = () => {
 
             {step === 2 && (
               <div className="space-y-5">
-                <h2 className="font-display text-2xl font-bold">Commission souhaitée</h2>
+                <h2 className="font-display text-2xl font-bold">Budget client & Commission</h2>
+
+                <div>
+                  <Label>TJM client (€ HT / jour)</Label>
+                  <Input
+                    type="number"
+                    placeholder="Ex: 550"
+                    value={form.tjm || ""}
+                    onChange={e => update("tjm", e.target.value)}
+                    className="mt-1.5 bg-background/50"
+                    min={0}
+                  />
+                </div>
 
                 <div>
                   <Label>Pourcentage de commission souhaité</Label>
@@ -274,15 +286,13 @@ const DeclareLead = () => {
                 </div>
 
                 {/* Info popup */}
-                <TooltipProvider>
-                  <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm text-primary">
-                    <Info className="h-5 w-5 mt-0.5 shrink-0" />
-                    <p>
-                      La marge sera qualifiée pendant la réunion de qualification du besoin.
-                      Pas d'inquiétude, vous gardez <strong>au minimum 5%</strong> de commission sur la mission.
-                    </p>
-                  </div>
-                </TooltipProvider>
+                <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm text-primary">
+                  <Info className="h-5 w-5 mt-0.5 shrink-0" />
+                  <p>
+                    La marge sera qualifiée pendant la réunion de qualification du besoin.
+                    Pas d'inquiétude, vous gardez <strong>au minimum 5%</strong> de commission sur la mission.
+                  </p>
+                </div>
 
                 <div>
                   <Label>Priorité</Label>
