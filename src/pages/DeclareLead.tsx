@@ -34,6 +34,21 @@ const DeclareLead = () => {
 
   const update = (field: string, value: string | string[] | boolean) => setForm(f => ({ ...f, [field]: value }));
 
+  const handleClientSecretChange = (checked: boolean) => {
+    setForm((prev) => ({
+      ...prev,
+      client_secret: checked,
+      ...(checked
+        ? {
+            client: "",
+            contact_name: "",
+            contact_phone: "",
+            contact_email: "",
+          }
+        : {}),
+    }));
+  };
+
   const submit = () => {
     createLead.mutate(
       {
