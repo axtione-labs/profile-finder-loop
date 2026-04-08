@@ -132,6 +132,42 @@ export type Database = {
           },
         ]
       }
+      contracts: {
+        Row: {
+          contract_pdf_url: string | null
+          created_at: string
+          id: string
+          lead_id: string
+          signature_data: string
+          signature_type: string
+          signed_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contract_pdf_url?: string | null
+          created_at?: string
+          id?: string
+          lead_id: string
+          signature_data?: string
+          signature_type?: string
+          signed_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contract_pdf_url?: string | null
+          created_at?: string
+          id?: string
+          lead_id?: string
+          signature_data?: string
+          signature_type?: string
+          signed_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           created_at: string
