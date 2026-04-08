@@ -128,7 +128,7 @@ const DeclareLead = () => {
                   </div>
                   <Switch
                     checked={form.client_secret}
-                    onCheckedChange={(v) => update("client_secret", v)}
+                    onCheckedChange={handleClientSecretChange}
                   />
                 </div>
 
