@@ -28,7 +28,7 @@ const DeclareLead = () => {
     contact_name: "", contact_phone: "", contact_email: "",
     position: "", seniority: "", start_date: "", duration: "",
     french_nationality_required: false,
-    margin: "5", priority: "",
+    tjm: "", margin: "5", priority: "",
     description: "",
   });
 
