@@ -1,26 +1,21 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, Building2, Briefcase, DollarSign, FileText } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Building2, Briefcase, DollarSign, FileText, Info, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Link, useNavigate } from "react-router-dom";
 import { useCreateLead } from "@/hooks/useLeads";
-
-const techOptions = [
-  "React", "Angular", "Vue.js", "Node.js", "Python", "Java", "Go", ".NET", "PHP",
-  "AWS", "Azure", "GCP", "Docker", "Kubernetes", "TypeScript", "SQL", "MongoDB",
-  "DevOps", "Cybersécurité", "Data", "IA/ML", "Salesforce", "SAP",
-];
 
 const stepsConfig = [
   { icon: Building2, label: "Contexte" },
   { icon: Briefcase, label: "Mission" },
   { icon: DollarSign, label: "Budget" },
-  { icon: FileText, label: "Description" },
+  { icon: FileText, label: "Fiche mission" },
 ];
 
 const DeclareLead = () => {
@@ -29,23 +24,20 @@ const DeclareLead = () => {
   const createLead = useCreateLead();
   const [form, setForm] = useState({
     client: "", sector: "", location: "", remote: "",
+    client_secret: false,
     contact_name: "", contact_phone: "", contact_email: "",
-    position: "", seniority: "", stack: [] as string[], start_date: "", duration: "",
-    tjm: "", margin: "", priority: "",
+    position: "", seniority: "", start_date: "", duration: "",
+    french_nationality_required: false,
+    margin: "5", priority: "",
     description: "",
   });
 
-  const update = (field: string, value: string | string[]) => setForm(f => ({ ...f, [field]: value }));
-
-  const toggleStack = (tag: string) => {
-    const stack = form.stack.includes(tag) ? form.stack.filter(t => t !== tag) : [...form.stack, tag];
-    update("stack", stack);
-  };
+  const update = (field: string, value: string | string[] | boolean) => setForm(f => ({ ...f, [field]: value }));
 
   const submit = () => {
     createLead.mutate(
       {
-        client: form.client,
+        client: form.client_secret ? "Confidentiel" : form.client,
         sector: form.sector,
         location: form.location,
         remote: form.remote,
@@ -54,17 +46,19 @@ const DeclareLead = () => {
         contact_email: form.contact_email,
         position: form.position,
         seniority: form.seniority,
-        stack: form.stack,
+        stack: [],
         start_date: form.start_date,
         duration: form.duration,
-        tjm: parseFloat(form.tjm) || 0,
-        margin: parseFloat(form.margin) || 0,
+        tjm: 0,
+        margin: parseFloat(form.margin) || 5,
         priority: form.priority || "normal",
         description: form.description,
       },
       { onSuccess: () => navigate("/dashboard") }
     );
   };
+
+  const todayStr = new Date().toISOString().split("T")[0];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -106,12 +100,30 @@ const DeclareLead = () => {
           >
             {step === 0 && (
               <div className="space-y-5">
-                <h2 className="font-display text-2xl font-bold">Contexte du besoin</h2>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <Label>Client</Label>
-                    <Input placeholder="Nom du client (ou anonyme)" value={form.client} onChange={e => update("client", e.target.value)} className="mt-1.5 bg-background/50" />
+                <h2 className="font-display text-2xl font-bold">Contexte de la mission</h2>
+
+                {/* Client secret toggle */}
+                <div className="flex items-center justify-between rounded-lg border border-border/50 bg-secondary/30 p-4">
+                  <div className="flex items-center gap-3">
+                    <Lock className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Client confidentiel</p>
+                      <p className="text-xs text-muted-foreground">Le nom du client sera communiqué lors de la réunion de qualification</p>
+                    </div>
                   </div>
+                  <Switch
+                    checked={form.client_secret}
+                    onCheckedChange={(v) => update("client_secret", v)}
+                  />
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {!form.client_secret && (
+                    <div className="sm:col-span-2">
+                      <Label>Client</Label>
+                      <Input placeholder="Nom du client" value={form.client} onChange={e => update("client", e.target.value)} className="mt-1.5 bg-background/50" />
+                    </div>
+                  )}
                   <div>
                     <Label>Secteur</Label>
                     <Select value={form.sector} onValueChange={v => update("sector", v)}>
@@ -181,7 +193,7 @@ const DeclareLead = () => {
                   </div>
                   <div>
                     <Label>Démarrage</Label>
-                    <Input type="date" min={new Date().toISOString().split("T")[0]} value={form.start_date} onChange={e => update("start_date", e.target.value)} className="mt-1.5 bg-background/50" />
+                    <Input type="date" min={todayStr} value={form.start_date} onChange={e => update("start_date", e.target.value)} className="mt-1.5 bg-background/50" />
                   </div>
                   <div>
                     <Label>Durée estimée</Label>
@@ -196,36 +208,56 @@ const DeclareLead = () => {
                     </Select>
                   </div>
                 </div>
-                <div>
-                  <Label>Tech stack</Label>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {techOptions.map(t => (
-                      <Badge
-                        key={t}
-                        variant={form.stack.includes(t) ? "default" : "outline"}
-                        className={`cursor-pointer transition-colors ${form.stack.includes(t) ? "gradient-primary border-0" : "hover:bg-secondary"}`}
-                        onClick={() => toggleStack(t)}
-                      >
-                        {t}
-                      </Badge>
-                    ))}
+
+                {/* Nationalité française obligatoire */}
+                <div className="flex items-center justify-between rounded-lg border border-border/50 bg-secondary/30 p-4">
+                  <div>
+                    <p className="text-sm font-medium">Nationalité française obligatoire</p>
+                    <p className="text-xs text-muted-foreground">Le candidat doit obligatoirement être de nationalité française</p>
                   </div>
+                  <Switch
+                    checked={form.french_nationality_required}
+                    onCheckedChange={(v) => update("french_nationality_required", v)}
+                  />
                 </div>
               </div>
             )}
 
             {step === 2 && (
               <div className="space-y-5">
-                <h2 className="font-display text-2xl font-bold">Budget & Priorité</h2>
+                <h2 className="font-display text-2xl font-bold">Commission souhaitée</h2>
+
                 <div>
-                  <Label>TJM proposé par le client (€)</Label>
-                  <Input type="number" placeholder="Ex: 550" value={form.tjm} onChange={e => update("tjm", e.target.value)} className="mt-1.5 bg-background/50" />
+                  <Label>Pourcentage de commission souhaité</Label>
+                  <div className="mt-3 grid grid-cols-3 gap-3">
+                    {["5", "7", "10"].map((pct) => (
+                      <button
+                        key={pct}
+                        type="button"
+                        onClick={() => update("margin", pct)}
+                        className={`rounded-xl border-2 p-4 text-center transition-all ${
+                          form.margin === pct
+                            ? "border-primary bg-primary/10 shadow-md"
+                            : "border-border hover:border-primary/50 hover:bg-secondary/50"
+                        }`}
+                      >
+                        <span className="text-2xl font-bold text-primary">{pct}%</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div>
-                  <Label>Marge souhaitée (€/jour)</Label>
-                  <Input type="number" placeholder="Ex: 50" value={form.margin} onChange={e => update("margin", e.target.value)} className="mt-1.5 bg-background/50" />
-                  <p className="text-xs text-muted-foreground mt-1">Marge par jour que vous souhaitez percevoir sur cette mission</p>
-                </div>
+
+                {/* Info popup */}
+                <TooltipProvider>
+                  <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+                    <Info className="h-5 w-5 mt-0.5 shrink-0" />
+                    <p>
+                      La marge sera qualifiée pendant la réunion de qualification du besoin.
+                      Pas d'inquiétude, vous gardez <strong>au minimum 5%</strong> de commission sur la mission.
+                    </p>
+                  </div>
+                </TooltipProvider>
+
                 <div>
                   <Label>Priorité</Label>
                   <Select value={form.priority} onValueChange={v => update("priority", v)}>
@@ -242,7 +274,8 @@ const DeclareLead = () => {
 
             {step === 3 && (
               <div className="space-y-5">
-                <h2 className="font-display text-2xl font-bold">Description libre</h2>
+                <h2 className="font-display text-2xl font-bold">Fiche mission</h2>
+                <p className="text-sm text-muted-foreground">Facultatif — ajoutez des détails supplémentaires si vous le souhaitez.</p>
                 <Textarea
                   placeholder="Décrivez le besoin, le contexte, les contraintes spécifiques..."
                   value={form.description}
