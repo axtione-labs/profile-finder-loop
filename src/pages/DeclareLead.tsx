@@ -69,7 +69,16 @@ const DeclareLead = () => {
         priority: form.priority || "normal",
         description: form.description,
       },
-      { onSuccess: () => navigate("/dashboard") }
+      {
+        onSuccess: (data) => {
+          const leadId = (data as any)?.id;
+          if (leadId) {
+            navigate(`/sign-contract?lead_id=${leadId}`);
+          } else {
+            navigate("/dashboard");
+          }
+        },
+      }
     );
   };
 

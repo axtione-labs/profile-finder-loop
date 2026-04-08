@@ -20,6 +20,7 @@ import AdminMissions from "./pages/admin/AdminMissions";
 import AdminCommissions from "./pages/admin/AdminCommissions";
 import AdminClients from "./pages/admin/AdminClients";
 import AdminApporteurs from "./pages/admin/AdminApporteurs";
+import SignContract from "./pages/SignContract";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/commissions" element={<ProtectedRoute><CommissionsDashboard /></ProtectedRoute>} />
             <Route path="/declare" element={<ProtectedRoute><DeclareLead /></ProtectedRoute>} />
+            <Route path="/sign-contract" element={<ProtectedRoute><SignContract /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminOverview /></ProtectedRoute>} />
             <Route path="/admin/leads" element={<ProtectedRoute requireAdmin><AdminLeads /></ProtectedRoute>} />
             <Route path="/admin/sourcing" element={<ProtectedRoute requireAdmin><AdminSourcing /></ProtectedRoute>} />
