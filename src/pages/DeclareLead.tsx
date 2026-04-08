@@ -92,11 +92,28 @@ const DeclareLead = () => {
   const handleSign = async () => {
     if (!signatureData || !leadId) return;
     const result = await createContract.mutateAsync({ leadId, signatureData, signatureType });
+    let signedUrl: string | null = null;
     if (result?.contract_pdf_url) {
       const { data } = await supabase.storage.from("contracts").createSignedUrl(result.contract_pdf_url, 3600);
-      if (data?.signedUrl) setContractUrl(data.signedUrl);
+      if (data?.signedUrl) {
+        signedUrl = data.signedUrl;
+        setContractUrl(data.signedUrl);
+      }
     }
     setSigned(true);
+
+    // Send contract email to the user
+    try {
+      await supabase.functions.invoke("send-contract-email", {
+        body: {
+          email: user?.email,
+          firstName: user?.user_metadata?.first_name || "",
+          contractUrl: signedUrl,
+        },
+      });
+    } catch (e) {
+      console.error("Failed to send contract email:", e);
+    }
   };
 
   const todayStr = new Date().toISOString().split("T")[0];
