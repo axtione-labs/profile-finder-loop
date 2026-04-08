@@ -161,8 +161,8 @@ const SignContract = () => {
             className="text-center space-y-6"
           >
             <div className="flex justify-center">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-                <Check className="h-10 w-10 text-green-600" />
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-success/10">
+                <Check className="h-10 w-10 text-success" />
               </div>
             </div>
             <h1 className="font-display text-3xl font-bold">Contrat signé avec succès !</h1>
