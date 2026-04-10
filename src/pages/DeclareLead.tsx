@@ -391,10 +391,6 @@ const DeclareLead = () => {
                       <Label>TJM client (€ HT / jour)</Label>
                       <Input type="number" placeholder="Ex: 550" value={form.tjm || ""} onChange={e => update("tjm", e.target.value)} className="mt-1.5 bg-background/50" min={0} />
                     </div>
-                    <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm text-primary">
-                      <Info className="h-5 w-5 mt-0.5 shrink-0" />
-                      <p>La commission sera attribuée lors de la <strong>réunion de qualification</strong> du besoin. Vous serez notifié par email.</p>
-                    </div>
                     <div>
                       <Label>Priorité</Label>
                       <Select value={form.priority} onValueChange={v => update("priority", v)}>
