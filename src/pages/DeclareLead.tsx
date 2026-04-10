@@ -21,7 +21,7 @@ import ContractContent from "@/components/ContractContent";
 const stepsConfig = [
   { icon: Building2, label: "Contexte" },
   { icon: Briefcase, label: "Mission" },
-  { icon: DollarSign, label: "Budget" },
+  { icon: DollarSign, label: "Budget & Priorité" },
   { icon: FileText, label: "Fiche mission" },
   { icon: FileSignature, label: "Contrat" },
 ];
@@ -222,7 +222,7 @@ const DeclareLead = () => {
               transition={{ delay: 0.5 }}
             >
               {[
-                { label: "Commission", value: `${form.margin}%`, icon: DollarSign },
+                { label: "Commission", value: "À définir", icon: DollarSign },
                 { label: "TJM Client", value: form.tjm ? `${form.tjm}€` : "N/A", icon: Briefcase },
                 { label: "Statut", value: "En cours", icon: Shield },
               ].map((stat, i) => (
@@ -386,27 +386,14 @@ const DeclareLead = () => {
 
                 {step === 2 && (
                   <div className="space-y-5">
-                    <h2 className="font-display text-2xl font-bold">Budget client & Commission</h2>
+                    <h2 className="font-display text-2xl font-bold">Budget client</h2>
                     <div>
                       <Label>TJM client (€ HT / jour)</Label>
                       <Input type="number" placeholder="Ex: 550" value={form.tjm || ""} onChange={e => update("tjm", e.target.value)} className="mt-1.5 bg-background/50" min={0} />
                     </div>
-                    <div>
-                      <Label>Pourcentage de commission souhaité</Label>
-                      <div className="mt-3 grid grid-cols-3 gap-3">
-                        {["5", "7", "10"].map((pct) => (
-                          <button key={pct} type="button" onClick={() => update("margin", pct)}
-                            className={`rounded-xl border-2 p-4 text-center transition-all ${
-                              form.margin === pct ? "border-primary bg-primary/10 shadow-md" : "border-border hover:border-primary/50 hover:bg-secondary/50"
-                            }`}>
-                            <span className="text-2xl font-bold text-primary">{pct}%</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
                     <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm text-primary">
                       <Info className="h-5 w-5 mt-0.5 shrink-0" />
-                      <p>La marge sera qualifiée pendant la réunion de qualification du besoin. Pas d'inquiétude, vous gardez <strong>au minimum 5%</strong> de commission sur la mission.</p>
+                      <p>La commission sera attribuée lors de la <strong>réunion de qualification</strong> du besoin. Vous serez notifié par email.</p>
                     </div>
                     <div>
                       <Label>Priorité</Label>
@@ -473,7 +460,7 @@ const DeclareLead = () => {
                       <div className="relative z-10 flex flex-wrap gap-3 mt-6">
                         {[
                           { icon: Shield, text: "Signature sécurisée" },
-                          { icon: DollarSign, text: `${form.margin}% garanti` },
+                          { icon: DollarSign, text: "Commission garantie" },
                           { icon: Sparkles, text: "Commissions débloquées" },
                         ].map((badge, i) => (
                           <motion.div
