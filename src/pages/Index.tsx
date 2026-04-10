@@ -177,115 +177,79 @@ const Index = () => {
             Transformez chaque contact en <span className="text-gradient">revenu passif</span>.
           </motion.h1>
 
-          {/* === CŒUR DE MÉTIER — Pipeline animé === */}
-          <motion.div className="mx-auto mt-10 max-w-3xl" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.2 }}>
-            <div className="relative rounded-2xl border border-primary/20 bg-primary/[0.04] backdrop-blur-sm p-6 sm:p-8">
-              {/* Connecting line */}
-              <div className="hidden sm:block absolute top-1/2 left-[18%] right-[18%] h-[2px] -translate-y-1/2 z-0">
-                <motion.div
-                  className="h-full bg-gradient-to-r from-primary/40 via-primary to-primary/40 rounded-full"
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ duration: 1, delay: 0.8, ease: "easeOut" }}
-                  style={{ originX: 0 }}
-                />
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-0 relative z-10">
-                {[
-                  { icon: Zap, label: "Besoin IT détecté", delay: 0.4 },
-                  { icon: Clock, label: "2 min pour déclarer", delay: 0.7 },
-                  { icon: TrendingUp, label: "5 à 10% chaque jour", delay: 1.0 },
-                ].map((item, i) => (
+          {/* === CŒUR DE MÉTIER — Pipeline 3 étapes === */}
+          <motion.div
+            className="mx-auto mt-10 max-w-2xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.25 }}
+          >
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+              {[
+                { icon: Zap, label: "Besoin IT\ndétecté" },
+                { icon: Clock, label: "2 min pour\ndéclarer" },
+                { icon: TrendingUp, label: "5 à 10% chaque\njour" },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-3 sm:gap-4">
                   <motion.div
-                    key={i}
-                    className="flex flex-col items-center gap-2 group"
-                    initial={{ opacity: 0, y: 20, scale: 0.8 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 0.5, delay: item.delay, type: "spring", stiffness: 180, damping: 14 }}
+                    className="flex items-center gap-2.5 rounded-full bg-primary/10 border border-primary/20 pl-3 pr-5 py-2.5 sm:py-3"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4, delay: 0.4 + i * 0.15 }}
+                    whileHover={{ scale: 1.04, backgroundColor: "hsl(var(--primary) / 0.15)" }}
                   >
-                    <motion.div
-                      className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl gradient-primary flex items-center justify-center shadow-lg"
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                      animate={{
-                        boxShadow: [
-                          "0 4px 20px hsl(var(--primary) / 0.2)",
-                          "0 4px 30px hsl(var(--primary) / 0.4)",
-                          "0 4px 20px hsl(var(--primary) / 0.2)",
-                        ],
-                      }}
-                      transition={{ boxShadow: { duration: 2, repeat: Infinity, delay: i * 0.5 } }}
-                    >
-                      <item.icon className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
-                    </motion.div>
-                    <span className="text-sm sm:text-base font-semibold text-foreground text-center leading-tight max-w-[140px]">
+                    <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+                      <item.icon className="w-4 h-4 text-primary" />
+                    </div>
+                    <span className="text-sm font-semibold text-primary whitespace-pre-line leading-tight">
                       {item.label}
                     </span>
-                    {/* Mobile arrow between steps */}
-                    {i < 2 && (
+                  </motion.div>
+                  {i < 2 && (
+                    <>
                       <motion.div
-                        className="sm:hidden text-primary"
+                        className="hidden sm:flex items-center text-muted-foreground/50"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ delay: item.delay + 0.3 }}
+                        transition={{ delay: 0.7 + i * 0.15 }}
                       >
-                        <ChevronDown className="h-5 w-5" />
+                        <ArrowRight className="h-4 w-4" />
                       </motion.div>
-                    )}
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Animated pulse dots on the line (desktop) */}
-              <div className="hidden sm:block">
-                {[0, 1].map(i => (
-                  <motion.div
-                    key={i}
-                    className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-primary z-20"
-                    style={{ left: i === 0 ? "40%" : "60%" }}
-                    animate={{
-                      scale: [1, 1.8, 1],
-                      opacity: [0.6, 1, 0.6],
-                    }}
-                    transition={{ duration: 1.5, repeat: Infinity, delay: 1.2 + i * 0.4 }}
-                  />
-                ))}
-              </div>
+                      <motion.div
+                        className="sm:hidden text-muted-foreground/50"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.7 + i * 0.15 }}
+                      >
+                        <ChevronDown className="h-4 w-4" />
+                      </motion.div>
+                    </>
+                  )}
+                </div>
+              ))}
             </div>
 
-            {/* Tagline */}
             <motion.p
-              className="mt-5 text-muted-foreground text-center text-base sm:text-lg"
+              className="mt-5 text-muted-foreground text-center text-base"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 1.4 }}
+              transition={{ delay: 0.9 }}
             >
               On trouve le profil. Vous touchez la commission.{" "}
               <motion.span
                 className="relative inline-block text-foreground font-extrabold text-lg sm:text-xl"
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.6, delay: 1.6, type: "spring", stiffness: 200 }}
+                transition={{ duration: 0.5, delay: 1.1, type: "spring", stiffness: 200 }}
               >
                 <motion.span
-                  className="absolute -inset-x-2 -inset-y-1 rounded-lg bg-primary/20 -z-10"
+                  className="absolute -inset-x-2 -inset-y-1 rounded-lg bg-primary/15 -z-10"
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
-                  transition={{ duration: 0.4, delay: 1.8 }}
+                  transition={{ duration: 0.3, delay: 1.3 }}
                   style={{ originX: 0 }}
                 />
-                <motion.span
-                  animate={{
-                    textShadow: [
-                      "0 0 0px hsl(var(--primary))",
-                      "0 0 20px hsl(var(--primary))",
-                      "0 0 0px hsl(var(--primary))"
-                    ]
-                  }}
-                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-                >
-                  Sans recruter.
-                </motion.span>
+                Sans recruter.
               </motion.span>
             </motion.p>
           </motion.div>
