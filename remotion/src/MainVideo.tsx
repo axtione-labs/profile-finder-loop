@@ -75,6 +75,16 @@ const modules = [
   },
 ];
 
+const transitions = [
+  wipe({ direction: "from-left" }),
+  slide({ direction: "from-right" }),
+  fade(),
+  wipe({ direction: "from-top" }),
+  slide({ direction: "from-left" }),
+  fade(),
+  wipe({ direction: "from-right" }),
+];
+
 export const MainVideo: React.FC = () => {
   return (
     <AbsoluteFill>
@@ -85,13 +95,16 @@ export const MainVideo: React.FC = () => {
         </TransitionSeries.Sequence>
 
         {modules.map((mod, i) => (
-          <TransitionSeries.Sequence key={i} durationInFrames={SCENE_DURATION}>
+          <>
             <TransitionSeries.Transition
-              presentation={i % 3 === 0 ? wipe({ direction: "from-left" }) : i % 3 === 1 ? slide({ direction: "from-right" }) : fade()}
+              key={`t-${i}`}
+              presentation={transitions[i]!}
               timing={transitionConfig}
             />
-            <ModuleScene {...mod} />
-          </TransitionSeries.Sequence>
+            <TransitionSeries.Sequence key={`s-${i}`} durationInFrames={SCENE_DURATION}>
+              <ModuleScene {...mod} />
+            </TransitionSeries.Sequence>
+          </>
         ))}
 
         <TransitionSeries.Transition
