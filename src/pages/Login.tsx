@@ -7,9 +7,8 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ArrowRight, ArrowLeft, Zap, ShieldAlert } from "lucide-react";
+import { ArrowLeft, Zap, ShieldAlert } from "lucide-react";
 import { lovable } from "@/integrations/lovable/index";
-import { Separator } from "@/components/ui/separator";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -39,7 +38,6 @@ const Login = () => {
       return;
     }
 
-    // Check if user is blocked
     const { data: { user: authUser } } = await supabase.auth.getUser();
     if (authUser) {
       const { data: profileData } = await supabase
@@ -61,37 +59,99 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left panel */}
-      <div className="hidden lg:flex lg:w-1/2 gradient-primary items-center justify-center p-12 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/30 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
-        </div>
+    <div className="flex min-h-screen w-full antialiased bg-background">
+      {/* Left Panel — Obsidian Spark */}
+      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden lg:flex p-12 text-white"
+        style={{ background: "linear-gradient(135deg, #020617 0%, #0f172a 100%)" }}
+      >
+        {/* Mesh overlay */}
+        <div className="absolute inset-0"
+          style={{
+            backgroundImage:
+              "radial-gradient(at 0% 0%, rgba(59,130,246,0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(99,102,241,0.15) 0px, transparent 50%)",
+          }}
+        />
+
+        {/* Logo */}
         <motion.div
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="relative z-10 flex items-center gap-3"
+        >
+          <div className="size-10 rounded-lg flex items-center justify-center shadow-lg gradient-primary">
+            <Zap className="w-5 h-5 text-white" />
+          </div>
+          <span className="text-xl font-display font-bold tracking-tight">
+            DealFlow<span className="text-primary">Network</span>
+          </span>
+        </motion.div>
+
+        {/* Centered content */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.15 }}
           className="relative z-10 max-w-md"
         >
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
-              <Zap className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-2xl font-display font-bold text-white">DealFlowNetwork</span>
-          </div>
-          <h2 className="text-3xl font-display font-bold text-white mb-4">
+          <h1 className="text-[2.75rem] font-display font-bold leading-[1.1] tracking-tight text-balance mb-6">
             Transformez vos contacts en{" "}
-            <span className="font-extrabold text-warning">revenus passifs</span>
-          </h2>
-          <p className="text-white/60 text-lg leading-relaxed">
-            Déclarez un besoin IT en 2 minutes, nous trouvons le profil adapté et vous touchez vos gains en quelques clics.
+            <span className="text-transparent bg-clip-text"
+              style={{ backgroundImage: "linear-gradient(to right, #fcd34d, #fef3c7)" }}
+            >
+              revenus passifs
+            </span>
+          </h1>
+          <p className="text-slate-400 text-lg mb-10 max-w-[40ch]">
+            Déclarez un besoin IT en 2 minutes, nous trouvons le profil adapté et vous touchez vos gains.
           </p>
+
+          {/* Live feed cards */}
+          <div className="space-y-4">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 }}
+              className="p-4 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm flex items-center justify-between"
+            >
+              <div>
+                <div className="text-[10px] font-mono text-primary uppercase tracking-widest mb-1">Nouveau besoin</div>
+                <div className="text-sm font-medium">Dev Full-Stack React/Node</div>
+              </div>
+              <div className="text-right">
+                <div className="text-sm font-semibold text-white">550€/j</div>
+                <div className="text-[10px] font-mono text-slate-500">il y a 2min</div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.65 }}
+              className="p-4 rounded-xl border border-white/5 bg-white/[0.02] flex items-center justify-between opacity-80"
+            >
+              <div>
+                <div className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest mb-1">Mission gagnée</div>
+                <div className="text-sm font-medium">Architecte Cloud AWS</div>
+              </div>
+              <div className="text-right">
+                <div className="text-sm font-semibold text-emerald-400">+1 100€/mois</div>
+                <div className="text-[10px] font-mono text-slate-500">il y a 14min</div>
+              </div>
+            </motion.div>
+          </div>
         </motion.div>
+
+        {/* Footer */}
+        <div className="relative z-10 flex items-center gap-6 text-xs font-mono text-slate-500 uppercase tracking-widest">
+          <span>Plateforme sécurisée</span>
+          <div className="size-1 bg-primary rounded-full" />
+          <span>Partenaires vérifiés</span>
+        </div>
       </div>
 
-      {/* Right panel */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-background relative">
+      {/* Right Panel — Form */}
+      <div className="flex w-full flex-col justify-center px-6 sm:px-8 lg:w-1/2 lg:px-24 xl:px-32 relative">
         <Button
           variant="ghost"
           size="sm"
@@ -101,12 +161,14 @@ const Login = () => {
           <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Retour
         </Button>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-md space-y-8"
+          className="mx-auto w-full max-w-sm space-y-8"
         >
+          {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-2 mb-4 mt-6">
             <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
               <Zap className="w-4 h-4 text-white" />
@@ -115,13 +177,13 @@ const Login = () => {
           </div>
 
           <div>
-            <h1 className="text-2xl font-display font-bold text-foreground">Connexion</h1>
-            <p className="text-muted-foreground mt-1">Accédez à votre espace apporteur</p>
+            <h2 className="text-3xl font-display font-bold tracking-tight text-foreground mb-2">Connexion</h2>
+            <p className="text-muted-foreground">Accédez à votre espace apporteur d'affaires.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+            <div>
+              <Label htmlFor="email" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -129,12 +191,17 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="h-11"
+                className="h-12 rounded-lg border-border bg-muted/30"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <Label htmlFor="password" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Mot de passe</Label>
+                <Link to="/forgot-password" className="text-xs font-medium text-primary hover:underline">
+                  Mot de passe oublié ?
+                </Link>
+              </div>
               <Input
                 id="password"
                 type="password"
@@ -142,31 +209,28 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="h-11"
+                className="h-12 rounded-lg border-border bg-muted/30"
               />
             </div>
 
-            <div className="flex justify-end">
-              <Link to="/forgot-password" className="text-sm text-primary hover:underline">
-                Mot de passe oublié ?
-              </Link>
-            </div>
-
-            <Button type="submit" className="w-full h-11 gradient-primary text-white font-semibold" disabled={isLoading}>
-              {isLoading ? "Connexion..." : "Se connecter"}
-              <ArrowRight className="w-4 h-4 ml-1" />
+            <Button
+              type="submit"
+              className="w-full h-12 rounded-lg bg-foreground text-background font-semibold shadow-xl hover:bg-foreground/90 transition-all active:scale-[0.98]"
+              disabled={isLoading}
+            >
+              {isLoading ? "Connexion..." : "Se connecter →"}
             </Button>
           </form>
 
-          <div className="flex items-center gap-3">
-            <Separator className="flex-1" />
-            <span className="text-xs text-muted-foreground">ou</span>
-            <Separator className="flex-1" />
+          <div className="relative flex items-center py-2">
+            <div className="grow border-t border-border" />
+            <span className="mx-4 shrink-0 text-xs font-medium text-muted-foreground uppercase tracking-widest">ou</span>
+            <div className="grow border-t border-border" />
           </div>
 
           <Button
             variant="outline"
-            className="w-full h-11 font-medium"
+            className="w-full h-12 rounded-lg font-medium border-border hover:bg-muted/50 transition-all active:scale-[0.98]"
             onClick={async () => {
               await lovable.auth.signInWithOAuth("google", {
                 redirect_uri: `${window.location.origin}/dashboard`,
@@ -179,7 +243,7 @@ const Login = () => {
 
           <p className="text-center text-sm text-muted-foreground">
             Pas encore de compte ?{" "}
-            <Link to="/register" className="text-primary font-medium hover:underline">
+            <Link to="/register" className="font-semibold text-foreground hover:text-primary transition-colors">
               Créer un compte
             </Link>
           </p>

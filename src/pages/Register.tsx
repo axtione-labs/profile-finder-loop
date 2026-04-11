@@ -6,9 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { ArrowRight, ArrowLeft, Zap, CheckCircle } from "lucide-react";
+import { ArrowLeft, Zap, CheckCircle } from "lucide-react";
 import { lovable } from "@/integrations/lovable/index";
-import { Separator } from "@/components/ui/separator";
+
+const benefits = [
+  "Déclarez un besoin en 2 minutes",
+  "Suivi en temps réel de vos leads",
+  "Gains transparents et versés mensuellement",
+];
 
 const Register = () => {
   const [firstName, setFirstName] = useState("");
@@ -37,14 +42,12 @@ const Register = () => {
     setIsLoading(false);
 
     if (error) {
-      // Handle "email already exists" specifically
       if (error.message?.toLowerCase().includes("already registered") || error.message?.toLowerCase().includes("already been registered") || error.message?.toLowerCase().includes("user already registered")) {
         toast.error("Cette adresse email est déjà utilisée. Connectez-vous ou utilisez une autre adresse.");
       } else {
         toast.error(error.message);
       }
     } else {
-      // Send welcome email via edge function (fire and forget)
       fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-welcome-email`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
@@ -55,129 +58,170 @@ const Register = () => {
     }
   };
 
-  const benefits = [
-    "Déclarez un besoin en 2 minutes",
-    "Suivi en temps réel de vos leads",
-    "Commissions transparentes",
-  ];
-
   return (
-    <div className="min-h-screen flex">
-      {/* Left panel */}
-      <div className="hidden lg:flex lg:w-1/2 gradient-primary items-center justify-center p-12 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/30 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
-        </div>
+    <div className="flex min-h-screen w-full antialiased bg-background">
+      {/* Left Panel — Obsidian Spark */}
+      <div
+        className="relative hidden w-1/2 flex-col justify-between overflow-hidden lg:flex p-12 text-white"
+        style={{ background: "linear-gradient(135deg, #020617 0%, #0f172a 100%)" }}
+      >
+        {/* Mesh overlay */}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              "radial-gradient(at 0% 0%, rgba(59,130,246,0.15) 0px, transparent 50%), radial-gradient(at 100% 100%, rgba(99,102,241,0.15) 0px, transparent 50%)",
+          }}
+        />
+
+        {/* Logo */}
         <motion.div
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="relative z-10 flex items-center gap-3"
+        >
+          <div className="size-10 rounded-lg flex items-center justify-center shadow-lg gradient-primary">
+            <Zap className="w-5 h-5 text-white" />
+          </div>
+          <span className="text-xl font-display font-bold tracking-tight">
+            DealFlow<span className="text-primary">Network</span>
+          </span>
+        </motion.div>
+
+        {/* Centered content */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.15 }}
           className="relative z-10 max-w-md"
         >
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
-              <Zap className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-2xl font-display font-bold text-white">DealFlowNetwork</span>
-          </div>
-          <h2 className="text-3xl font-display font-bold text-white mb-6">
-            Rejoignez le réseau <span className="font-extrabold text-warning">DealFlowNetwork</span>
-          </h2>
-          <div className="space-y-4">
+          <h1 className="text-[2.75rem] font-display font-bold leading-[1.1] tracking-tight text-balance mb-6">
+            Rejoignez le réseau{" "}
+            <span
+              className="text-transparent bg-clip-text"
+              style={{ backgroundImage: "linear-gradient(to right, #fcd34d, #fef3c7)" }}
+            >
+              DealFlowNetwork
+            </span>
+          </h1>
+
+          <div className="space-y-4 mt-8">
             {benefits.map((b, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + i * 0.15 }}
+                transition={{ delay: 0.4 + i * 0.15 }}
                 className="flex items-center gap-3"
               >
-                <CheckCircle className="w-5 h-5 text-primary shrink-0" />
-                <span className="text-white/80">{b}</span>
+                <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
+                <span className="text-slate-300">{b}</span>
               </motion.div>
             ))}
           </div>
         </motion.div>
+
+        {/* Footer */}
+        <div className="relative z-10 flex items-center gap-6 text-xs font-mono text-slate-500 uppercase tracking-widest">
+          <span>Inscription gratuite</span>
+          <div className="size-1 bg-primary rounded-full" />
+          <span>Sans engagement</span>
+        </div>
       </div>
 
-      {/* Right panel */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-background relative">
+      {/* Right Panel — Form */}
+      <div className="flex w-full flex-col justify-center px-6 sm:px-8 lg:w-1/2 lg:px-24 xl:px-32 relative">
         <Button
           variant="ghost"
           size="sm"
-          className="absolute top-6 left-6 gap-1.5 text-muted-foreground hover:text-foreground"
+          className="absolute top-4 left-4 sm:top-6 sm:left-6 gap-1.5 text-muted-foreground hover:text-foreground text-xs sm:text-sm z-10"
           onClick={() => navigate("/")}
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Retour
         </Button>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-md space-y-6"
+          className="mx-auto w-full max-w-sm space-y-6"
         >
-          <div className="lg:hidden flex items-center gap-3 mb-4">
-            <div className="w-9 h-9 gradient-primary rounded-xl flex items-center justify-center">
+          {/* Mobile logo */}
+          <div className="lg:hidden flex items-center gap-2 mb-4 mt-6">
+            <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
               <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="text-xl font-display font-bold text-foreground">DealFlowNetwork</span>
+            <span className="text-lg font-display font-bold text-foreground">DealFlowNetwork</span>
           </div>
 
           <div>
-            <h1 className="text-2xl font-display font-bold text-foreground">Créer un compte</h1>
-            <p className="text-muted-foreground mt-1">Inscription rapide en quelques secondes</p>
+            <h2 className="text-3xl font-display font-bold tracking-tight text-foreground mb-2">Créer un compte</h2>
+            <p className="text-muted-foreground">Inscription rapide en quelques secondes.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">Prénom <span className="text-destructive">*</span></Label>
-                <Input id="firstName" placeholder="Jean" value={firstName} onChange={(e) => setFirstName(e.target.value)} required className="h-11 border-primary/30 focus-visible:ring-primary" />
+              <div>
+                <Label htmlFor="firstName" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
+                  Prénom <span className="text-destructive">*</span>
+                </Label>
+                <Input id="firstName" placeholder="Jean" value={firstName} onChange={(e) => setFirstName(e.target.value)} required className="h-12 rounded-lg border-border bg-muted/30" />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Nom <span className="text-destructive">*</span></Label>
-                <Input id="lastName" placeholder="Dupont" value={lastName} onChange={(e) => setLastName(e.target.value)} required className="h-11 border-primary/30 focus-visible:ring-primary" />
+              <div>
+                <Label htmlFor="lastName" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
+                  Nom <span className="text-destructive">*</span>
+                </Label>
+                <Input id="lastName" placeholder="Dupont" value={lastName} onChange={(e) => setLastName(e.target.value)} required className="h-12 rounded-lg border-border bg-muted/30" />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email <span className="text-destructive">*</span></Label>
-              <Input id="email" type="email" placeholder="vous@exemple.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 border-primary/30 focus-visible:ring-primary" />
+            <div>
+              <Label htmlFor="email" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
+                Email <span className="text-destructive">*</span>
+              </Label>
+              <Input id="email" type="email" placeholder="vous@exemple.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-12 rounded-lg border-border bg-muted/30" />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="phone">Téléphone</Label>
-              <Input id="phone" type="tel" placeholder="+33 6 12 34 56 78" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-11" />
+            <div>
+              <Label htmlFor="phone" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Téléphone</Label>
+              <Input id="phone" type="tel" placeholder="+33 6 12 34 56 78" value={phone} onChange={(e) => setPhone(e.target.value)} className="h-12 rounded-lg border-border bg-muted/30" />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="company">Société <span className="text-muted-foreground font-normal">(optionnel)</span></Label>
-              <Input id="company" placeholder="Ma Société" value={company} onChange={(e) => setCompany(e.target.value)} className="h-11" />
+            <div>
+              <Label htmlFor="company" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
+                Société <span className="text-muted-foreground font-normal normal-case tracking-normal">(optionnel)</span>
+              </Label>
+              <Input id="company" placeholder="Ma Société" value={company} onChange={(e) => setCompany(e.target.value)} className="h-12 rounded-lg border-border bg-muted/30" />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe <span className="text-destructive">*</span></Label>
-              <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="h-11 border-primary/30 focus-visible:ring-primary" />
-              <p className="text-xs text-muted-foreground">Minimum 6 caractères</p>
+            <div>
+              <Label htmlFor="password" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
+                Mot de passe <span className="text-destructive">*</span>
+              </Label>
+              <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="h-12 rounded-lg border-border bg-muted/30" />
+              <p className="text-xs text-muted-foreground mt-1">Minimum 6 caractères</p>
             </div>
 
-            <Button type="submit" className="w-full h-11 gradient-primary text-white font-semibold" disabled={isLoading}>
-              {isLoading ? "Création..." : "Créer mon compte"}
-              <ArrowRight className="w-4 h-4 ml-1" />
+            <Button
+              type="submit"
+              className="w-full h-12 rounded-lg bg-foreground text-background font-semibold shadow-xl hover:bg-foreground/90 transition-all active:scale-[0.98]"
+              disabled={isLoading}
+            >
+              {isLoading ? "Création..." : "Créer mon compte →"}
             </Button>
           </form>
 
-          <div className="flex items-center gap-3">
-            <Separator className="flex-1" />
-            <span className="text-xs text-muted-foreground">ou</span>
-            <Separator className="flex-1" />
+          <div className="relative flex items-center py-1">
+            <div className="grow border-t border-border" />
+            <span className="mx-4 shrink-0 text-xs font-medium text-muted-foreground uppercase tracking-widest">ou</span>
+            <div className="grow border-t border-border" />
           </div>
 
           <Button
             variant="outline"
-            className="w-full h-11 font-medium"
+            className="w-full h-12 rounded-lg font-medium border-border hover:bg-muted/50 transition-all active:scale-[0.98]"
             onClick={async () => {
               await lovable.auth.signInWithOAuth("google", {
                 redirect_uri: window.location.origin,
@@ -190,7 +234,7 @@ const Register = () => {
 
           <p className="text-center text-sm text-muted-foreground">
             Déjà un compte ?{" "}
-            <Link to="/login" className="text-primary font-medium hover:underline">
+            <Link to="/login" className="font-semibold text-foreground hover:text-primary transition-colors">
               Se connecter
             </Link>
           </p>
