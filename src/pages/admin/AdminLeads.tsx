@@ -205,6 +205,7 @@ const AdminLeads = () => {
           {isLoading ? (
             <div className="py-12 text-center text-muted-foreground">Chargement...</div>
           ) : (
+            <>
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-border/50 bg-secondary/30">
@@ -264,6 +265,7 @@ const AdminLeads = () => {
               </tbody>
             </table>
             <TablePagination page={page} totalPages={totalPages} total={total} from={from} to={to} setPage={setPage} />
+            </>
           )}
           {!isLoading && filtered.length === 0 && (
             <div className="py-8 text-center text-xs text-muted-foreground">Aucun résultat trouvé</div>
