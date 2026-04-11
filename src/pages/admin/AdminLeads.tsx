@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { useLeads, useUpdateLead, type Lead } from "@/hooks/useLeads";
 import { useMissions, useDeleteMission } from "@/hooks/useMissions";
 import { useUpdateCandidate } from "@/hooks/useCandidates";
-import { useProfiles, type Profile } from "@/hooks/useProfiles";
+import { useProfiles } from "@/hooks/useProfiles";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useQueryClient } from "@tanstack/react-query";
