@@ -61,74 +61,44 @@ const sendMarginEmail = async (lead: Lead, marginStatus: string, adminMargin: nu
 
 interface MarginCellProps {
   lead: Lead;
-  profiles: Profile[];
   updateLead: ReturnType<typeof useUpdateLead>;
 }
 
-const MarginCell = ({ lead, profiles, updateLead }: MarginCellProps) => {
-  const [adaptValue, setAdaptValue] = useState("");
-  const [showAdapt, setShowAdapt] = useState(false);
-  const status = (lead as any).margin_status || "pending";
+const MarginCell = ({ lead, updateLead }: MarginCellProps) => {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(String(lead.margin || 5));
 
-  const handleMarginAction = (action: "accepted" | "refused" | "adapted", adminMargin?: number) => {
-    const updates: any = { id: lead.id, margin_status: action };
-    if (action === "adapted" && adminMargin !== undefined) {
-      updates.admin_margin = adminMargin;
-    }
-    updateLead.mutate(updates, {
+  const handleSave = () => {
+    const num = parseFloat(value) || 5;
+    updateLead.mutate({ id: lead.id, margin: num }, {
       onSuccess: () => {
-        toast.success(`Marge ${action === "accepted" ? "acceptée" : action === "refused" ? "refusée" : "ajustée"}`);
-        sendMarginEmail(lead, action, adminMargin || lead.margin, profiles);
-        setShowAdapt(false);
+        toast.success("Marge mise à jour");
+        setEditing(false);
       },
     });
   };
 
-  if (status !== "pending") {
+  if (editing) {
     return (
-      <div className="text-xs">
-        <Badge variant="outline" className={`${marginStatusColor[status] || ""}`}>
-          {marginStatusLabel(status)}
-        </Badge>
-        <div className="mt-0.5 text-muted-foreground">
-          {lead.margin}€/j{status === "adapted" ? ` → ${(lead as any).admin_margin}€/j` : ""}
-        </div>
+      <div className="flex items-center gap-1">
+        <Input
+          type="number"
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          className="h-7 w-16 text-xs"
+          onKeyDown={e => e.key === "Enter" && handleSave()}
+        />
+        <span className="text-xs text-muted-foreground">%</span>
+        <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={handleSave}><Check className="h-3 w-3" /></Button>
+        <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditing(false)}><X className="h-3 w-3" /></Button>
       </div>
     );
   }
 
   return (
-    <div className="text-xs space-y-1">
-      <div className="font-medium">{lead.margin}€/jour</div>
-      {showAdapt ? (
-        <div className="flex items-center gap-1">
-          <Input
-            type="number"
-            placeholder="Nouvelle marge"
-            value={adaptValue}
-            onChange={e => setAdaptValue(e.target.value)}
-            className="h-7 w-20 text-xs"
-          />
-          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => {
-            const val = parseFloat(adaptValue);
-            if (val > 0) handleMarginAction("adapted", val);
-          }}><Check className="h-3 w-3" /></Button>
-          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setShowAdapt(false)}><X className="h-3 w-3" /></Button>
-        </div>
-      ) : (
-        <div className="flex gap-0.5">
-          <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-success hover:text-success" onClick={() => handleMarginAction("accepted")} title="Accepter">
-            <Check className="h-3.5 w-3.5" />
-          </Button>
-          <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-destructive hover:text-destructive" onClick={() => handleMarginAction("refused")} title="Refuser">
-            <X className="h-3.5 w-3.5" />
-          </Button>
-          <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-primary hover:text-primary" onClick={() => setShowAdapt(true)} title="Adapter">
-            <RefreshCw className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-      )}
-    </div>
+    <button onClick={() => setEditing(true)} className="text-xs font-medium hover:text-primary transition-colors cursor-pointer">
+      {lead.margin || 5}%
+    </button>
   );
 };
 
