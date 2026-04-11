@@ -333,44 +333,108 @@ const DeclareLead = () => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="text-center space-y-8 py-8"
+            className="space-y-8 py-8"
           >
-            <motion.div
-              className="relative mx-auto w-32 h-32"
-              initial={{ rotate: -10 }}
-              animate={{ rotate: 0 }}
-              transition={{ type: "spring", stiffness: 200 }}
-            >
+            {/* Success banner */}
+            <div className="text-center space-y-4">
               <motion.div
-                className="absolute inset-0 rounded-full gradient-primary opacity-20"
-                animate={{ scale: [1, 1.4, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="flex h-24 w-24 items-center justify-center rounded-full gradient-primary glow-primary">
-                  <Rocket className="h-12 w-12 text-primary-foreground" />
+                className="relative mx-auto w-32 h-32"
+                initial={{ rotate: -10 }}
+                animate={{ rotate: 0 }}
+                transition={{ type: "spring", stiffness: 200 }}
+              >
+                <motion.div
+                  className="absolute inset-0 rounded-full gradient-primary opacity-20"
+                  animate={{ scale: [1, 1.4, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="flex h-24 w-24 items-center justify-center rounded-full gradient-primary glow-primary">
+                    <Rocket className="h-12 w-12 text-primary-foreground" />
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                <h1 className="font-display text-3xl font-bold">
+                  <span className="text-gradient">Félicitations</span> 🎉
+                </h1>
+                <p className="text-lg text-muted-foreground mt-2 max-w-md mx-auto">
+                  Votre besoin a été déclaré et votre contrat d'apport d'affaires signé avec succès.
+                </p>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 text-green-600 text-sm font-medium mt-3">
+                  <Check className="h-4 w-4" />
+                  Contrat signé avec succès
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Signed contract preview */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="gradient-card rounded-2xl border border-border/50 p-8"
+            >
+              <h2 className="font-display text-lg font-semibold mb-4 flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" />
+                Aperçu du contrat signé
+              </h2>
+              <div className="max-h-[500px] overflow-y-auto pr-4">
+                <ContractContent
+                  apporteurName={apporteurName}
+                  donneurOrdre="Lynx"
+                  signatureData={signatureData}
+                  signedAt={signedAt || undefined}
+                  showSignature
+                />
+              </div>
+            </motion.div>
+
+            {/* Recap */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="gradient-card rounded-2xl border border-border/50 p-6"
+            >
+              <h3 className="font-semibold mb-4">Récapitulatif</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Apporteur d'affaires</p>
+                  <p className="font-medium">{apporteurName}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Donneur d'ordre</p>
+                  <p className="font-medium">Lynx</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Date et heure de signature</p>
+                  <p className="font-medium">
+                    {signedAt
+                      ? `Le ${signedAt.toLocaleDateString("fr-FR")} à ${signedAt.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`
+                      : "—"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Signature</p>
+                  <div className="mt-1">
+                    {signatureData ? (
+                      <img src={signatureData} alt="Signature" className="max-h-12 object-contain" />
+                    ) : (
+                      <p>—</p>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <h1 className="font-display text-3xl font-bold">
-                <span className="text-gradient">Félicitations</span> 🎉
-              </h1>
-              <p className="text-lg text-muted-foreground mt-2 max-w-md mx-auto">
-                Votre besoin a été déclaré et votre contrat d'apport d'affaires signé avec succès.
-              </p>
-            </motion.div>
-
+            {/* Stats */}
             <motion.div
               className="grid grid-cols-3 gap-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
+              transition={{ delay: 0.6 }}
             >
               {[
                 { label: "Commission", value: "À définir", icon: DollarSign },
@@ -382,7 +446,7 @@ const DeclareLead = () => {
                   className="gradient-card rounded-xl border border-border/50 p-4 text-center"
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 + i * 0.1 }}
+                  transition={{ delay: 0.7 + i * 0.1 }}
                 >
                   <stat.icon className="h-5 w-5 mx-auto mb-2 text-primary" />
                   <p className="text-lg font-bold text-foreground">{stat.value}</p>
@@ -395,7 +459,7 @@ const DeclareLead = () => {
               className="flex justify-center gap-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
+              transition={{ delay: 0.9 }}
             >
               {contractUrl && (
                 <Button variant="outline" onClick={() => window.open(contractUrl, "_blank")}>
