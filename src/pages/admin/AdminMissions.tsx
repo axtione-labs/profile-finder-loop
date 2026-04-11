@@ -278,35 +278,33 @@ const AdminMissions = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {missions.map((m) => (
-                      <tr key={m.id} className="border-b border-border/30 hover:bg-secondary/20 transition-colors">
-                        <td className="px-4 py-3 font-medium">{m.consultant_name}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{m.client}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{getApporteurName(m.apporteur_id)}</td>
-                        <td className="px-4 py-3 font-medium">{m.tjm}€</td>
-                        <td className="px-4 py-3 font-medium">{m.tjm_client}€</td>
-                        <td className="px-4 py-3">
-                          <Select value={m.status} onValueChange={(v) => handleUpdateMissionStatus(m.id, v)}>
-                            <SelectTrigger className={`h-7 w-[170px] border text-xs font-medium ${missionStatusColor[m.status] || "bg-secondary"}`}>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {missionStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-1">
-                            <Button variant="ghost" size="sm" onClick={() => openEdit(m)}>
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(m.id)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                    {missions.map((m) => {
+                      const statusBadgeColor = missionStatusColor[m.status] || "bg-secondary text-muted-foreground";
+                      return (
+                        <tr key={m.id} className="border-b border-border/30 hover:bg-secondary/20 transition-colors">
+                          <td className="px-4 py-3 font-medium">{m.consultant_name}</td>
+                          <td className="px-4 py-3 text-muted-foreground">{m.client}</td>
+                          <td className="px-4 py-3 text-muted-foreground">{getApporteurName(m.apporteur_id)}</td>
+                          <td className="px-4 py-3 font-medium">{m.tjm}€</td>
+                          <td className="px-4 py-3 font-medium">{m.tjm_client}€</td>
+                          <td className="px-4 py-3">
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadgeColor}`}>
+                              {m.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-1">
+                              <Button variant="ghost" size="sm" onClick={() => openEdit(m)}>
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(m.id)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               )}
@@ -344,15 +342,6 @@ const AdminMissions = () => {
               <div>
                 <Label>Durée</Label>
                 <Input value={editMission.duration} onChange={e => setEditMission((m: any) => ({ ...m, duration: e.target.value }))} />
-              </div>
-              <div>
-                <Label>Statut</Label>
-                <Select value={editMission.status} onValueChange={v => setEditMission((m: any) => ({ ...m, status: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {missionStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setEditOpen(false)}>Annuler</Button>

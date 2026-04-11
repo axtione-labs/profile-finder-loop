@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Send, FileSearch, Handshake, Coins, Clock, TrendingUp, Plus, CheckCircle2, LogOut, Settings, Trash2 } from "lucide-react";
+import { Send, FileSearch, Handshake, Coins, Clock, TrendingUp, Plus, CheckCircle2, LogOut, Settings, Trash2, XCircle, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLeads, useDeleteLead } from "@/hooks/useLeads";
@@ -10,13 +10,15 @@ import { useCandidates } from "@/hooks/useCandidates";
 import { toast } from "sonner";
 
 const workflowSteps = [
-  "Déclaré", "Qualifié", "En sourcing", "Profil trouvé", "Envoyé client", "Gagné"
+  "Déclaré", "Qualifié", "En sourcing", "Profil trouvé", "Envoyé client"
 ];
 
 const statusToStep: Record<string, number> = {
   "Déclaré": 0, "À qualifier": 0, "Qualifié": 1, "En sourcing": 2,
-  "Profil trouvé": 3, "Envoyé client": 4, "Gagné": 5, "Perdu": 6,
+  "Profil trouvé": 3, "Envoyé client": 4, "Gagné": 5, "Perdu": -1,
 };
+
+const stepIcons = [Send, FileSearch, Handshake, CheckCircle2, Send];
 
 const priorityBadge = (p: string) => {
   if (p === "urgent") return <Badge className="bg-destructive/20 text-destructive border-0 text-xs">Urgent</Badge>;
@@ -157,30 +159,81 @@ const Dashboard = () => {
                       </Button>
                     </div>
 
-                    {/* Timeline */}
-                    <div className="mt-4 flex items-center gap-1">
-                      {workflowSteps.map((s, i) => (
-                        <div key={s} className="flex flex-1 items-center">
-                          <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-all ${
-                            i < currentStep
-                              ? "gradient-primary text-primary-foreground"
-                              : i === currentStep
-                              ? "border-2 border-primary bg-primary/20 text-primary"
-                              : "bg-secondary text-muted-foreground"
-                          }`}>
-                            {i < currentStep ? <CheckCircle2 className="h-3.5 w-3.5" /> : i + 1}
-                          </div>
-                          {i < workflowSteps.length - 1 && (
-                            <div className={`mx-1 h-0.5 flex-1 rounded ${i < currentStep ? "bg-primary" : "bg-border"}`} />
-                          )}
+                    {/* Workflow Timeline */}
+                    {lead.status === "Perdu" ? (
+                      <div className="mt-4 flex items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-destructive/15">
+                          <XCircle className="h-5 w-5 text-destructive" />
                         </div>
-                      ))}
-                    </div>
-                    <div className="mt-2 flex justify-between text-[10px] text-muted-foreground">
-                      {workflowSteps.map(s => (
-                        <span key={s} className="flex-1 text-center">{s}</span>
-                      ))}
-                    </div>
+                        <div>
+                          <p className="text-sm font-semibold text-destructive">Besoin perdu</p>
+                          <p className="text-xs text-muted-foreground">Ce besoin n'a pas abouti</p>
+                        </div>
+                      </div>
+                    ) : lead.status === "Gagné" ? (
+                      <div className="mt-4 flex items-center gap-3 rounded-lg border border-success/30 bg-success/5 p-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-success/15">
+                          <Trophy className="h-5 w-5 text-success" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-success">Mission gagnée 🎉</p>
+                          <p className="text-xs text-muted-foreground">Félicitations ! Le besoin a abouti en mission</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-4">
+                        <div className="relative flex items-center">
+                          {workflowSteps.map((s, i) => {
+                            const isCompleted = i < currentStep;
+                            const isCurrent = i === currentStep;
+                            return (
+                              <div key={s} className="flex flex-1 items-center">
+                                <motion.div
+                                  className={`relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ${
+                                    isCompleted
+                                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
+                                      : isCurrent
+                                      ? "border-2 border-primary bg-primary/10 text-primary ring-4 ring-primary/10"
+                                      : "border border-border bg-muted/50 text-muted-foreground"
+                                  }`}
+                                  initial={false}
+                                  animate={isCurrent ? { scale: [1, 1.08, 1] } : {}}
+                                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                                >
+                                  {isCompleted ? <CheckCircle2 className="h-4 w-4" /> : i + 1}
+                                </motion.div>
+                                {i < workflowSteps.length - 1 && (
+                                  <div className="relative mx-1 h-1 flex-1 overflow-hidden rounded-full bg-border/50">
+                                    <motion.div
+                                      className="absolute inset-y-0 left-0 rounded-full bg-primary"
+                                      initial={{ width: "0%" }}
+                                      animate={{ width: isCompleted ? "100%" : "0%" }}
+                                      transition={{ duration: 0.5, delay: i * 0.1 }}
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="mt-2 flex justify-between">
+                          {workflowSteps.map((s, i) => {
+                            const isCompleted = i < currentStep;
+                            const isCurrent = i === currentStep;
+                            return (
+                              <span
+                                key={s}
+                                className={`flex-1 text-center text-[10px] font-medium transition-colors ${
+                                  isCompleted ? "text-primary" : isCurrent ? "text-foreground" : "text-muted-foreground/60"
+                                }`}
+                              >
+                                {s}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}
