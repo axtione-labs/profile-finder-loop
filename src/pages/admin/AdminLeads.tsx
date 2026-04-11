@@ -18,48 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useQueryClient } from "@tanstack/react-query";
 
-const marginStatusLabel = (status: string) => {
-  switch (status) {
-    case "accepted": return "✅ Acceptée";
-    case "refused": return "❌ Refusée";
-    case "adapted": return "🔄 Ajustée";
-    default: return "⏳ En attente";
-  }
-};
 
-const marginStatusColor: Record<string, string> = {
-  pending: "bg-warning/15 text-warning border-warning/30",
-  accepted: "bg-success/15 text-success border-success/30",
-  refused: "bg-destructive/15 text-destructive border-destructive/30",
-  adapted: "bg-primary/15 text-primary border-primary/30",
-};
-
-const sendMarginEmail = async (lead: Lead, marginStatus: string, adminMargin: number, profiles: Profile[]) => {
-  const profile = profiles.find(p => p.user_id === lead.user_id);
-  if (!profile) return;
-  try {
-    await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-margin-email`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-      },
-      body: JSON.stringify({
-        userId: lead.user_id,
-        firstName: profile.first_name,
-        position: lead.position,
-        client: lead.client,
-        marginStatus,
-        requestedMargin: lead.margin,
-        adminMargin,
-      }),
-    });
-  } catch (e) {
-    console.error("Failed to send margin email:", e);
-  }
-};
-
-interface MarginCellProps {
   lead: Lead;
   updateLead: ReturnType<typeof useUpdateLead>;
 }
