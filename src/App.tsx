@@ -22,6 +22,9 @@ import AdminClients from "./pages/admin/AdminClients";
 import AdminApporteurs from "./pages/admin/AdminApporteurs";
 import SignContract from "./pages/SignContract";
 import NotFound from "./pages/NotFound";
+import MesClients from "./pages/apporteur/MesClients";
+import MesContrats from "./pages/apporteur/MesContrats";
+import MesCommissions from "./pages/apporteur/MesCommissions";
 
 const queryClient = new QueryClient();
 
