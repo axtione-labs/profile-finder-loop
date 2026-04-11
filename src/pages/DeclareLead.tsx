@@ -815,7 +815,7 @@ const DeclareLead = () => {
               {step === 4 && (
                 <Button
                   onClick={handleSign}
-                  disabled={!signatureData || createContract.isPending}
+                  disabled={createContract.isPending}
                   className="gradient-primary glow-primary border-0 text-base px-8"
                 >
                   <FileSignature className="mr-2 h-5 w-5" />
