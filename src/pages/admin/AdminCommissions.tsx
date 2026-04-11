@@ -173,24 +173,33 @@ const AdminCommissions = () => {
         </div>
 
         {/* Summary cards */}
-        <motion.div className="grid gap-4 sm:grid-cols-3" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="gradient-card rounded-xl border border-border/50 p-5">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <TrendingUp className="h-4 w-4" /> Marge admin ({filterYear})
+        <motion.div className="grid gap-4 sm:grid-cols-4" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="rounded-xl p-5 text-white" style={{ background: "linear-gradient(135deg, #1a73e8 0%, #34a4f0 50%, #4fc3f7 100%)" }}>
+            <div className="flex items-center gap-2 text-sm text-white/80">
+              <Coins className="h-4 w-4" /> Total {filterYear}
             </div>
-            <div className="mt-2 font-display text-xl font-bold text-gradient">{totalAdmin.toLocaleString("fr-FR")} €</div>
+            <div className="mt-2 font-display text-2xl font-bold">{(totalPaid + totalPending).toLocaleString("fr-FR")} €</div>
           </div>
-          <div className="gradient-card rounded-xl border border-border/50 p-5">
+          <div className="rounded-xl border border-border/50 bg-card p-5">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Coins className="h-4 w-4" /> Commissions en attente
-            </div>
-            <div className="mt-2 font-display text-2xl font-bold text-warning">{totalPending.toLocaleString("fr-FR")} €</div>
-          </div>
-          <div className="gradient-card rounded-xl border border-border/50 p-5">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar className="h-4 w-4" /> Payées ({filterYear})
+              <Calendar className="h-4 w-4" /> Payées
             </div>
             <div className="mt-2 font-display text-2xl font-bold text-success">{totalPaid.toLocaleString("fr-FR")} €</div>
+            <p className="mt-1 text-[10px] text-muted-foreground">{yearCommissions.filter(c => c.status === "Payée").length} commissions</p>
+          </div>
+          <div className="rounded-xl border border-border/50 bg-card p-5">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Coins className="h-4 w-4" /> En attente
+            </div>
+            <div className="mt-2 font-display text-2xl font-bold text-warning">{totalPending.toLocaleString("fr-FR")} €</div>
+            <p className="mt-1 text-[10px] text-muted-foreground">{yearCommissions.filter(c => c.status !== "Payée").length} commissions</p>
+          </div>
+          <div className="rounded-xl border border-border/50 bg-card p-5">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <TrendingUp className="h-4 w-4" /> Apporteurs
+            </div>
+            <div className="mt-2 font-display text-2xl font-bold text-primary">{new Set(yearCommissions.map(c => c.apporteur_id)).size}</div>
+            <p className="mt-1 text-[10px] text-muted-foreground">{profiles.filter(p => !p.blocked).length} qualifiés</p>
           </div>
         </motion.div>
 
