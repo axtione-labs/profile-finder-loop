@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { usePagination } from "@/hooks/usePagination";
 import { TablePagination } from "@/components/admin/TablePagination";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
@@ -28,6 +29,7 @@ const AdminApporteurs = () => {
   const { data: allDocuments = [] } = useAllDocuments();
   const validateDocument = useValidateDocument();
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search);
   const [selectedProfile, setSelectedProfile] = useState<any>(null);
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({ first_name: "", last_name: "", phone: "", company: "", admin_comment: "" });
@@ -44,7 +46,7 @@ const AdminApporteurs = () => {
   const currentList = tab === "active" ? activeProfiles : trashedProfiles;
 
   const filtered = currentList.filter(p => {
-    const term = search.toLowerCase();
+    const term = debouncedSearch.toLowerCase();
     return (
       p.first_name.toLowerCase().includes(term) ||
       p.last_name.toLowerCase().includes(term) ||

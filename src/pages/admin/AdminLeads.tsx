@@ -2,6 +2,7 @@ import { useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { usePagination } from "@/hooks/usePagination";
 import { TablePagination } from "@/components/admin/TablePagination";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,6 +87,7 @@ const AdminLeads = () => {
   const updateCandidate = useUpdateCandidate();
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -130,7 +132,7 @@ const AdminLeads = () => {
 
   const filtered = leads.filter(l => {
     const apporteurName = getApporteurName(l.user_id).toLowerCase();
-    const matchSearch = l.position.toLowerCase().includes(search.toLowerCase()) || l.client.toLowerCase().includes(search.toLowerCase()) || apporteurName.includes(search.toLowerCase());
+    const matchSearch = l.position.toLowerCase().includes(debouncedSearch.toLowerCase()) || l.client.toLowerCase().includes(debouncedSearch.toLowerCase()) || apporteurName.includes(debouncedSearch.toLowerCase());
     const matchStatus = statusFilter === "all" || l.status === statusFilter;
     const matchPriority = priorityFilter === "all" || l.priority === priorityFilter;
     return matchSearch && matchStatus && matchPriority;

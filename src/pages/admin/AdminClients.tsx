@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { usePagination } from "@/hooks/usePagination";
 import { TablePagination } from "@/components/admin/TablePagination";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,7 @@ const AdminClients = () => {
   const { data: leads = [], isLoading } = useLeads();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search);
   const [sectorFilter, setSectorFilter] = useState("all");
   const [editClient, setEditClient] = useState<ClientInfo | null>(null);
   const [editForm, setEditForm] = useState({ name: "", sector: "", contact_name: "", contact_phone: "", contact_email: "" });
@@ -70,9 +72,9 @@ const AdminClients = () => {
   }, [clients]);
 
   const filtered = clients.filter(c => {
-    const matchSearch = c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.contact_name.toLowerCase().includes(search.toLowerCase()) ||
-      c.contact_email.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = c.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      c.contact_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      c.contact_email.toLowerCase().includes(debouncedSearch.toLowerCase());
     const matchSector = sectorFilter === "all" || c.sector === sectorFilter;
     return matchSearch && matchSector;
   });

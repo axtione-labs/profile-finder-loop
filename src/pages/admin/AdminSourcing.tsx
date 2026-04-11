@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { usePagination } from "@/hooks/usePagination";
 import { TablePagination } from "@/components/admin/TablePagination";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +32,7 @@ const AdminSourcing = () => {
   const updateCandidate = useUpdateCandidate();
   const deleteCandidate = useDeleteCandidate();
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search);
   const [addOpen, setAddOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editCandidate, setEditCandidate] = useState<any>(null);
@@ -48,9 +50,9 @@ const AdminSourcing = () => {
 
   const filtered = candidates.filter(c => {
     const fullName = `${c.first_name} ${c.last_name}`.toLowerCase();
-    return fullName.includes(search.toLowerCase()) ||
-      c.position?.toLowerCase().includes(search.toLowerCase()) ||
-      c.stack.some(s => s.toLowerCase().includes(search.toLowerCase()));
+    return fullName.includes(debouncedSearch.toLowerCase()) ||
+      c.position?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      c.stack.some(s => s.toLowerCase().includes(debouncedSearch.toLowerCase()));
   });
 
   const handleUpdateStatus = (id: string, status: string) => {
