@@ -127,7 +127,9 @@ const DeclareLead = () => {
           e.contact_name = "Le nom du responsable ne doit pas dépasser 100 caractères";
         }
 
-        if (form.contact_phone.trim() && !phoneRegex.test(form.contact_phone.trim())) {
+        if (!form.contact_phone.trim()) {
+          e.contact_phone = "Le téléphone est obligatoire";
+        } else if (!phoneRegex.test(form.contact_phone.trim())) {
           e.contact_phone = "Format de téléphone invalide";
         }
 
@@ -485,7 +487,7 @@ const DeclareLead = () => {
                             <FieldError error={errors.contact_name} />
                           </div>
                           <div data-field-error={hasFieldError("contact_phone") || undefined}>
-                            <Label>Téléphone <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
+                            <Label>Téléphone <span className="text-destructive">*</span></Label>
                             <Input
                               placeholder="06 12 34 56 78"
                               value={form.contact_phone}
