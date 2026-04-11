@@ -343,15 +343,6 @@ const AdminMissions = () => {
                 <Label>Durée</Label>
                 <Input value={editMission.duration} onChange={e => setEditMission((m: any) => ({ ...m, duration: e.target.value }))} />
               </div>
-              <div>
-                <Label>Statut</Label>
-                <Select value={editMission.status} onValueChange={v => setEditMission((m: any) => ({ ...m, status: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {missionStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setEditOpen(false)}>Annuler</Button>
                 <Button onClick={handleSaveEdit}>Enregistrer</Button>
