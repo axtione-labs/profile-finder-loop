@@ -58,7 +58,7 @@ const AdminOverview = () => {
           animate={{ opacity: 1, y: 0 }}
         >
           {cards.map((card) => (
-            <div key={card.label} className="gradient-card rounded-xl border border-border/50 p-5">
+            <div key={card.label} className="rounded-xl border border-border/50 bg-card p-5">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">{card.label}</span>
                 <card.icon className="h-4 w-4 text-muted-foreground" />
