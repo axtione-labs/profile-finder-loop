@@ -127,7 +127,7 @@ const Index = () => {
             <div className="w-8 h-8 sm:w-10 sm:h-10 gradient-primary rounded-xl flex items-center justify-center">
               <ZapLogo className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <span className="font-display text-lg sm:text-xl font-bold text-gradient">DealFlowNetwork</span>
+            <span className="font-display text-lg sm:text-xl font-bold text-gradient-gold">DealFlowNetwork</span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-4">
             <a href="#blog" className="hidden sm:inline-block text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</a>
@@ -159,8 +159,8 @@ const Index = () => {
 
       {/* Hero */}
       <section className="gradient-hero relative overflow-hidden pt-32 pb-20">
-        <div className="absolute inset-0 opacity-30" style={{
-          backgroundImage: "radial-gradient(circle at 30% 50%, hsl(221 83% 53% / 0.12), transparent 50%), radial-gradient(circle at 70% 30%, hsl(250 80% 60% / 0.08), transparent 50%)"
+        <div className="absolute inset-0 opacity-50" style={{
+          backgroundImage: "radial-gradient(circle at 30% 50%, hsl(221 83% 53% / 0.15), transparent 50%), radial-gradient(circle at 70% 30%, hsl(250 80% 60% / 0.1), transparent 50%)"
         }} />
         <div className="container relative mx-auto px-6 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
@@ -608,7 +608,7 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 py-8">
+      <footer className="border-t border-border/50 py-8 bg-background">
         <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
           © 2026 DealFlowNetwork. Tous droits réservés.
         </div>
