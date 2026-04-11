@@ -64,42 +64,8 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <nav className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="container mx-auto flex h-16 items-center justify-between px-6">
-          <Link to="/" className="flex items-center gap-2">
-            <img src="/lynx-logo.png" alt="Lynx" className="w-8 h-8" />
-            <span className="font-display text-xl font-bold text-gradient-gold">Lynx</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            {isAdmin && (
-              <Link to="/admin">
-                <Button size="sm" variant="outline">
-                  <Settings className="mr-1.5 h-4 w-4" /> Admin
-                </Button>
-              </Link>
-            )}
-            <Link to="/declare">
-              <Button size="sm" className="gradient-primary border-0">
-                <Plus className="mr-1.5 h-4 w-4" /> Nouveau besoin
-              </Button>
-            </Link>
-            <Link to="/settings">
-              <Button size="sm" variant="ghost">
-                <Settings className="h-4 w-4" />
-              </Button>
-            </Link>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-sm font-semibold text-primary">
-              {initials}
-            </div>
-            <Button size="sm" variant="ghost" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </nav>
-
-      <div className="container mx-auto px-6 py-8">
+    <ApporteurLayout title="Dashboard">
+      <div>
         <h1 className="mb-6 font-display text-2xl font-bold">
           Bonjour {profile?.first_name || ""}
         </h1>
