@@ -286,7 +286,7 @@ const AdminSourcing = () => {
               <tbody>
                 {filtered.map((candidate, idx) => (
                   <tr key={candidate.id} className={`h-11 border-b border-gray-100 hover:bg-blue-50/40 transition-colors duration-100 ${idx % 2 === 1 ? "bg-gray-50/30" : "bg-white"}`}>
-                    <td className="px-3 py-2.5 max-w-0 truncate font-medium text-gray-900">{candidate.first_name} {candidate.last_name}</td>
+                    <td className="px-3 py-2.5 whitespace-nowrap font-medium text-gray-900">{candidate.first_name} {candidate.last_name}</td>
                     <td className="px-3 py-2.5 max-w-0 truncate text-gray-600">{candidate.position || "—"}</td>
                     <td className="px-3 py-2.5 text-gray-600">{candidate.experience || "—"}</td>
                     <td className="px-3 py-2.5 w-[100px] text-right tabular-nums font-medium text-gray-900">{candidate.tjm}€/j</td>
