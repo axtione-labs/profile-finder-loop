@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Check, Download, FileSignature, ScrollText } from "lucide-react";
+import { ArrowLeft, Check, Download, FileSignature, ScrollText, ShieldCheck, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,21 +13,35 @@ const SignContract = () => {
   const [searchParams] = useSearchParams();
   const leadId = searchParams.get("lead_id");
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const createContract = useCreateContract();
 
   const [signatureData, setSignatureData] = useState("");
   const [signatureType, setSignatureType] = useState<"draw" | "text">("draw");
   const [signed, setSigned] = useState(false);
+  const [signedAt, setSignedAt] = useState<Date | null>(null);
   const [contractUrl, setContractUrl] = useState<string | null>(null);
+  const [signatureError, setSignatureError] = useState("");
+
+  const apporteurName = profile
+    ? `${profile.first_name} ${profile.last_name}`.trim() || "[Apporteur d'affaires — à compléter]"
+    : "[Apporteur d'affaires — à compléter]";
 
   const handleSignatureChange = (data: string, type: "draw" | "text") => {
     setSignatureData(data);
     setSignatureType(type);
+    if (data) setSignatureError("");
   };
 
   const handleSign = async () => {
-    if (!signatureData || !leadId) return;
+    if (!signatureData) {
+      setSignatureError("La signature est obligatoire avant de valider le contrat");
+      return;
+    }
+    if (!leadId) return;
+
+    const now = new Date();
+    setSignedAt(now);
 
     const result = await createContract.mutateAsync({
       leadId,
@@ -93,7 +107,10 @@ const SignContract = () => {
 
             <div className="gradient-card rounded-2xl border border-border/50 p-8">
               <div className="max-h-[500px] overflow-y-auto pr-4">
-                <ContractContent />
+                <ContractContent
+                  apporteurName={apporteurName}
+                  donneurOrdre="Lynx"
+                />
               </div>
             </div>
 
@@ -103,6 +120,12 @@ const SignContract = () => {
                 <h2 className="font-display text-lg font-semibold">Votre signature</h2>
               </div>
               <SignaturePad onSignatureChange={handleSignatureChange} />
+              {signatureError && (
+                <div className="flex items-center gap-2 mt-3 text-destructive text-sm">
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  <span>{signatureError}</span>
+                </div>
+              )}
             </div>
 
             <div className="flex justify-between">
@@ -111,7 +134,7 @@ const SignContract = () => {
               </Button>
               <Button
                 onClick={handleSign}
-                disabled={!signatureData || createContract.isPending}
+                disabled={createContract.isPending}
                 className="gradient-primary glow-primary border-0"
               >
                 <Check className="mr-2 h-4 w-4" />
@@ -123,18 +146,77 @@ const SignContract = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="text-center space-y-6"
+            className="space-y-8"
           >
-            <div className="flex justify-center">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-success/10">
-                <Check className="h-10 w-10 text-success" />
+            {/* Success banner */}
+            <div className="text-center space-y-4">
+              <div className="flex justify-center">
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-success/10">
+                  <ShieldCheck className="h-10 w-10 text-success" />
+                </div>
+              </div>
+              <h1 className="font-display text-3xl font-bold">Contrat signé avec succès !</h1>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-success/10 text-success text-sm font-medium">
+                <Check className="h-4 w-4" />
+                Contrat signé avec succès
               </div>
             </div>
-            <h1 className="font-display text-3xl font-bold">Contrat signé avec succès !</h1>
-            <p className="text-muted-foreground max-w-md mx-auto">
+
+            {/* Signed contract preview */}
+            <div className="gradient-card rounded-2xl border border-border/50 p-8">
+              <h2 className="font-display text-lg font-semibold mb-4 flex items-center gap-2">
+                <ScrollText className="h-5 w-5 text-primary" />
+                Aperçu du contrat signé
+              </h2>
+              <div className="max-h-[500px] overflow-y-auto pr-4">
+                <ContractContent
+                  apporteurName={apporteurName}
+                  donneurOrdre="Lynx"
+                  signatureData={signatureData}
+                  signedAt={signedAt || undefined}
+                  showSignature
+                />
+              </div>
+            </div>
+
+            {/* Contract details recap */}
+            <div className="gradient-card rounded-2xl border border-border/50 p-6">
+              <h3 className="font-semibold mb-4">Récapitulatif</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Apporteur d'affaires</p>
+                  <p className="font-medium">{apporteurName}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Donneur d'ordre</p>
+                  <p className="font-medium">Lynx</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Date et heure de signature</p>
+                  <p className="font-medium">
+                    {signedAt
+                      ? `Le ${signedAt.toLocaleDateString("fr-FR")} à ${signedAt.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`
+                      : "—"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Signature</p>
+                  <div className="mt-1">
+                    {signatureData ? (
+                      <img src={signatureData} alt="Signature" className="max-h-12 object-contain" />
+                    ) : (
+                      <p>—</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-muted-foreground text-center text-sm max-w-md mx-auto">
               Votre contrat d'apport d'affaires a été signé et enregistré. Vous pouvez le télécharger ci-dessous.
               Une copie vous sera également envoyée par email.
             </p>
+
             <div className="flex justify-center gap-4">
               {contractUrl && (
                 <Button onClick={handleDownload} variant="outline">
