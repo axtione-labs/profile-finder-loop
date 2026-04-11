@@ -206,7 +206,9 @@ const AdminMissions = () => {
                   <Label>Besoin associé</Label>
                   <Select value={newMission.lead_id} onValueChange={v => {
                     const lead = leads.find(l => l.id === v);
-                    setNewMission(p => ({ ...p, lead_id: v, tjm_client: lead ? String(lead.tjm) : "" }));
+                    const marginPercent = lead?.margin || 5;
+                    const commission = lead ? Math.round(lead.tjm * marginPercent / 100) : "";
+                    setNewMission(p => ({ ...p, lead_id: v, tjm_client: lead ? String(lead.tjm) : "", commission_apporteur: String(commission) }));
                   }}>
                     <SelectTrigger className="mt-1.5 bg-background/50"><SelectValue placeholder="Sélectionner un besoin" /></SelectTrigger>
                     <SelectContent>
