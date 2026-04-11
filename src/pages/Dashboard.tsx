@@ -10,12 +10,12 @@ import { useCandidates } from "@/hooks/useCandidates";
 import { toast } from "sonner";
 
 const workflowSteps = [
-  "Déclaré", "Qualifié", "En sourcing", "Profil trouvé", "Envoyé client", "Négociation", "Gagné"
+  "Déclaré", "Qualifié", "En sourcing", "Profil trouvé", "Envoyé client", "Gagné"
 ];
 
 const statusToStep: Record<string, number> = {
   "Déclaré": 0, "À qualifier": 0, "Qualifié": 1, "En sourcing": 2,
-  "Profil trouvé": 3, "Envoyé client": 4, "Négociation": 5, "Gagné": 6, "Perdu": 7,
+  "Profil trouvé": 3, "Envoyé client": 4, "Gagné": 5, "Perdu": 6,
 };
 
 const priorityBadge = (p: string) => {
