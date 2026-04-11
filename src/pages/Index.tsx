@@ -127,7 +127,7 @@ const Index = () => {
             <div className="w-8 h-8 sm:w-10 sm:h-10 gradient-primary rounded-xl flex items-center justify-center">
               <ZapLogo className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
-            <span className="font-display text-lg sm:text-xl font-bold text-gradient">DealFlowNetwork</span>
+            <span className="font-display text-lg sm:text-xl font-bold text-gradient-gold">DealFlowNetwork</span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-4">
             <a href="#blog" className="hidden sm:inline-block text-sm text-muted-foreground hover:text-foreground transition-colors">Blog</a>

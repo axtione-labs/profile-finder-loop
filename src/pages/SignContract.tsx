@@ -70,7 +70,7 @@ const SignContract = () => {
     <div className="min-h-screen bg-background text-foreground">
       <nav className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto flex h-16 items-center px-6">
-          <Link to="/" className="font-display text-xl font-bold text-gradient">DealFlowNetwork</Link>
+          <Link to="/" className="font-display text-xl font-bold text-gradient-gold">DealFlowNetwork</Link>
         </div>
       </nav>
 

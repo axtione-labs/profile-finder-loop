@@ -76,7 +76,7 @@ const Settings = () => {
     <div className="min-h-screen bg-background text-foreground">
       <nav className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto flex h-16 items-center justify-between px-6">
-          <Link to="/" className="font-display text-xl font-bold text-gradient">DealFlowNetwork</Link>
+          <Link to="/" className="font-display text-xl font-bold text-gradient-gold">DealFlowNetwork</Link>
           <div className="flex items-center gap-3">
             <Link to="/dashboard">
               <Button size="sm" variant="ghost" className="gap-1.5">
