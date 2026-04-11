@@ -149,45 +149,46 @@ const AdminClients = () => {
 
         <motion.div className="overflow-x-auto rounded-xl border border-border/50" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           {isLoading ? (
-            <div className="py-12 text-center text-muted-foreground">Chargement...</div>
+            <div className="py-8 text-center text-xs text-muted-foreground">Chargement...</div>
           ) : filtered.length === 0 ? (
-            <div className="py-12 text-center text-muted-foreground">Aucun client trouvé</div>
+            <div className="py-8 text-center text-xs text-muted-foreground">Aucun client trouvé</div>
           ) : (
-            <table className="w-full text-sm">
+            <>
+            <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-border/50 bg-secondary/30">
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Client</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Secteur</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Contact</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Téléphone</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Email</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Besoins</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Actions</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Client</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Secteur</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Contact</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Téléphone</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Email</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Besoins</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((client) => (
                   <tr key={client.name} className="border-b border-border/30 hover:bg-secondary/20 transition-colors">
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-2">
                       <div className="flex items-center gap-2">
-                        <Building2 className="h-4 w-4 text-muted-foreground" />
+                        <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
                         <span className="font-medium">{client.name}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">{client.sector || "—"}</td>
-                    <td className="px-4 py-3">{client.contact_name || "—"}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{client.contact_phone || "—"}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{client.contact_email || "—"}</td>
-                    <td className="px-4 py-3">
-                      <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary">{client.leadCount}</span>
+                    <td className="px-3 py-2 text-muted-foreground">{client.sector || "—"}</td>
+                    <td className="px-3 py-2">{client.contact_name || "—"}</td>
+                    <td className="px-3 py-2 text-muted-foreground">{client.contact_phone || "—"}</td>
+                    <td className="px-3 py-2 text-muted-foreground">{client.contact_email || "—"}</td>
+                    <td className="px-3 py-2">
+                      <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary">{client.leadCount}</span>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => openEdit(client)}>
-                          <Pencil className="h-4 w-4" />
+                    <td className="px-3 py-2">
+                      <div className="flex items-center gap-0.5">
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => openEdit(client)}>
+                          <Pencil className="h-3.5 w-3.5" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteClient(client)}>
-                          <Trash2 className="h-4 w-4" />
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive hover:text-destructive" onClick={() => setDeleteClient(client)}>
+                          <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
                     </td>
@@ -195,6 +196,7 @@ const AdminClients = () => {
                 ))}
               </tbody>
             </table>
+            </>
           )}
         </motion.div>
       </div>
