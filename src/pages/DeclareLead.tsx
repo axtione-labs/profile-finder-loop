@@ -362,7 +362,7 @@ const DeclareLead = () => {
                 <p className="text-lg text-muted-foreground mt-2 max-w-md mx-auto">
                   Votre besoin a été déclaré et votre contrat d'apport d'affaires signé avec succès.
                 </p>
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 text-green-600 text-sm font-medium mt-3">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mt-3">
                   <Check className="h-4 w-4" />
                   Contrat signé avec succès
                 </div>
