@@ -149,8 +149,8 @@ const AdminLeads = () => {
 
   const handleSaveEdit = () => {
     if (!editLead) return;
-    const { id, ...rest } = editLead;
-    updateLead.mutate({ id, ...rest }, {
+    const { id, user_id, created_at, updated_at, apporteur_name, ...editable } = editLead as any;
+    updateLead.mutate({ id, ...editable }, {
       onSuccess: () => {
         toast.success("Besoin mis à jour");
         setEditLead(null);
