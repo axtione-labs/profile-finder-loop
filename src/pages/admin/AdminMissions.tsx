@@ -88,12 +88,19 @@ const AdminMissions = () => {
     !c.status.startsWith("Placé chez") && c.status !== "Indisponible"
   );
 
-  // Pre-fill TJM client when lead is selected
+  // Pre-fill TJM client and commission when lead is selected
   useEffect(() => {
     if (newMission.lead_id) {
       const lead = leads.find(l => l.id === newMission.lead_id);
-      if (lead && !newMission.tjm_client) {
-        setNewMission(p => ({ ...p, tjm_client: String(lead.tjm) }));
+      if (lead) {
+        const tjm = lead.tjm;
+        const marginPercent = lead.margin || 5;
+        const commission = Math.round(tjm * marginPercent / 100);
+        setNewMission(p => ({
+          ...p,
+          tjm_client: p.tjm_client || String(tjm),
+          commission_apporteur: String(commission),
+        }));
       }
     }
   }, [newMission.lead_id]);
