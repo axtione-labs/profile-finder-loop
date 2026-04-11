@@ -124,9 +124,7 @@ const Index = () => {
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 gradient-primary rounded-xl flex items-center justify-center">
-              <ZapLogo className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-            </div>
+            <img src="/lynx-logo.png" alt="Lynx" className="w-8 h-8 sm:w-10 sm:h-10" />
             <span className="font-display text-lg sm:text-xl font-bold text-gradient-gold">Lynx</span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-4">
