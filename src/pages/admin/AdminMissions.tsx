@@ -188,8 +188,8 @@ const AdminMissions = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-2xl font-bold">Missions</h1>
-            <p className="text-sm text-muted-foreground">Suivi commercial et financier</p>
+            <h1 className="font-display text-lg font-bold">Missions</h1>
+            <p className="text-xs text-muted-foreground">Suivi commercial et financier</p>
           </div>
           <Dialog open={missionOpen} onOpenChange={setMissionOpen}>
             <DialogTrigger asChild>
@@ -274,7 +274,7 @@ const AdminMissions = () => {
               ) : missions.length === 0 ? (
                 <div className="py-12 text-center text-muted-foreground">Aucune mission pour le moment.</div>
               ) : (
-                <table className="w-full text-sm">
+                <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b border-border/50 bg-secondary/30">
                       <th className="px-4 py-3 text-left font-medium text-muted-foreground">Consultant</th>

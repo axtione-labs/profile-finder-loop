@@ -1,5 +1,7 @@
 import { useState, useRef } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
+import { usePagination } from "@/hooks/usePagination";
+import { TablePagination } from "@/components/admin/TablePagination";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -171,8 +173,8 @@ const AdminSourcing = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-2xl font-bold">Sourcing</h1>
-            <p className="text-sm text-muted-foreground">Gérer les candidats et profils</p>
+            <h1 className="font-display text-lg font-bold">Sourcing</h1>
+            <p className="text-xs text-muted-foreground">Gérer les candidats et profils</p>
           </div>
           <Dialog open={addOpen} onOpenChange={setAddOpen}>
             <DialogTrigger asChild>

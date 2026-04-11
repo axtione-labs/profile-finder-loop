@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { usePagination } from "@/hooks/usePagination";
+import { TablePagination } from "@/components/admin/TablePagination";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
@@ -193,10 +195,10 @@ const AdminApporteurs = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div>
-          <h1 className="font-display text-2xl font-bold">Apporteurs d'affaires</h1>
-          <p className="text-sm text-muted-foreground">Gérer les profils et suivre l'activité</p>
+          <h1 className="font-display text-lg font-bold">Apporteurs d'affaires</h1>
+          <p className="text-xs text-muted-foreground">Gérer les profils et suivre l'activité</p>
         </div>
 
         <Tabs value={tab} onValueChange={setTab}>
@@ -219,7 +221,7 @@ const AdminApporteurs = () => {
               {tab === "trash" ? "La corbeille est vide" : "Aucun apporteur trouvé"}
             </div>
           ) : (
-            <table className="w-full text-sm">
+            <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-border/50 bg-secondary/30">
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Nom</th>

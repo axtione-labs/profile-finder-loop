@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { usePagination } from "@/hooks/usePagination";
+import { TablePagination } from "@/components/admin/TablePagination";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
@@ -125,10 +127,10 @@ const AdminClients = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div>
-          <h1 className="font-display text-2xl font-bold">Clients</h1>
-          <p className="text-sm text-muted-foreground">Gérer les clients et leurs informations de contact</p>
+          <h1 className="font-display text-lg font-bold">Clients</h1>
+          <p className="text-xs text-muted-foreground">Gérer les clients et leurs informations · {filtered.length} client(s)</p>
         </div>
 
         <motion.div className="flex flex-wrap items-center gap-3" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>

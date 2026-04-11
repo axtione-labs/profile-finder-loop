@@ -46,10 +46,10 @@ const AdminOverview = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-8">
+      <div className="space-y-6">
         <div>
-          <h1 className="font-display text-2xl font-bold">Vue d'ensemble</h1>
-          <p className="text-sm text-muted-foreground">Tableau de bord administrateur</p>
+          <h1 className="font-display text-lg font-bold">Vue d'ensemble</h1>
+          <p className="text-xs text-muted-foreground">Tableau de bord administrateur</p>
         </div>
 
         <motion.div
@@ -63,7 +63,7 @@ const AdminOverview = () => {
                 <span className="text-sm text-muted-foreground">{card.label}</span>
                 <card.icon className="h-4 w-4 text-muted-foreground" />
               </div>
-              <div className="mt-2 font-display text-2xl font-bold">{card.value}</div>
+              <div className="mt-2 font-display text-xl font-bold">{card.value}</div>
               <p className="mt-1 text-xs text-muted-foreground">{card.change}</p>
             </div>
           ))}
@@ -83,7 +83,7 @@ const AdminOverview = () => {
             </div>
           ) : (
             <div className="overflow-x-auto rounded-xl border border-border/50">
-              <table className="w-full text-sm">
+              <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-border/50 bg-secondary/30">
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">Apporteur</th>
