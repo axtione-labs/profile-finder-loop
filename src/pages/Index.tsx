@@ -46,7 +46,7 @@ const itNeeds = [
 const blogArticles = [
   {
     title: "Qu'est-ce qu'un apporteur d'affaires IT ?",
-    summary: "Un apporteur d'affaires IT est un intermédiaire qui met en relation des entreprises ayant des besoins en recrutement IT avec des ESN ou des cabinets de recrutement. Il identifie les opportunités dans son réseau professionnel et les transmet à un partenaire capable de les traiter. En échange, il perçoit une commission sur chaque placement réussi.",
+    summary: "Un apporteur d'affaires IT est un intermédiaire qui met en relation des entreprises ayant des besoins en recrutement IT avec des ESN ou des cabinets de recrutement. Il identifie les opportunités dans son réseau professionnel et les transmet à un partenaire capable de les traiter. En échange, il perçoit des gains sur chaque placement réussi.",
     icon: BookOpen,
   },
   {
@@ -56,7 +56,7 @@ const blogArticles = [
   },
   {
     title: "Combien gagne un apporteur d'affaires IT ?",
-    summary: "La rémunération est proportionnelle au TJM du consultant placé. Avec une commission de 5 à 10% sur un TJM moyen de 550€, cela représente entre 27€ et 55€ par jour travaillé par le consultant. Sur 20 jours mensuels, un seul placement peut rapporter entre 550€ et 1 100€/mois. En cumulant plusieurs placements, les revenus deviennent très significatifs.",
+    summary: "La rémunération est proportionnelle au TJM du consultant placé. Avec un taux de 5 à 10% sur un TJM moyen de 550€, cela représente entre 27€ et 55€ par jour travaillé par le consultant. Sur 20 jours mensuels, un seul placement peut rapporter entre 550€ et 1 100€/mois. En cumulant plusieurs placements, les revenus deviennent très significatifs.",
     icon: TrendingUp,
   },
 ];
