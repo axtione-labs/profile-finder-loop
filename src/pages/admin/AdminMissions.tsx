@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Pencil, Trash2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMissions, useCreateMission, useCreateCommission, useUpdateMission, useDeleteMission } from "@/hooks/useMissions";
@@ -16,13 +17,14 @@ import { useLeads } from "@/hooks/useLeads";
 import { useCandidates, useUpdateCandidate } from "@/hooks/useCandidates";
 import { useProfiles } from "@/hooks/useProfiles";
 
-const missionStatuses = ["Validé apporteur", "Non validé apporteur", "CV envoyé client", "Négociation", "Perdu", "Gagné"];
+const missionStatuses = ["Déclaré", "Qualifié", "En sourcing", "Profil trouvé", "Envoyé client", "Perdu", "Gagné"];
 
 const missionStatusColor: Record<string, string> = {
-  "Validé apporteur": "bg-success/15 text-success",
-  "Non validé apporteur": "bg-destructive/15 text-destructive",
-  "CV envoyé client": "bg-primary/15 text-primary",
-  "Négociation": "bg-warning/15 text-warning",
+  "Déclaré": "bg-warning/15 text-warning",
+  "Qualifié": "bg-primary/15 text-primary",
+  "En sourcing": "bg-primary/15 text-primary",
+  "Profil trouvé": "bg-success/15 text-success",
+  "Envoyé client": "bg-primary/15 text-primary",
   "Perdu": "bg-destructive/15 text-destructive",
   "Gagné": "bg-success/15 text-success",
   "En cours": "bg-primary/15 text-primary",
@@ -59,8 +61,21 @@ const AdminMissions = () => {
 
   const confirmStatusUpdate = () => {
     if (!statusConfirm) return;
+    const mission = missions.find(m => m.id === statusConfirm.id);
     updateMission.mutate({ id: statusConfirm.id, status: statusConfirm.status }, {
-      onSuccess: () => toast.success(`Mission : ${statusConfirm.status}`),
+      onSuccess: () => {
+        toast.success(`Mission : ${statusConfirm.status}`);
+        // Sync lead status with mission status
+        if (mission?.lead_id) {
+          supabase
+            .from("leads" as any)
+            .update({ status: statusConfirm.status } as any)
+            .eq("id", mission.lead_id)
+            .then(({ error }: any) => {
+              if (!error) toast.success("Statut du besoin synchronisé");
+            });
+        }
+      },
     });
     setStatusConfirm(null);
   };
@@ -102,7 +117,7 @@ const AdminMissions = () => {
       tjm: candidate.tjm,
       tjm_client: tjmClient,
       duration: newMission.duration || lead.duration,
-      status: "CV envoyé client",
+      status: "Envoyé client",
       start_date: new Date().toISOString(),
     });
 
