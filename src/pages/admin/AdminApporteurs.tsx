@@ -198,10 +198,10 @@ const AdminApporteurs = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-4">
+      <div className="space-y-4 px-6 py-5">
         <div>
-          <h1 className="font-display text-lg font-bold">Apporteurs d'affaires</h1>
-          <p className="text-xs text-muted-foreground">Gérer les profils et suivre l'activité</p>
+          <h1 className="font-display text-lg font-bold text-gray-900">Apporteurs d'affaires</h1>
+          <p className="text-[11px] text-gray-500">Gérer les profils et suivre l'activité</p>
         </div>
 
         <Tabs value={tab} onValueChange={setTab}>
@@ -212,71 +212,79 @@ const AdminApporteurs = () => {
         </Tabs>
 
         <motion.div className="relative max-w-md" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Rechercher par nom ou entreprise..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 bg-background/50" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Input placeholder="Rechercher par nom ou entreprise..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 bg-white border-gray-200" />
         </motion.div>
 
-        <motion.div className="overflow-x-auto rounded-xl border border-border/50" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <motion.div className="overflow-hidden rounded-lg border border-gray-200" initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           {isLoading ? (
-            <div className="py-12 text-center text-muted-foreground">Chargement...</div>
+            <div className="space-y-0">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-4 px-3 h-11 border-b border-gray-100">
+                  <div className="h-3 w-28 animate-pulse rounded bg-gray-200" />
+                  <div className="h-3 w-20 animate-pulse rounded bg-gray-100" />
+                  <div className="h-3 w-16 animate-pulse rounded bg-gray-100" />
+                </div>
+              ))}
+            </div>
           ) : filtered.length === 0 ? (
-            <div className="py-12 text-center text-muted-foreground">
+            <div className="py-12 text-center text-[11px] text-gray-400">
               {tab === "trash" ? "La corbeille est vide" : "Aucun apporteur trouvé"}
             </div>
           ) : (
             <>
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-border/50 bg-secondary/30">
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Nom</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Entreprise</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Leads</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Missions</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">RIB</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">KBIS</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Pièce d'identité</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">{tab === "trash" ? "Suppression dans" : "Statut"}</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Actions</th>
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Nom</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Entreprise</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Leads</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Missions</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">RIB</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">KBIS</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Pièce d'identité</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">{tab === "trash" ? "Suppression dans" : "Statut"}</th>
+                  <th className="px-3 py-2.5 text-right text-[11px] font-medium uppercase text-gray-500 w-[120px]">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {paginated.map(p => {
+                {paginated.map((p, idx) => {
                   const stats = getStats(p.user_id);
                   const deletedAt = (p as any).deleted_at;
                   return (
-                    <tr key={p.id} className="border-b border-border/30 hover:bg-secondary/20 transition-colors">
-                      <td className="px-3 py-2 font-medium">
-                        <div className="flex items-center gap-2">
-                          <UserCheck className="h-3.5 w-3.5 text-primary" />
-                          {p.first_name} {p.last_name}
+                    <tr key={p.id} className={`h-11 border-b border-gray-100 hover:bg-blue-50/40 transition-colors duration-100 ${idx % 2 === 1 ? "bg-gray-50/30" : "bg-white"}`}>
+                      <td className="px-3 py-2.5 max-w-0">
+                        <div className="flex items-center gap-2 truncate">
+                          <UserCheck className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                          <span className="font-medium text-gray-900 truncate">{p.first_name} {p.last_name}</span>
                         </div>
                       </td>
-                      <td className="px-3 py-2 text-muted-foreground">{p.company || "—"}</td>
-                      <td className="px-3 py-2">
-                        <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary">{stats.leads}</span>
+                      <td className="px-3 py-2.5 max-w-0 truncate text-gray-600">{p.company || "—"}</td>
+                      <td className="px-3 py-2.5">
+                        <span className="inline-block rounded border px-2 py-0.5 text-[11px] font-medium bg-blue-100 text-blue-700 border-blue-200">{stats.leads}</span>
                       </td>
-                      <td className="px-3 py-2">
-                        <span className="rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-medium text-accent-foreground">{stats.missions}</span>
+                      <td className="px-3 py-2.5">
+                        <span className="inline-block rounded border px-2 py-0.5 text-[11px] font-medium bg-purple-100 text-purple-700 border-purple-200">{stats.missions}</span>
                       </td>
-                      <td className="px-3 py-2"><DocStatusBadge doc={getDocStatus(p.user_id, "rib")} /></td>
-                      <td className="px-3 py-2"><DocStatusBadge doc={getDocStatus(p.user_id, "kbis")} /></td>
-                      <td className="px-3 py-2"><DocStatusBadge doc={getDocStatus(p.user_id, "id_card")} /></td>
-                      <td className="px-3 py-2">
+                      <td className="px-3 py-2.5"><DocStatusBadge doc={getDocStatus(p.user_id, "rib")} /></td>
+                      <td className="px-3 py-2.5"><DocStatusBadge doc={getDocStatus(p.user_id, "kbis")} /></td>
+                      <td className="px-3 py-2.5"><DocStatusBadge doc={getDocStatus(p.user_id, "id_card")} /></td>
+                      <td className="px-3 py-2.5">
                         {tab === "trash" && deletedAt ? (
-                          <span className="rounded-full bg-warning/15 px-2 py-0.5 text-[10px] font-medium text-warning">
+                          <span className="inline-block rounded border px-2 py-0.5 text-[11px] font-medium bg-amber-100 text-amber-700 border-amber-200">
                             {getDaysUntilPurge(deletedAt)} jours
                           </span>
                         ) : p.blocked ? (
-                          <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-[10px] font-medium text-destructive">Bloqué</span>
+                          <span className="inline-block rounded border px-2 py-0.5 text-[11px] font-medium bg-red-100 text-red-700 border-red-200">Bloqué</span>
                         ) : (
-                          <span className="rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-medium text-success">Actif</span>
+                          <span className="inline-block rounded border px-2 py-0.5 text-[11px] font-medium bg-green-100 text-green-700 border-green-200">Actif</span>
                         )}
                       </td>
-                      <td className="px-3 py-2">
-                        <div className="flex items-center gap-0.5">
+                      <td className="px-3 py-2.5 w-[120px] text-right">
+                        <div className="flex justify-end gap-0.5">
                           {tab === "trash" ? (
                             <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setRestoreConfirmId(p.id)} title="Restaurer">
-                              <RotateCcw className="h-3.5 w-3.5 text-primary" />
+                              <RotateCcw className="h-3.5 w-3.5 text-blue-500" />
                             </Button>
                           ) : (
                             <>
@@ -284,7 +292,7 @@ const AdminApporteurs = () => {
                                 <Eye className="h-3.5 w-3.5" />
                               </Button>
                               <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setBlockConfirm({ id: p.id, blocked: p.blocked })} title={p.blocked ? "Débloquer" : "Bloquer"}>
-                                {p.blocked ? <ShieldCheck className="h-3.5 w-3.5 text-success" /> : <ShieldOff className="h-3.5 w-3.5 text-warning" />}
+                                {p.blocked ? <ShieldCheck className="h-3.5 w-3.5 text-green-500" /> : <ShieldOff className="h-3.5 w-3.5 text-amber-500" />}
                               </Button>
                               <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive hover:text-destructive" onClick={() => setDeleteConfirmId(p.id)}>
                                 <Trash2 className="h-3.5 w-3.5" />
