@@ -280,8 +280,7 @@ const AdminLeads = () => {
                   <div><span className="text-muted-foreground">Localisation :</span> <span>{selectedLead.location}</span></div>
                   <div><span className="text-muted-foreground">Mode :</span> <span>{selectedLead.remote}</span></div>
                   <div><span className="text-muted-foreground">TJM :</span> <span className="font-medium">{selectedLead.tjm}€</span></div>
-                  <div><span className="text-muted-foreground">Marge souhaitée :</span> <span className="font-medium">{selectedLead.margin}€/jour</span></div>
-                  <div><span className="text-muted-foreground">Statut marge :</span> <span className="font-medium">{marginStatusLabel((selectedLead as any).margin_status)}</span></div>
+                  <div><span className="text-muted-foreground">Marge :</span> <span className="font-medium">{selectedLead.margin}%</span></div>
                   <div><span className="text-muted-foreground">Durée :</span> <span>{selectedLead.duration}</span></div>
                   <div><span className="text-muted-foreground">Priorité :</span> <span>{selectedLead.priority === "urgent" ? "🔴 Urgent" : "Normal"}</span></div>
                 </div>
