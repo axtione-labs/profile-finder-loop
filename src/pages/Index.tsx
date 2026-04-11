@@ -16,22 +16,22 @@ const steps = [
   { icon: Zap, title: "Détectez", desc: "Vous identifiez un besoin IT chez un client" },
   { icon: Clock, title: "Déclarez", desc: "Remplissez le formulaire en 2 minutes" },
   { icon: TrendingUp, title: "Suivez", desc: "Nous trouvons le profil, vous validez" },
-  { icon: Shield, title: "Gagnez", desc: "Mission signée = commission versée" },
+  { icon: Shield, title: "Gagnez", desc: "Mission signée = gains versés" },
 ];
 
 const stats = [
   { value: "48h", label: "Délai moyen de réponse" },
-  { value: "5-10%", label: "Commission sur le TJM" },
+  { value: "5-10%", label: "Taux de rémunération" },
   { value: "92%", label: "Taux de satisfaction" },
 ];
 
 const faqs = [
-  { q: "Comment fonctionne la commission ?", a: "Vous touchez entre 5% et 10% du TJM du consultant placé, chaque mois, pendant toute la durée de la mission. Plus vous déclarez de besoins, plus vos revenus augmentent." },
+  { q: "Comment sont calculés vos gains ?", a: "Vous touchez entre 5% et 10% du TJM du consultant placé, chaque mois, pendant toute la durée de la mission. Plus vous déclarez de besoins, plus vos revenus augmentent." },
   { q: "Combien de temps faut-il pour déclarer un besoin ?", a: "Moins de 2 minutes. Il suffit de renseigner le client, le poste recherché et quelques détails. On s'occupe du reste." },
   { q: "Qui trouve le consultant ?", a: "Notre équipe de sourcing identifie et présente les meilleurs profils IT. Vous n'avez pas besoin de recruter." },
-  { q: "Quand suis-je payé ?", a: "Les commissions sont versées mensuellement, dès que le consultant travaille. Vous pouvez suivre vos gains en temps réel sur votre dashboard." },
+  { q: "Quand suis-je payé ?", a: "Les gains sont versés mensuellement, dès que le consultant travaille. Vous pouvez suivre vos revenus en temps réel sur votre dashboard." },
   { q: "Y a-t-il un engagement ?", a: "Aucun engagement. Inscription gratuite. Vous déclarez quand vous voulez, à votre rythme." },
-  { q: "Puis-je suivre l'état de mes leads ?", a: "Oui, votre tableau de bord vous donne une visibilité complète : statut du lead, avancement du sourcing, et détail de vos commissions." },
+  { q: "Puis-je suivre l'état de mes leads ?", a: "Oui, votre tableau de bord vous donne une visibilité complète : statut du lead, avancement du sourcing, et détail de vos gains." },
 ];
 
 const itNeeds = [
@@ -165,7 +165,7 @@ const Index = () => {
         <div className="container relative mx-auto px-6 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <span className="mb-6 inline-block rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-              🐺 La meute qui chasse vos commissions
+              🐺 La meute qui chasse vos gains
             </span>
           </motion.div>
 
@@ -235,7 +235,7 @@ const Index = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.9 }}
             >
-              On trouve le profil. Vous touchez la commission.{" "}
+              On trouve le profil. Vous touchez vos gains.{" "}
               <motion.span
                 className="relative inline-block text-foreground font-extrabold text-lg sm:text-xl"
                 initial={{ opacity: 0, scale: 0.9 }}
