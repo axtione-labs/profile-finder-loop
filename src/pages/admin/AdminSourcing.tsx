@@ -114,6 +114,7 @@ const AdminSourcing = () => {
       availability: editCandidate.availability,
       stack: editCandidate.stack.split(",").map((s: string) => s.trim()).filter(Boolean),
       tjm: parseFloat(editCandidate.tjm) || 0,
+      status: editCandidate.status,
       cv_url,
     }, {
       onSuccess: () => {
@@ -280,7 +281,7 @@ const AdminSourcing = () => {
                   <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Tél.</th>
                   <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500 w-[140px]">Statut</th>
                   <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">CV</th>
-                  <th className="px-3 py-2.5 text-right text-[11px] font-medium uppercase text-gray-500 w-[120px]">Actions</th>
+                  <th className="px-3 py-2.5 text-right text-[11px] font-medium uppercase text-gray-500 w-[80px]">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -309,18 +310,8 @@ const AdminSourcing = () => {
                         </a>
                       ) : <span className="text-gray-400">—</span>}
                     </td>
-                    <td className="px-3 py-2.5 w-[120px] text-right">
+                    <td className="px-3 py-2.5 w-[80px] text-right">
                       <div className="flex justify-end gap-0.5">
-                        <Select value={candidate.status} onValueChange={(v) => handleUpdateStatus(candidate.id, v)}>
-                          <SelectTrigger className="h-6 w-[110px] bg-white border-gray-200 text-[11px]">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {candidateStatuses.map(s => (
-                              <SelectItem key={s} value={s}>{s}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
                         <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => openEdit(candidate)}>
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
@@ -384,15 +375,26 @@ const AdminSourcing = () => {
                 <Input className="mt-1.5" value={editCandidate.stack} onChange={e => setEditCandidate((c: any) => ({ ...c, stack: e.target.value }))} />
               </div>
               <div>
+                <Label>Statut</Label>
+                <Select value={editCandidate.status} onValueChange={v => setEditCandidate((c: any) => ({ ...c, status: v }))}>
+                  <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {candidateStatuses.map(s => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <Label>CV (PDF)</Label>
                 <div className="mt-1.5 flex items-center gap-2">
-                  <input ref={editFileRef} type="file" accept=".pdf" className="hidden" onChange={e => setEditCvFile(e.target.files?.[0] || null)} />
-                  <Button type="button" variant="outline" size="sm" onClick={() => editFileRef.current?.click()}>
-                    <FileUp className="mr-2 h-4 w-4" /> {editCvFile ? editCvFile.name : editCandidate.cv_url ? "Remplacer le CV" : "Ajouter un CV"}
-                  </Button>
-                  {editCvFile && <span className="text-xs text-muted-foreground">{(editCvFile.size / 1024).toFixed(0)} Ko</span>}
-                </div>
-              </div>
+                   <input ref={editFileRef} type="file" accept=".pdf" className="hidden" onChange={e => setEditCvFile(e.target.files?.[0] || null)} />
+                   <Button type="button" variant="outline" size="sm" onClick={() => editFileRef.current?.click()}>
+                     <FileUp className="mr-2 h-4 w-4" /> {editCvFile ? editCvFile.name : editCandidate.cv_url ? "Remplacer le CV" : "Ajouter un CV"}
+                   </Button>
+                   {editCvFile && <span className="text-xs text-muted-foreground">{(editCvFile.size / 1024).toFixed(0)} Ko</span>}
+                 </div>
+               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setEditOpen(false)}>Annuler</Button>
                 <Button onClick={handleSaveEdit} disabled={uploading}>

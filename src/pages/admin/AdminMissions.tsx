@@ -348,6 +348,15 @@ const AdminMissions = () => {
                 </div>
               </div>
               <div>
+                <Label>Statut</Label>
+                <Select value={editMission.status} onValueChange={v => setEditMission((m: any) => ({ ...m, status: v }))}>
+                  <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {missionStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <Label>Durée</Label>
                 <Input value={editMission.duration} onChange={e => setEditMission((m: any) => ({ ...m, duration: e.target.value }))} />
               </div>
