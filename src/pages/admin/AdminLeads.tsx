@@ -132,7 +132,7 @@ const AdminLeads = () => {
 
   const filtered = leads.filter(l => {
     const apporteurName = getApporteurName(l.user_id).toLowerCase();
-    const matchSearch = l.position.toLowerCase().includes(search.toLowerCase()) || l.client.toLowerCase().includes(search.toLowerCase()) || apporteurName.includes(search.toLowerCase());
+    const matchSearch = l.position.toLowerCase().includes(debouncedSearch.toLowerCase()) || l.client.toLowerCase().includes(debouncedSearch.toLowerCase()) || apporteurName.includes(debouncedSearch.toLowerCase());
     const matchStatus = statusFilter === "all" || l.status === statusFilter;
     const matchPriority = priorityFilter === "all" || l.priority === priorityFilter;
     return matchSearch && matchStatus && matchPriority;

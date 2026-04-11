@@ -46,7 +46,7 @@ const AdminApporteurs = () => {
   const currentList = tab === "active" ? activeProfiles : trashedProfiles;
 
   const filtered = currentList.filter(p => {
-    const term = search.toLowerCase();
+    const term = debouncedSearch.toLowerCase();
     return (
       p.first_name.toLowerCase().includes(term) ||
       p.last_name.toLowerCase().includes(term) ||
