@@ -132,9 +132,9 @@ const MarginCell = ({ lead, profiles, updateLead }: MarginCellProps) => {
   );
 };
 
-type LeadStatus = "Déclaré" | "À qualifier" | "Qualifié" | "En sourcing" | "Profil trouvé" | "Envoyé client";
+type LeadStatus = "Déclaré" | "À qualifier" | "Qualifié" | "En sourcing" | "Profil trouvé" | "Envoyé client" | "Perdu" | "Gagné";
 
-const allStatuses: LeadStatus[] = ["Déclaré", "À qualifier", "Qualifié", "En sourcing", "Profil trouvé", "Envoyé client"];
+const allStatuses: LeadStatus[] = ["Déclaré", "À qualifier", "Qualifié", "En sourcing", "Profil trouvé", "Envoyé client", "Perdu", "Gagné"];
 
 const statusColor: Record<string, string> = {
   "Déclaré": "bg-warning/15 text-warning border-warning/30",
@@ -143,6 +143,8 @@ const statusColor: Record<string, string> = {
   "En sourcing": "bg-primary/15 text-primary border-primary/30",
   "Profil trouvé": "bg-success/15 text-success border-success/30",
   "Envoyé client": "bg-primary/15 text-primary border-primary/30",
+  "Perdu": "bg-destructive/15 text-destructive border-destructive/30",
+  "Gagné": "bg-success/15 text-success border-success/30",
 };
 
 const AdminLeads = () => {
@@ -205,7 +207,14 @@ const AdminLeads = () => {
 
   const handleUpdateStatus = (id: string, status: string) => {
     updateLead.mutate({ id, status }, {
-      onSuccess: () => toast.success(`Statut mis à jour : ${status}`),
+      onSuccess: () => {
+        toast.success(`Statut mis à jour : ${status}`);
+        // Sync linked missions with the same status
+        const linked = getLinkedMissions(id);
+        for (const m of linked) {
+          supabase.from("missions" as any).update({ status } as any).eq("id", m.id);
+        }
+      },
     });
   };
 
