@@ -42,7 +42,7 @@ const nameRegex = /^[a-zA-ZÀ-ÿ0-9\s\-']+$/;
 const DeclareLead = () => {
   const [step, setStep] = useState(0);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const createLead = useCreateLead();
   const createContract = useCreateContract();
   const formRef = useRef<HTMLDivElement>(null);
@@ -63,7 +63,13 @@ const DeclareLead = () => {
   const [signatureData, setSignatureData] = useState("");
   const [signatureType, setSignatureType] = useState<"draw" | "text">("draw");
   const [signed, setSigned] = useState(false);
+  const [signedAt, setSignedAt] = useState<Date | null>(null);
   const [contractUrl, setContractUrl] = useState<string | null>(null);
+  const [signatureError, setSignatureError] = useState("");
+
+  const apporteurName = profile
+    ? `${profile.first_name} ${profile.last_name}`.trim() || "[Apporteur d'affaires — à compléter]"
+    : "[Apporteur d'affaires — à compléter]";
 
   const update = (field: string, value: string | string[] | boolean) => {
     setForm(f => ({ ...f, [field]: value }));
@@ -198,10 +204,17 @@ const DeclareLead = () => {
   const handleSignatureChange = (data: string, type: "draw" | "text") => {
     setSignatureData(data);
     setSignatureType(type);
+    if (data) setSignatureError("");
   };
 
   const handleSign = async () => {
-    if (!signatureData || !leadId) return;
+    if (!signatureData) {
+      setSignatureError("La signature est obligatoire avant de valider le contrat");
+      return;
+    }
+    if (!leadId) return;
+    const now = new Date();
+    setSignedAt(now);
     const result = await createContract.mutateAsync({ leadId, signatureData, signatureType });
     let signedUrl: string | null = null;
     if (result?.contract_pdf_url) {
@@ -320,44 +333,108 @@ const DeclareLead = () => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="text-center space-y-8 py-8"
+            className="space-y-8 py-8"
           >
-            <motion.div
-              className="relative mx-auto w-32 h-32"
-              initial={{ rotate: -10 }}
-              animate={{ rotate: 0 }}
-              transition={{ type: "spring", stiffness: 200 }}
-            >
+            {/* Success banner */}
+            <div className="text-center space-y-4">
               <motion.div
-                className="absolute inset-0 rounded-full gradient-primary opacity-20"
-                animate={{ scale: [1, 1.4, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="flex h-24 w-24 items-center justify-center rounded-full gradient-primary glow-primary">
-                  <Rocket className="h-12 w-12 text-primary-foreground" />
+                className="relative mx-auto w-32 h-32"
+                initial={{ rotate: -10 }}
+                animate={{ rotate: 0 }}
+                transition={{ type: "spring", stiffness: 200 }}
+              >
+                <motion.div
+                  className="absolute inset-0 rounded-full gradient-primary opacity-20"
+                  animate={{ scale: [1, 1.4, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="flex h-24 w-24 items-center justify-center rounded-full gradient-primary glow-primary">
+                    <Rocket className="h-12 w-12 text-primary-foreground" />
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                <h1 className="font-display text-3xl font-bold">
+                  <span className="text-gradient">Félicitations</span> 🎉
+                </h1>
+                <p className="text-lg text-muted-foreground mt-2 max-w-md mx-auto">
+                  Votre besoin a été déclaré et votre contrat d'apport d'affaires signé avec succès.
+                </p>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mt-3">
+                  <Check className="h-4 w-4" />
+                  Contrat signé avec succès
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Signed contract preview */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="gradient-card rounded-2xl border border-border/50 p-8"
+            >
+              <h2 className="font-display text-lg font-semibold mb-4 flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" />
+                Aperçu du contrat signé
+              </h2>
+              <div className="max-h-[500px] overflow-y-auto pr-4">
+                <ContractContent
+                  apporteurName={apporteurName}
+                  donneurOrdre="Lynx"
+                  signatureData={signatureData}
+                  signedAt={signedAt || undefined}
+                  showSignature
+                />
+              </div>
+            </motion.div>
+
+            {/* Recap */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="gradient-card rounded-2xl border border-border/50 p-6"
+            >
+              <h3 className="font-semibold mb-4">Récapitulatif</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Apporteur d'affaires</p>
+                  <p className="font-medium">{apporteurName}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Donneur d'ordre</p>
+                  <p className="font-medium">Lynx</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Date et heure de signature</p>
+                  <p className="font-medium">
+                    {signedAt
+                      ? `Le ${signedAt.toLocaleDateString("fr-FR")} à ${signedAt.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`
+                      : "—"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Signature</p>
+                  <div className="mt-1">
+                    {signatureData ? (
+                      <img src={signatureData} alt="Signature" className="max-h-12 object-contain" />
+                    ) : (
+                      <p>—</p>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <h1 className="font-display text-3xl font-bold">
-                <span className="text-gradient">Félicitations</span> 🎉
-              </h1>
-              <p className="text-lg text-muted-foreground mt-2 max-w-md mx-auto">
-                Votre besoin a été déclaré et votre contrat d'apport d'affaires signé avec succès.
-              </p>
-            </motion.div>
-
+            {/* Stats */}
             <motion.div
               className="grid grid-cols-3 gap-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
+              transition={{ delay: 0.6 }}
             >
               {[
                 { label: "Commission", value: "À définir", icon: DollarSign },
@@ -369,7 +446,7 @@ const DeclareLead = () => {
                   className="gradient-card rounded-xl border border-border/50 p-4 text-center"
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 + i * 0.1 }}
+                  transition={{ delay: 0.7 + i * 0.1 }}
                 >
                   <stat.icon className="h-5 w-5 mx-auto mb-2 text-primary" />
                   <p className="text-lg font-bold text-foreground">{stat.value}</p>
@@ -382,7 +459,7 @@ const DeclareLead = () => {
               className="flex justify-center gap-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
+              transition={{ delay: 0.9 }}
             >
               {contractUrl && (
                 <Button variant="outline" onClick={() => window.open(contractUrl, "_blank")}>
@@ -685,7 +762,7 @@ const DeclareLead = () => {
                       className="gradient-card rounded-2xl border border-border/50 p-8"
                     >
                       <div className="max-h-[400px] overflow-y-auto pr-4">
-                        <ContractContent />
+                        <ContractContent apporteurName={apporteurName} donneurOrdre="Lynx" />
                       </div>
                     </motion.div>
 
@@ -700,6 +777,12 @@ const DeclareLead = () => {
                         <h2 className="font-display text-lg font-semibold">Votre signature</h2>
                       </div>
                       <SignaturePad onSignatureChange={handleSignatureChange} />
+                      {signatureError && (
+                        <div className="flex items-center gap-2 mt-3 text-destructive text-sm">
+                          <Info className="h-4 w-4 shrink-0" />
+                          <span>{signatureError}</span>
+                        </div>
+                      )}
                     </motion.div>
                   </div>
                 )}
@@ -732,7 +815,7 @@ const DeclareLead = () => {
               {step === 4 && (
                 <Button
                   onClick={handleSign}
-                  disabled={!signatureData || createContract.isPending}
+                  disabled={createContract.isPending}
                   className="gradient-primary glow-primary border-0 text-base px-8"
                 >
                   <FileSignature className="mr-2 h-5 w-5" />
