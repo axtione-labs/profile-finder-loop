@@ -42,7 +42,6 @@ const App = () => (
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/commissions" element={<ProtectedRoute><CommissionsDashboard /></ProtectedRoute>} />
             <Route path="/dashboard/clients" element={<ProtectedRoute><MesClients /></ProtectedRoute>} />
             <Route path="/dashboard/contracts" element={<ProtectedRoute><MesContrats /></ProtectedRoute>} />
