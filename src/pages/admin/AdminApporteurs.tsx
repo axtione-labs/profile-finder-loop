@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { usePagination } from "@/hooks/usePagination";
+import { TablePagination } from "@/components/admin/TablePagination";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
@@ -49,6 +51,7 @@ const AdminApporteurs = () => {
       (p.company || "").toLowerCase().includes(term)
     );
   });
+  const { page, setPage, totalPages, paginated, total, from, to } = usePagination(filtered, 25);
 
   const getStats = (userId: string) => {
     const userLeads = leads.filter(l => l.user_id === userId);
@@ -193,10 +196,10 @@ const AdminApporteurs = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div>
-          <h1 className="font-display text-2xl font-bold">Apporteurs d'affaires</h1>
-          <p className="text-sm text-muted-foreground">Gérer les profils et suivre l'activité</p>
+          <h1 className="font-display text-lg font-bold">Apporteurs d'affaires</h1>
+          <p className="text-xs text-muted-foreground">Gérer les profils et suivre l'activité</p>
         </div>
 
         <Tabs value={tab} onValueChange={setTab}>
@@ -219,7 +222,8 @@ const AdminApporteurs = () => {
               {tab === "trash" ? "La corbeille est vide" : "Aucun apporteur trouvé"}
             </div>
           ) : (
-            <table className="w-full text-sm">
+            <>
+            <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-border/50 bg-secondary/30">
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Nom</th>
@@ -234,59 +238,54 @@ const AdminApporteurs = () => {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(p => {
+                {paginated.map(p => {
                   const stats = getStats(p.user_id);
                   const deletedAt = (p as any).deleted_at;
                   return (
                     <tr key={p.id} className="border-b border-border/30 hover:bg-secondary/20 transition-colors">
-                      <td className="px-4 py-3 font-medium">
+                      <td className="px-3 py-2 font-medium">
                         <div className="flex items-center gap-2">
-                          <UserCheck className="h-4 w-4 text-primary" />
+                          <UserCheck className="h-3.5 w-3.5 text-primary" />
                           {p.first_name} {p.last_name}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">{p.company || "—"}</td>
-                      <td className="px-4 py-3">
-                        <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary">{stats.leads}</span>
+                      <td className="px-3 py-2 text-muted-foreground">{p.company || "—"}</td>
+                      <td className="px-3 py-2">
+                        <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary">{stats.leads}</span>
                       </td>
-                      <td className="px-4 py-3">
-                        <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs font-medium text-accent-foreground">{stats.missions}</span>
+                      <td className="px-3 py-2">
+                        <span className="rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-medium text-accent-foreground">{stats.missions}</span>
                       </td>
-                      <td className="px-4 py-3"><DocStatusBadge doc={getDocStatus(p.user_id, "rib")} /></td>
-                      <td className="px-4 py-3"><DocStatusBadge doc={getDocStatus(p.user_id, "kbis")} /></td>
-                      <td className="px-4 py-3"><DocStatusBadge doc={getDocStatus(p.user_id, "id_card")} /></td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-2"><DocStatusBadge doc={getDocStatus(p.user_id, "rib")} /></td>
+                      <td className="px-3 py-2"><DocStatusBadge doc={getDocStatus(p.user_id, "kbis")} /></td>
+                      <td className="px-3 py-2"><DocStatusBadge doc={getDocStatus(p.user_id, "id_card")} /></td>
+                      <td className="px-3 py-2">
                         {tab === "trash" && deletedAt ? (
-                          <span className="rounded-full bg-warning/15 px-2 py-0.5 text-xs font-medium text-warning">
+                          <span className="rounded-full bg-warning/15 px-2 py-0.5 text-[10px] font-medium text-warning">
                             {getDaysUntilPurge(deletedAt)} jours
                           </span>
                         ) : p.blocked ? (
-                          <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-xs font-medium text-destructive">Bloqué</span>
+                          <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-[10px] font-medium text-destructive">Bloqué</span>
                         ) : (
-                          <span className="rounded-full bg-success/15 px-2 py-0.5 text-xs font-medium text-success">Actif</span>
+                          <span className="rounded-full bg-success/15 px-2 py-0.5 text-[10px] font-medium text-success">Actif</span>
                         )}
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1">
+                      <td className="px-3 py-2">
+                        <div className="flex items-center gap-0.5">
                           {tab === "trash" ? (
-                            <Button variant="ghost" size="sm" onClick={() => setRestoreConfirmId(p.id)} title="Restaurer">
-                              <RotateCcw className="h-4 w-4 text-primary" />
+                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setRestoreConfirmId(p.id)} title="Restaurer">
+                              <RotateCcw className="h-3.5 w-3.5 text-primary" />
                             </Button>
                           ) : (
                             <>
-                              <Button variant="ghost" size="sm" onClick={() => openDetail(p)}>
-                                <Eye className="h-4 w-4" />
+                              <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => openDetail(p)}>
+                                <Eye className="h-3.5 w-3.5" />
                               </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setBlockConfirm({ id: p.id, blocked: p.blocked })}
-                                title={p.blocked ? "Débloquer" : "Bloquer"}
-                              >
-                                {p.blocked ? <ShieldCheck className="h-4 w-4 text-success" /> : <ShieldOff className="h-4 w-4 text-warning" />}
+                              <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setBlockConfirm({ id: p.id, blocked: p.blocked })} title={p.blocked ? "Débloquer" : "Bloquer"}>
+                                {p.blocked ? <ShieldCheck className="h-3.5 w-3.5 text-success" /> : <ShieldOff className="h-3.5 w-3.5 text-warning" />}
                               </Button>
-                              <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteConfirmId(p.id)}>
-                                <Trash2 className="h-4 w-4" />
+                              <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive hover:text-destructive" onClick={() => setDeleteConfirmId(p.id)}>
+                                <Trash2 className="h-3.5 w-3.5" />
                               </Button>
                             </>
                           )}
@@ -297,6 +296,8 @@ const AdminApporteurs = () => {
                 })}
               </tbody>
             </table>
+            <TablePagination page={page} totalPages={totalPages} total={total} from={from} to={to} setPage={setPage} />
+            </>
           )}
         </motion.div>
       </div>

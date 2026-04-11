@@ -161,8 +161,8 @@ const AdminCommissions = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-2xl font-bold">Commissions</h1>
-            <p className="text-sm text-muted-foreground">Suivi financier et jours travaillés</p>
+            <h1 className="font-display text-lg font-bold">Commissions</h1>
+            <p className="text-xs text-muted-foreground">Suivi financier et jours travaillés</p>
           </div>
           <Select value={filterYear} onValueChange={setFilterYear}>
             <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
@@ -178,7 +178,7 @@ const AdminCommissions = () => {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <TrendingUp className="h-4 w-4" /> Marge admin ({filterYear})
             </div>
-            <div className="mt-2 font-display text-2xl font-bold text-gradient">{totalAdmin.toLocaleString("fr-FR")} €</div>
+            <div className="mt-2 font-display text-xl font-bold text-gradient">{totalAdmin.toLocaleString("fr-FR")} €</div>
           </div>
           <div className="gradient-card rounded-xl border border-border/50 p-5">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -230,7 +230,7 @@ const AdminCommissions = () => {
           ) : yearCommissions.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">Aucune commission pour {filterYear}.</div>
           ) : (
-            <table className="w-full text-sm">
+            <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-border/50 bg-secondary/30">
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Mois</th>

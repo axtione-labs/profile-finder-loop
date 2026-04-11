@@ -6,6 +6,52 @@
 
 @layer base {
   :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    --accent: 220 14% 96%;
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 217 91% 60%;
+
+    --radius: 0.75rem;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 0%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217 91% 60%;
+  }
+
+  .dark {
     --background: 222 47% 3%;
     --foreground: 210 40% 98%;
 
@@ -33,8 +79,6 @@
     --border: 217 33% 14%;
     --input: 217 33% 14%;
     --ring: 217 91% 60%;
-
-    --radius: 0.75rem;
 
     --success: 142 71% 50%;
     --success-foreground: 0 0% 100%;
@@ -73,10 +117,18 @@
   }
 
   .gradient-hero {
+    background: linear-gradient(135deg, hsl(220 14% 96%), hsl(220 14% 92%));
+  }
+
+  .dark .gradient-hero {
     background: linear-gradient(135deg, hsl(222 47% 3%), hsl(222 47% 8%));
   }
 
   .gradient-card {
+    background: linear-gradient(135deg, hsl(0 0% 100%), hsl(220 14% 98%));
+  }
+
+  .dark .gradient-card {
     background: linear-gradient(135deg, hsl(222 47% 7%), hsl(222 47% 5%));
   }
 
@@ -92,6 +144,13 @@
   }
 
   .text-gradient-gold {
+    background: linear-gradient(to right, #d97706, #b45309);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .dark .text-gradient-gold {
     background: linear-gradient(to right, #fcd34d, #fef3c7);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;

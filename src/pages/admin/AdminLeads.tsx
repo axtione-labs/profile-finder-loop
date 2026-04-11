@@ -1,5 +1,7 @@
 import { useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
+import { usePagination } from "@/hooks/usePagination";
+import { TablePagination } from "@/components/admin/TablePagination";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -158,12 +160,14 @@ const AdminLeads = () => {
     });
   };
 
+  const { page, setPage, totalPages, paginated, total, from, to } = usePagination(filtered, 25);
+
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div>
-          <h1 className="font-display text-2xl font-bold">Gestion des besoins</h1>
-          <p className="text-sm text-muted-foreground">Qualifier, affecter et suivre les leads</p>
+          <h1 className="font-display text-lg font-bold">Gestion des besoins</h1>
+          <p className="text-xs text-muted-foreground">Qualifier, affecter et suivre les leads · {total} résultat(s)</p>
         </div>
 
         <motion.div
@@ -201,22 +205,23 @@ const AdminLeads = () => {
           {isLoading ? (
             <div className="py-12 text-center text-muted-foreground">Chargement...</div>
           ) : (
-            <table className="w-full text-sm">
+            <>
+            <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-border/50 bg-secondary/30">
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Poste</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Client</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Apporteur</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">TJM</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Marge</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Statut</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Actions</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Poste</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Client</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Apporteur</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">TJM</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Marge</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Statut</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((lead) => (
+                {paginated.map((lead) => (
                   <tr key={lead.id} className="border-b border-border/30 hover:bg-secondary/20 transition-colors">
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-2">
                       <div>
                         <span className="font-medium">{lead.position}</span>
                         <div className="mt-0.5 flex flex-wrap gap-1">
@@ -226,15 +231,15 @@ const AdminLeads = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">{lead.client}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{getApporteurName(lead.user_id)}</td>
-                    <td className="px-4 py-3 font-medium">{lead.tjm}€</td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-2 text-muted-foreground">{lead.client}</td>
+                    <td className="px-3 py-2 text-muted-foreground">{getApporteurName(lead.user_id)}</td>
+                    <td className="px-3 py-2 font-medium">{lead.tjm}€</td>
+                    <td className="px-3 py-2">
                       <MarginCell lead={lead} updateLead={updateLead} />
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-2">
                       <Select value={lead.status} onValueChange={(v) => handleUpdateStatus(lead.id, v)}>
-                        <SelectTrigger className={`h-7 w-[130px] border text-xs font-medium ${statusColor[lead.status] || ""}`}>
+                        <SelectTrigger className={`h-6 w-[120px] border text-[11px] font-medium ${statusColor[lead.status] || ""}`}>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -242,16 +247,16 @@ const AdminLeads = () => {
                         </SelectContent>
                       </Select>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => setSelectedLead(lead)}>
-                          <Eye className="h-4 w-4" />
+                    <td className="px-3 py-2">
+                      <div className="flex gap-0.5">
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setSelectedLead(lead)}>
+                          <Eye className="h-3.5 w-3.5" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => setEditLead({ ...lead })}>
-                          <Pencil className="h-4 w-4" />
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setEditLead({ ...lead })}>
+                          <Pencil className="h-3.5 w-3.5" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(lead.id)}>
-                          <Trash2 className="h-4 w-4" />
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(lead.id)}>
+                          <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
                     </td>
@@ -259,9 +264,11 @@ const AdminLeads = () => {
                 ))}
               </tbody>
             </table>
+            <TablePagination page={page} totalPages={totalPages} total={total} from={from} to={to} setPage={setPage} />
+            </>
           )}
           {!isLoading && filtered.length === 0 && (
-            <div className="py-12 text-center text-muted-foreground">Aucun résultat trouvé</div>
+            <div className="py-8 text-center text-xs text-muted-foreground">Aucun résultat trouvé</div>
           )}
         </motion.div>
 
