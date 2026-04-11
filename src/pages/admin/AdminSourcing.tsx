@@ -114,6 +114,7 @@ const AdminSourcing = () => {
       availability: editCandidate.availability,
       stack: editCandidate.stack.split(",").map((s: string) => s.trim()).filter(Boolean),
       tjm: parseFloat(editCandidate.tjm) || 0,
+      status: editCandidate.status,
       cv_url,
     }, {
       onSuccess: () => {
