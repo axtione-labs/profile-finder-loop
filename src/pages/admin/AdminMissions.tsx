@@ -67,11 +67,11 @@ const AdminMissions = () => {
         toast.success(`Mission : ${statusConfirm.status}`);
         // Sync lead status with mission status
         if (mission?.lead_id) {
-          const { error } = supabase
+          supabase
             .from("leads" as any)
             .update({ status: statusConfirm.status } as any)
             .eq("id", mission.lead_id)
-            .then(({ error }) => {
+            .then(({ error }: any) => {
               if (!error) toast.success("Statut du besoin synchronisé");
             });
         }
