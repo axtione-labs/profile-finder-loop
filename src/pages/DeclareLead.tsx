@@ -42,7 +42,7 @@ const nameRegex = /^[a-zA-ZÀ-ÿ0-9\s\-']+$/;
 const DeclareLead = () => {
   const [step, setStep] = useState(0);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const createLead = useCreateLead();
   const createContract = useCreateContract();
   const formRef = useRef<HTMLDivElement>(null);
@@ -63,7 +63,13 @@ const DeclareLead = () => {
   const [signatureData, setSignatureData] = useState("");
   const [signatureType, setSignatureType] = useState<"draw" | "text">("draw");
   const [signed, setSigned] = useState(false);
+  const [signedAt, setSignedAt] = useState<Date | null>(null);
   const [contractUrl, setContractUrl] = useState<string | null>(null);
+  const [signatureError, setSignatureError] = useState("");
+
+  const apporteurName = profile
+    ? `${profile.first_name} ${profile.last_name}`.trim() || "[Apporteur d'affaires — à compléter]"
+    : "[Apporteur d'affaires — à compléter]";
 
   const update = (field: string, value: string | string[] | boolean) => {
     setForm(f => ({ ...f, [field]: value }));
@@ -198,10 +204,17 @@ const DeclareLead = () => {
   const handleSignatureChange = (data: string, type: "draw" | "text") => {
     setSignatureData(data);
     setSignatureType(type);
+    if (data) setSignatureError("");
   };
 
   const handleSign = async () => {
-    if (!signatureData || !leadId) return;
+    if (!signatureData) {
+      setSignatureError("La signature est obligatoire avant de valider le contrat");
+      return;
+    }
+    if (!leadId) return;
+    const now = new Date();
+    setSignedAt(now);
     const result = await createContract.mutateAsync({ leadId, signatureData, signatureType });
     let signedUrl: string | null = null;
     if (result?.contract_pdf_url) {
@@ -685,7 +698,7 @@ const DeclareLead = () => {
                       className="gradient-card rounded-2xl border border-border/50 p-8"
                     >
                       <div className="max-h-[400px] overflow-y-auto pr-4">
-                        <ContractContent />
+                        <ContractContent apporteurName={apporteurName} donneurOrdre="Lynx" />
                       </div>
                     </motion.div>
 
@@ -700,6 +713,12 @@ const DeclareLead = () => {
                         <h2 className="font-display text-lg font-semibold">Votre signature</h2>
                       </div>
                       <SignaturePad onSignatureChange={handleSignatureChange} />
+                      {signatureError && (
+                        <div className="flex items-center gap-2 mt-3 text-destructive text-sm">
+                          <Info className="h-4 w-4 shrink-0" />
+                          <span>{signatureError}</span>
+                        </div>
+                      )}
                     </motion.div>
                   </div>
                 )}
