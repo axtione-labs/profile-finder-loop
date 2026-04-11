@@ -82,7 +82,7 @@ const Register = () => {
             <span className="text-2xl font-display font-bold text-white">DealFlowNetwork</span>
           </div>
           <h2 className="text-3xl font-display font-bold text-white mb-6">
-            Rejoignez le réseau <span className="text-gradient">DealFlowNetwork</span>
+            Rejoignez le réseau <span className="font-extrabold text-warning">DealFlowNetwork</span>
           </h2>
           <div className="space-y-4">
             {benefits.map((b, i) => (
