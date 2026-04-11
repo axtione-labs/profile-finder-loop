@@ -8,6 +8,7 @@ import { useLeads, useDeleteLead } from "@/hooks/useLeads";
 import { useMissions, useCommissions } from "@/hooks/useMissions";
 import { useCandidates } from "@/hooks/useCandidates";
 import { toast } from "sonner";
+import ApporteurLayout from "@/components/apporteur/ApporteurLayout";
 
 const workflowSteps = [
   "Déclaré", "Qualifié", "En sourcing", "Profil trouvé", "Envoyé client"
