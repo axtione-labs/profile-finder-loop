@@ -44,6 +44,9 @@ const App = () => (
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/commissions" element={<ProtectedRoute><CommissionsDashboard /></ProtectedRoute>} />
+            <Route path="/dashboard/clients" element={<ProtectedRoute><MesClients /></ProtectedRoute>} />
+            <Route path="/dashboard/contracts" element={<ProtectedRoute><MesContrats /></ProtectedRoute>} />
+            <Route path="/dashboard/commissions" element={<ProtectedRoute><MesCommissions /></ProtectedRoute>} />
             <Route path="/declare" element={<ProtectedRoute><DeclareLead /></ProtectedRoute>} />
             <Route path="/sign-contract" element={<ProtectedRoute><SignContract /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminOverview /></ProtectedRoute>} />
