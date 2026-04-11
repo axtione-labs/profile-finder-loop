@@ -297,6 +297,7 @@ const AdminApporteurs = () => {
               </tbody>
             </table>
             <TablePagination page={page} totalPages={totalPages} total={total} from={from} to={to} setPage={setPage} />
+            </>
           )}
         </motion.div>
       </div>
