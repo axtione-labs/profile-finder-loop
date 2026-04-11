@@ -18,10 +18,10 @@ import { useCandidates, useCreateCandidate, useUpdateCandidate, useDeleteCandida
 import { supabase } from "@/integrations/supabase/client";
 
 const statusColor: Record<string, string> = {
-  "Disponible": "bg-success/15 text-success",
-  "En process": "bg-primary/15 text-primary",
-  "Placé": "bg-warning/15 text-warning",
-  "Indisponible": "bg-destructive/15 text-destructive",
+  "Disponible": "bg-green-100 text-green-700 border-green-200",
+  "En process": "bg-blue-100 text-blue-700 border-blue-200",
+  "Placé": "bg-orange-100 text-orange-700 border-orange-200",
+  "Indisponible": "bg-red-100 text-red-700 border-red-200",
 };
 
 const candidateStatuses = ["Disponible", "En process", "Placé", "Indisponible"];
@@ -166,17 +166,17 @@ const AdminSourcing = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const color = Object.entries(statusColor).find(([key]) => status.startsWith(key))?.[1] || "bg-secondary text-muted-foreground";
-    return <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ${color}`}>{status}</span>;
+    const color = Object.entries(statusColor).find(([key]) => status.startsWith(key))?.[1] || "bg-gray-100 text-gray-600 border-gray-200";
+    return <span className={`inline-block rounded border px-2 py-0.5 text-[11px] font-medium whitespace-nowrap ${color}`}>{status}</span>;
   };
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 px-6 py-5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-lg font-bold">Sourcing</h1>
-            <p className="text-xs text-muted-foreground">Gérer les candidats et profils</p>
+            <h1 className="font-display text-lg font-bold text-gray-900">Sourcing</h1>
+            <p className="text-[11px] text-gray-500">Gérer les candidats et profils</p>
           </div>
           <Dialog open={addOpen} onOpenChange={setAddOpen}>
             <DialogTrigger asChild>
@@ -192,49 +192,49 @@ const AdminSourcing = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label>Prénom</Label>
-                    <Input className="mt-1.5 bg-background/50" value={newCandidate.first_name} onChange={e => setNewCandidate(p => ({ ...p, first_name: e.target.value }))} placeholder="Jean" />
+                    <Input className="mt-1.5 bg-white border-gray-200" value={newCandidate.first_name} onChange={e => setNewCandidate(p => ({ ...p, first_name: e.target.value }))} placeholder="Jean" />
                   </div>
                   <div>
                     <Label>Nom</Label>
-                    <Input className="mt-1.5 bg-background/50" value={newCandidate.last_name} onChange={e => setNewCandidate(p => ({ ...p, last_name: e.target.value }))} placeholder="Dupont" />
+                    <Input className="mt-1.5 bg-white border-gray-200" value={newCandidate.last_name} onChange={e => setNewCandidate(p => ({ ...p, last_name: e.target.value }))} placeholder="Dupont" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label>Téléphone</Label>
-                    <Input className="mt-1.5 bg-background/50" value={newCandidate.phone} onChange={e => setNewCandidate(p => ({ ...p, phone: e.target.value }))} placeholder="06 12 34 56 78" />
+                    <Input className="mt-1.5 bg-white border-gray-200" value={newCandidate.phone} onChange={e => setNewCandidate(p => ({ ...p, phone: e.target.value }))} placeholder="06 12 34 56 78" />
                   </div>
                   <div>
                     <Label>Poste</Label>
-                    <Input className="mt-1.5 bg-background/50" value={newCandidate.position} onChange={e => setNewCandidate(p => ({ ...p, position: e.target.value }))} placeholder="Dev Fullstack" />
+                    <Input className="mt-1.5 bg-white border-gray-200" value={newCandidate.position} onChange={e => setNewCandidate(p => ({ ...p, position: e.target.value }))} placeholder="Dev Fullstack" />
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   <div>
                     <Label>Expérience</Label>
-                    <Input className="mt-1.5 bg-background/50" value={newCandidate.experience} onChange={e => setNewCandidate(p => ({ ...p, experience: e.target.value }))} placeholder="5 ans" />
+                    <Input className="mt-1.5 bg-white border-gray-200" value={newCandidate.experience} onChange={e => setNewCandidate(p => ({ ...p, experience: e.target.value }))} placeholder="5 ans" />
                   </div>
                   <div>
                     <Label>TJM (€)</Label>
-                    <Input className="mt-1.5 bg-background/50" type="number" value={newCandidate.tjm} onChange={e => setNewCandidate(p => ({ ...p, tjm: e.target.value }))} placeholder="450" />
+                    <Input className="mt-1.5 bg-white border-gray-200" type="number" value={newCandidate.tjm} onChange={e => setNewCandidate(p => ({ ...p, tjm: e.target.value }))} placeholder="450" />
                   </div>
                   <div>
                     <Label>Disponibilité</Label>
-                    <Input className="mt-1.5 bg-background/50" value={newCandidate.availability} onChange={e => setNewCandidate(p => ({ ...p, availability: e.target.value }))} placeholder="Immédiate" />
+                    <Input className="mt-1.5 bg-white border-gray-200" value={newCandidate.availability} onChange={e => setNewCandidate(p => ({ ...p, availability: e.target.value }))} placeholder="Immédiate" />
                   </div>
                 </div>
                 <div>
                   <Label>Stack (séparées par des virgules)</Label>
-                  <Input className="mt-1.5 bg-background/50" value={newCandidate.stack} onChange={e => setNewCandidate(p => ({ ...p, stack: e.target.value }))} placeholder="React, TypeScript, Node.js" />
+                  <Input className="mt-1.5 bg-white border-gray-200" value={newCandidate.stack} onChange={e => setNewCandidate(p => ({ ...p, stack: e.target.value }))} placeholder="React, TypeScript, Node.js" />
                 </div>
                 <div>
                   <Label>CV (PDF)</Label>
                   <div className="mt-1.5 flex items-center gap-2">
                     <input ref={fileInputRef} type="file" accept=".pdf" className="hidden" onChange={e => setCvFile(e.target.files?.[0] || null)} />
-                    <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
+                    <Button type="button" variant="outline" size="sm" className="border-gray-200" onClick={() => fileInputRef.current?.click()}>
                       <FileUp className="mr-2 h-4 w-4" /> {cvFile ? cvFile.name : "Choisir un fichier"}
                     </Button>
-                    {cvFile && <span className="text-xs text-muted-foreground">{(cvFile.size / 1024).toFixed(0)} Ko</span>}
+                    {cvFile && <span className="text-[11px] text-gray-500">{(cvFile.size / 1024).toFixed(0)} Ko</span>}
                   </div>
                 </div>
                 <Button onClick={handleAdd} disabled={createCandidate.isPending || uploading} className="gradient-primary border-0 w-full">
@@ -246,65 +246,73 @@ const AdminSourcing = () => {
         </div>
 
         <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Rechercher candidat, poste, stack..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 bg-background/50" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Input placeholder="Rechercher candidat, poste, stack..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 bg-white border-gray-200" />
         </div>
 
         <motion.div
-          className="overflow-x-auto rounded-xl border border-border/50"
+          className="overflow-hidden rounded-lg border border-gray-200"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
         >
           {isLoading ? (
-            <div className="text-center text-muted-foreground py-12">Chargement...</div>
+            <div className="space-y-0">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-4 px-3 h-11 border-b border-gray-100">
+                  <div className="h-3 w-28 animate-pulse rounded bg-gray-200" />
+                  <div className="h-3 w-20 animate-pulse rounded bg-gray-100" />
+                  <div className="h-3 w-16 animate-pulse rounded bg-gray-100" />
+                </div>
+              ))}
+            </div>
           ) : filtered.length === 0 ? (
-            <div className="py-12 text-center text-muted-foreground">Aucun candidat trouvé.</div>
+            <div className="py-12 text-center text-[11px] text-gray-400">Aucun candidat trouvé.</div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-secondary/30">
-                  <TableHead>Nom</TableHead>
-                  <TableHead>Poste</TableHead>
-                  <TableHead>Expérience</TableHead>
-                  <TableHead>TJM</TableHead>
-                  <TableHead>Disponibilité</TableHead>
-                  <TableHead>Stack</TableHead>
-                  <TableHead>Téléphone</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>CV</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((candidate) => (
-                  <TableRow key={candidate.id}>
-                    <TableCell className="font-medium whitespace-nowrap">{candidate.first_name} {candidate.last_name}</TableCell>
-                    <TableCell>{candidate.position || "—"}</TableCell>
-                    <TableCell>{candidate.experience || "—"}</TableCell>
-                    <TableCell className="font-medium">{candidate.tjm}€/j</TableCell>
-                    <TableCell>{candidate.availability || "—"}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1 max-w-[200px]">
-                        {candidate.stack.map(t => (
-                          <Badge key={t} variant="outline" className="text-xs">{t}</Badge>
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Nom</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Poste</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Exp.</th>
+                  <th className="px-3 py-2.5 text-right text-[11px] font-medium uppercase text-gray-500 w-[100px]">TJM</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Dispo.</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Stack</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Tél.</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500 w-[140px]">Statut</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">CV</th>
+                  <th className="px-3 py-2.5 text-right text-[11px] font-medium uppercase text-gray-500 w-[120px]">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((candidate, idx) => (
+                  <tr key={candidate.id} className={`h-11 border-b border-gray-100 hover:bg-blue-50/40 transition-colors duration-100 ${idx % 2 === 1 ? "bg-gray-50/30" : "bg-white"}`}>
+                    <td className="px-3 py-2.5 max-w-0 truncate font-medium text-gray-900">{candidate.first_name} {candidate.last_name}</td>
+                    <td className="px-3 py-2.5 max-w-0 truncate text-gray-600">{candidate.position || "—"}</td>
+                    <td className="px-3 py-2.5 text-gray-600">{candidate.experience || "—"}</td>
+                    <td className="px-3 py-2.5 w-[100px] text-right tabular-nums font-medium text-gray-900">{candidate.tjm}€/j</td>
+                    <td className="px-3 py-2.5 text-gray-600">{candidate.availability || "—"}</td>
+                    <td className="px-3 py-2.5">
+                      <div className="flex flex-wrap gap-1 max-w-[180px]">
+                        {candidate.stack.slice(0, 3).map(t => (
+                          <span key={t} className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-500">{t}</span>
                         ))}
                       </div>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">{candidate.phone || "—"}</TableCell>
-                    <TableCell>{getStatusBadge(candidate.status)}</TableCell>
-                    <TableCell>
+                    </td>
+                    <td className="px-3 py-2.5 max-w-0 truncate text-gray-500 tabular-nums">{candidate.phone || "—"}</td>
+                    <td className="px-3 py-2.5 w-[140px]">{getStatusBadge(candidate.status)}</td>
+                    <td className="px-3 py-2.5">
                       {candidate.cv_url ? (
                         <a href={candidate.cv_url} target="_blank" rel="noopener noreferrer">
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" className="h-6 text-[11px] border-gray-200">
                             <ExternalLink className="mr-1 h-3 w-3" /> CV
                           </Button>
                         </a>
-                      ) : "—"}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
+                      ) : <span className="text-gray-400">—</span>}
+                    </td>
+                    <td className="px-3 py-2.5 w-[120px] text-right">
+                      <div className="flex justify-end gap-0.5">
                         <Select value={candidate.status} onValueChange={(v) => handleUpdateStatus(candidate.id, v)}>
-                          <SelectTrigger className="h-7 w-[130px] bg-background/50 text-xs">
+                          <SelectTrigger className="h-6 w-[110px] bg-white border-gray-200 text-[11px]">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -313,18 +321,18 @@ const AdminSourcing = () => {
                             ))}
                           </SelectContent>
                         </Select>
-                        <Button variant="ghost" size="sm" onClick={() => openEdit(candidate)}>
-                          <Pencil className="h-4 w-4" />
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => openEdit(candidate)}>
+                          <Pencil className="h-3.5 w-3.5" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteConfirmId(candidate.id)}>
-                          <Trash2 className="h-4 w-4" />
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive hover:text-destructive" onClick={() => setDeleteConfirmId(candidate.id)}>
+                          <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 ))}
-              </TableBody>
-            </Table>
+              </tbody>
+            </table>
           )}
         </motion.div>
       </div>

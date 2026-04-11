@@ -18,9 +18,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 const commStatusColor: Record<string, string> = {
-  "À générer": "bg-warning/15 text-warning",
-  "Générée": "bg-primary/15 text-primary",
-  "Payée": "bg-success/15 text-success",
+  "À générer": "bg-amber-100 text-amber-700 border-amber-200",
+  "Générée": "bg-blue-100 text-blue-700 border-blue-200",
+  "Payée": "bg-green-100 text-green-700 border-green-200",
 };
 
 const months = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
@@ -158,14 +158,14 @@ const AdminCommissions = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 px-6 py-5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-lg font-bold">Commissions</h1>
-            <p className="text-xs text-muted-foreground">Suivi financier et jours travaillés</p>
+            <h1 className="font-display text-lg font-bold text-gray-900">Commissions</h1>
+            <p className="text-[11px] text-gray-500">Suivi financier et jours travaillés</p>
           </div>
           <Select value={filterYear} onValueChange={setFilterYear}>
-            <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-[120px] bg-white border-gray-200"><SelectValue /></SelectTrigger>
             <SelectContent>
               {years.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
             </SelectContent>
@@ -205,68 +205,77 @@ const AdminCommissions = () => {
 
         {/* Chart */}
         <motion.div
-          className="gradient-card rounded-xl border border-border/50 p-5"
+          className="rounded-xl border border-gray-200 bg-white p-5"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <h2 className="mb-4 font-display text-lg font-semibold">Répartition mensuelle ({filterYear})</h2>
-          <ResponsiveContainer width="100%" height={300}>
+          <h2 className="mb-4 font-display text-lg font-semibold text-gray-900">Répartition mensuelle ({filterYear})</h2>
+          <ResponsiveContainer width="100%" height={240}>
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} width={35} />
               <Tooltip
-                contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, color: "hsl(var(--foreground))" }}
+                contentStyle={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 8, fontSize: 12, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+                cursor={{ fill: '#F9FAFB' }}
                 formatter={(value: number) => `${value.toLocaleString("fr-FR")} €`}
               />
-              <Legend />
-              <Bar dataKey="apporteurs" name="Comm. apporteurs" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="admin" name="Marge admin" fill="hsl(var(--warning))" radius={[4, 4, 0, 0]} />
+              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
+              <Bar dataKey="apporteurs" name="Comm. apporteurs" fill="#2563EB" radius={[4, 4, 0, 0]} maxBarSize={32} />
+              <Bar dataKey="admin" name="Marge admin" fill="#F97316" radius={[4, 4, 0, 0]} maxBarSize={32} />
             </BarChart>
           </ResponsiveContainer>
         </motion.div>
 
         {/* Commissions table */}
         <motion.div
-          className="overflow-x-auto rounded-xl border border-border/50"
+          className="overflow-hidden rounded-lg border border-gray-200"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
           {isLoading ? (
-            <div className="py-12 text-center text-muted-foreground">Chargement...</div>
+            <div className="space-y-0">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-4 px-3 h-11 border-b border-gray-100">
+                  <div className="h-3 w-20 animate-pulse rounded bg-gray-200" />
+                  <div className="h-3 w-24 animate-pulse rounded bg-gray-100" />
+                  <div className="h-3 w-16 animate-pulse rounded bg-gray-100" />
+                </div>
+              ))}
+            </div>
           ) : yearCommissions.length === 0 ? (
-            <div className="py-12 text-center text-muted-foreground">Aucune commission pour {filterYear}.</div>
+            <div className="py-12 text-center text-[11px] text-gray-400">Aucune commission pour {filterYear}.</div>
           ) : (
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-border/50 bg-secondary/30">
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Mois</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Apporteur</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Consultant</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Jours</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Total comm.</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Marge admin</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Facture</th>
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Statut</th>
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Mois</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Apporteur</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Consultant</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Jours</th>
+                  <th className="px-3 py-2.5 text-right text-[11px] font-medium uppercase text-gray-500 w-[100px]">Total comm.</th>
+                  <th className="px-3 py-2.5 text-right text-[11px] font-medium uppercase text-gray-500 w-[100px]">Marge admin</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Facture</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500 w-[140px]">Statut</th>
                 </tr>
               </thead>
               <tbody>
-                {yearCommissions.map((c) => {
+                {yearCommissions.map((c, idx) => {
                   const mission = getMissionInfo(c.mission_id);
                   return (
-                    <tr key={c.id} className="border-b border-border/30 hover:bg-secondary/20 transition-colors">
-                      <td className="px-4 py-3 text-muted-foreground">{months[(c.commission_month || 1) - 1]} {c.commission_year}</td>
-                      <td className="px-4 py-3 font-medium">{getApporteurName(c.apporteur_id)}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{mission?.consultant_name || "—"}</td>
-                      <td className="px-4 py-3">
+                    <tr key={c.id} className={`h-11 border-b border-gray-100 hover:bg-blue-50/40 transition-colors duration-100 ${idx % 2 === 1 ? "bg-gray-50/30" : "bg-white"}`}>
+                      <td className="px-3 py-2.5 text-gray-500 w-[100px] tabular-nums">{months[(c.commission_month || 1) - 1]} {c.commission_year}</td>
+                      <td className="px-3 py-2.5 max-w-0 truncate font-medium text-gray-900">{getApporteurName(c.apporteur_id)}</td>
+                      <td className="px-3 py-2.5 max-w-0 truncate text-gray-600">{mission?.consultant_name || "—"}</td>
+                      <td className="px-3 py-2.5">
                         {c.status === "Payée" ? (
-                          <span className="text-xs font-medium">{c.days_worked}</span>
+                          <span className="text-xs font-medium text-gray-900">{c.days_worked}</span>
                         ) : (
                           <Input
                             type="number"
-                            className="h-7 w-20 bg-background/50 text-xs"
+                            className="h-7 w-20 bg-white border-gray-200 text-xs"
                             value={c.days_worked || 0}
                             onChange={(e) => handleUpdateDaysWorked(c.id, parseFloat(e.target.value) || 0)}
                             min={0}
@@ -274,30 +283,30 @@ const AdminCommissions = () => {
                           />
                         )}
                       </td>
-                      <td className="px-4 py-3 font-semibold">{(c.days_worked * c.amount).toLocaleString("fr-FR")} €</td>
-                      <td className="px-4 py-3 font-semibold text-gradient">{(c.days_worked * c.admin_amount).toLocaleString("fr-FR")} €</td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-2.5 w-[100px] text-right tabular-nums font-medium text-gray-900">{(c.days_worked * c.amount).toLocaleString("fr-FR")} €</td>
+                      <td className="px-3 py-2.5 w-[100px] text-right tabular-nums font-medium text-blue-600">{(c.days_worked * c.admin_amount).toLocaleString("fr-FR")} €</td>
+                      <td className="px-3 py-2.5">
                         {(c as any).invoice_url ? (
-                          <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs text-success" onClick={() => {
+                          <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs text-green-600" onClick={() => {
                             const { data } = supabase.storage.from("documents").getPublicUrl((c as any).invoice_url);
                             window.open(data.publicUrl, "_blank");
                           }}>
                             <Eye className="h-3 w-3" /> Voir
                           </Button>
                         ) : c.status === "Générée" ? (
-                          <Button variant="outline" size="sm" className="h-7 gap-1 text-xs" onClick={() => setInvoiceUploadId(c.id)}>
+                          <Button variant="outline" size="sm" className="h-7 gap-1 text-xs border-gray-200" onClick={() => setInvoiceUploadId(c.id)}>
                             <Upload className="h-3 w-3" /> Uploader
                           </Button>
                         ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
+                          <span className="text-xs text-gray-400">—</span>
                         )}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-2.5 w-[140px]">
                         {c.status === "Payée" ? (
-                          <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${commStatusColor["Payée"]}`}>Payée</span>
+                          <span className="inline-block rounded border px-2 py-0.5 text-[11px] font-medium bg-green-100 text-green-700 border-green-200">Payée</span>
                         ) : (
                           <Select value={c.status} onValueChange={(v) => handleUpdateStatus(c.id, v)}>
-                            <SelectTrigger className={`h-7 w-[120px] border text-xs font-medium ${commStatusColor[c.status] || ""}`}>
+                            <SelectTrigger className={`h-6 w-[120px] border text-[11px] font-medium ${commStatusColor[c.status] || ""}`}>
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>

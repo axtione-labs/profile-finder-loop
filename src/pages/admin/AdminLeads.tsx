@@ -69,14 +69,14 @@ type LeadStatus = "Déclaré" | "À qualifier" | "Qualifié" | "En sourcing" | "
 const allStatuses: LeadStatus[] = ["Déclaré", "À qualifier", "Qualifié", "En sourcing", "Profil trouvé", "Envoyé client", "Perdu", "Gagné"];
 
 const statusColor: Record<string, string> = {
-  "Déclaré": "bg-warning/15 text-warning border-warning/30",
-  "À qualifier": "bg-warning/15 text-warning border-warning/30",
-  "Qualifié": "bg-primary/15 text-primary border-primary/30",
-  "En sourcing": "bg-primary/15 text-primary border-primary/30",
-  "Profil trouvé": "bg-success/15 text-success border-success/30",
-  "Envoyé client": "bg-primary/15 text-primary border-primary/30",
-  "Perdu": "bg-destructive/15 text-destructive border-destructive/30",
-  "Gagné": "bg-success/15 text-success border-success/30",
+  "Déclaré": "bg-amber-100 text-amber-700 border-amber-200",
+  "À qualifier": "bg-amber-100 text-amber-700 border-amber-200",
+  "Qualifié": "bg-blue-100 text-blue-700 border-blue-200",
+  "En sourcing": "bg-blue-100 text-blue-700 border-blue-200",
+  "Profil trouvé": "bg-green-100 text-green-700 border-green-200",
+  "Envoyé client": "bg-purple-100 text-purple-700 border-purple-200",
+  "Perdu": "bg-red-100 text-red-700 border-red-200",
+  "Gagné": "bg-green-100 text-green-700 border-green-200",
 };
 
 const AdminLeads = () => {
@@ -166,10 +166,10 @@ const AdminLeads = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-4">
+      <div className="space-y-4 px-6 py-5">
         <div>
-          <h1 className="font-display text-lg font-bold">Gestion des besoins</h1>
-          <p className="text-xs text-muted-foreground">Qualifier, affecter et suivre les leads · {total} résultat(s)</p>
+          <h1 className="font-display text-lg font-bold text-gray-900">Gestion des besoins</h1>
+          <p className="text-[11px] text-gray-500">Qualifier, affecter et suivre les leads · {total} résultat(s)</p>
         </div>
 
         <motion.div
@@ -178,18 +178,18 @@ const AdminLeads = () => {
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Rechercher poste, client, apporteur..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 bg-background/50" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Input placeholder="Rechercher poste, client, apporteur..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 bg-white border-gray-200" />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[160px] bg-background/50"><SelectValue placeholder="Statut" /></SelectTrigger>
+            <SelectTrigger className="w-[160px] bg-white border-gray-200"><SelectValue placeholder="Statut" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tous les statuts</SelectItem>
               {allStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-            <SelectTrigger className="w-[140px] bg-background/50"><SelectValue placeholder="Priorité" /></SelectTrigger>
+            <SelectTrigger className="w-[140px] bg-white border-gray-200"><SelectValue placeholder="Priorité" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Toutes</SelectItem>
               <SelectItem value="urgent">Urgent</SelectItem>
@@ -199,49 +199,69 @@ const AdminLeads = () => {
         </motion.div>
 
         <motion.div
-          className="overflow-x-auto rounded-xl border border-border/50"
+          className="overflow-hidden rounded-lg border border-gray-200"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
           {isLoading ? (
-            <div className="py-12 text-center text-muted-foreground">Chargement...</div>
+            <div className="space-y-0">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-4 px-3 h-11 border-b border-gray-100">
+                  <div className="h-3 w-32 animate-pulse rounded bg-gray-200" />
+                  <div className="h-3 w-24 animate-pulse rounded bg-gray-100" />
+                  <div className="h-3 w-20 animate-pulse rounded bg-gray-100" />
+                  <div className="h-3 w-16 animate-pulse rounded bg-gray-100" />
+                </div>
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="py-12 text-center text-[11px] text-gray-400">Aucun résultat trouvé</div>
           ) : (
             <>
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-border/50 bg-secondary/30">
-                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Poste</th>
-                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Client</th>
-                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Apporteur</th>
-                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">TJM</th>
-                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Marge</th>
-                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Statut</th>
-                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Actions</th>
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Poste</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Client</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Apporteur</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500 w-[100px] text-right">TJM</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Marge</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Priorité</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500 w-[140px]">Statut</th>
+                  <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500 w-[100px]">Date</th>
+                  <th className="px-3 py-2.5 text-right text-[11px] font-medium uppercase text-gray-500 w-[120px]">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {paginated.map((lead) => (
-                  <tr key={lead.id} className="border-b border-border/30 hover:bg-secondary/20 transition-colors">
-                    <td className="px-3 py-2">
-                      <div>
-                        <span className="font-medium">{lead.position}</span>
-                        <div className="mt-0.5 flex flex-wrap gap-1">
-                          {lead.stack.slice(0, 3).map(t => (
-                            <span key={t} className="rounded bg-secondary/60 px-1.5 py-0.5 text-[10px] text-muted-foreground">{t}</span>
-                          ))}
-                        </div>
+                {paginated.map((lead, idx) => (
+                  <tr key={lead.id} className={`h-11 border-b border-gray-100 hover:bg-blue-50/40 transition-colors duration-100 ${idx % 2 === 1 ? "bg-gray-50/30" : "bg-white"}`}>
+                    <td className="px-3 py-2.5 max-w-0">
+                      <div className="truncate font-medium text-gray-900">{lead.position}</div>
+                      <div className="mt-0.5 flex flex-wrap gap-1">
+                        {lead.stack.slice(0, 3).map(t => (
+                          <span key={t} className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-500">{t}</span>
+                        ))}
                       </div>
                     </td>
-                    <td className="px-3 py-2 text-muted-foreground">{lead.client}</td>
-                    <td className="px-3 py-2 text-muted-foreground">{getApporteurName(lead.user_id)}</td>
-                    <td className="px-3 py-2 font-medium">{lead.tjm}€</td>
-                    <td className="px-3 py-2">
+                    <td className="px-3 py-2.5 max-w-0 truncate text-gray-600">{lead.client}</td>
+                    <td className="px-3 py-2.5 max-w-0 truncate text-gray-600">{getApporteurName(lead.user_id)}</td>
+                    <td className="px-3 py-2.5 w-[100px] text-right tabular-nums font-medium text-gray-900">{lead.tjm}€</td>
+                    <td className="px-3 py-2.5">
                       <MarginCell lead={lead} updateLead={updateLead} />
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-3 py-2.5">
+                      {lead.priority === "urgent" ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded border bg-red-100 text-red-600 border-red-200">
+                          <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" /> Urgent
+                        </span>
+                      ) : (
+                        <span className="text-[11px] font-medium px-2 py-0.5 rounded border bg-gray-100 text-gray-600 border-gray-200">Normal</span>
+                      )}
+                    </td>
+                    <td className="px-3 py-2.5 w-[140px]">
                       <Select value={lead.status} onValueChange={(v) => handleUpdateStatus(lead.id, v)}>
-                        <SelectTrigger className={`h-6 w-[120px] border text-[11px] font-medium ${statusColor[lead.status] || ""}`}>
+                        <SelectTrigger className={`h-6 w-[130px] border text-[11px] font-medium ${statusColor[lead.status] || ""}`}>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -249,8 +269,9 @@ const AdminLeads = () => {
                         </SelectContent>
                       </Select>
                     </td>
-                    <td className="px-3 py-2">
-                      <div className="flex gap-0.5">
+                    <td className="px-3 py-2.5 w-[100px] tabular-nums text-gray-500">{new Date(lead.created_at).toLocaleDateString("fr-FR")}</td>
+                    <td className="px-3 py-2.5 w-[120px] text-right">
+                      <div className="flex justify-end gap-0.5">
                         <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setSelectedLead(lead)}>
                           <Eye className="h-3.5 w-3.5" />
                         </Button>
@@ -268,9 +289,6 @@ const AdminLeads = () => {
             </table>
             <TablePagination page={page} totalPages={totalPages} total={total} from={from} to={to} setPage={setPage} />
             </>
-          )}
-          {!isLoading && filtered.length === 0 && (
-            <div className="py-8 text-center text-xs text-muted-foreground">Aucun résultat trouvé</div>
           )}
         </motion.div>
 

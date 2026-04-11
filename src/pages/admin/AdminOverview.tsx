@@ -7,15 +7,15 @@ import { useMissions, useCommissions } from "@/hooks/useMissions";
 import { useProfiles } from "@/hooks/useProfiles";
 
 const statusColor: Record<string, string> = {
-  "Déclaré": "bg-warning/15 text-warning",
-  "À qualifier": "bg-warning/15 text-warning",
-  "Qualifié": "bg-primary/15 text-primary",
-  "En sourcing": "bg-primary/15 text-primary",
-  "Profil trouvé": "bg-success/15 text-success",
-  "Envoyé client": "bg-primary/15 text-primary",
-  "Négociation": "bg-warning/15 text-warning",
-  "Gagné": "bg-success/15 text-success",
-  "Perdu": "bg-destructive/15 text-destructive",
+  "Déclaré": "bg-amber-100 text-amber-700 border-amber-200",
+  "À qualifier": "bg-amber-100 text-amber-700 border-amber-200",
+  "Qualifié": "bg-blue-100 text-blue-700 border-blue-200",
+  "En sourcing": "bg-blue-100 text-blue-700 border-blue-200",
+  "Profil trouvé": "bg-green-100 text-green-700 border-green-200",
+  "Envoyé client": "bg-purple-100 text-purple-700 border-purple-200",
+  "Négociation": "bg-amber-100 text-amber-700 border-amber-200",
+  "Gagné": "bg-green-100 text-green-700 border-green-200",
+  "Perdu": "bg-red-100 text-red-700 border-red-200",
 };
 
 const AdminOverview = () => {
@@ -46,10 +46,10 @@ const AdminOverview = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 px-6 py-5">
         <div>
-          <h1 className="font-display text-lg font-bold">Vue d'ensemble</h1>
-          <p className="text-xs text-muted-foreground">Tableau de bord administrateur</p>
+          <h1 className="font-display text-lg font-bold text-gray-900">Vue d'ensemble</h1>
+          <p className="text-[11px] text-gray-500">Tableau de bord administrateur</p>
         </div>
 
         <motion.div
@@ -58,13 +58,15 @@ const AdminOverview = () => {
           animate={{ opacity: 1, y: 0 }}
         >
           {cards.map((card) => (
-            <div key={card.label} className="rounded-xl border border-border/50 bg-card p-5">
+            <div key={card.label} className="rounded-xl border border-gray-200 bg-white p-4 hover:shadow-sm transition">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">{card.label}</span>
-                <card.icon className="h-4 w-4 text-muted-foreground" />
+                <span className="text-[11px] text-gray-500">{card.label}</span>
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50">
+                  <card.icon className="h-4 w-4 text-blue-600" />
+                </div>
               </div>
-              <div className="mt-2 font-display text-xl font-bold">{card.value}</div>
-              <p className="mt-1 text-xs text-muted-foreground">{card.change}</p>
+              <div className="mt-1 font-display text-[22px] font-bold text-gray-900">{card.value}</div>
+              <p className="mt-0.5 text-[11px] text-gray-500">{card.change}</p>
             </div>
           ))}
         </motion.div>
@@ -74,45 +76,47 @@ const AdminOverview = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
         >
-          <h2 className="mb-4 font-display text-lg font-semibold flex items-center gap-2">
-            <Clock className="h-4 w-4 text-primary" /> Derniers besoins
+          <h2 className="mb-4 font-display text-lg font-semibold flex items-center gap-2 text-gray-900">
+            <Clock className="h-4 w-4 text-blue-600" /> Derniers besoins
           </h2>
           {recentLeads.length === 0 ? (
-            <div className="gradient-card rounded-xl border border-border/50 p-8 text-center text-muted-foreground">
+            <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-gray-400 text-[11px]">
               Aucun lead pour le moment.
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-border/50">
+            <div className="overflow-hidden rounded-lg border border-gray-200">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-border/50 bg-secondary/30">
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Apporteur</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Client</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Poste</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Statut</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Priorité</th>
-                    <th className="px-4 py-3 text-left font-medium text-muted-foreground">Date</th>
+                  <tr className="border-b border-gray-200 bg-gray-50">
+                    <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Apporteur</th>
+                    <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Client</th>
+                    <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Poste</th>
+                    <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500 w-[140px]">Statut</th>
+                    <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Priorité</th>
+                    <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500 w-[100px]">Date</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {recentLeads.map((lead) => (
-                    <tr key={lead.id} className="border-b border-border/30 hover:bg-secondary/20 transition-colors">
-                      <td className="px-4 py-3 font-medium">{getApporteurName(lead.user_id)}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{lead.client}</td>
-                      <td className="px-4 py-3">{lead.position}</td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor[lead.status] || ""}`}>
+                  {recentLeads.map((lead, idx) => (
+                    <tr key={lead.id} className={`h-11 border-b border-gray-100 hover:bg-blue-50/40 transition-colors duration-100 ${idx % 2 === 1 ? "bg-gray-50/30" : "bg-white"}`}>
+                      <td className="px-3 py-2.5 max-w-0 truncate font-medium text-gray-900">{getApporteurName(lead.user_id)}</td>
+                      <td className="px-3 py-2.5 max-w-0 truncate text-gray-600">{lead.client}</td>
+                      <td className="px-3 py-2.5 max-w-0 truncate text-gray-900">{lead.position}</td>
+                      <td className="px-3 py-2.5 w-[140px]">
+                        <span className={`inline-block rounded border px-2 py-0.5 text-[11px] font-medium ${statusColor[lead.status] || ""}`}>
                           {lead.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-2.5">
                         {lead.priority === "urgent" ? (
-                          <span className="text-xs font-medium text-destructive">🔴 Urgent</span>
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded border bg-red-100 text-red-600 border-red-200">
+                            <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" /> Urgent
+                          </span>
                         ) : (
-                          <span className="text-xs text-muted-foreground">Normal</span>
+                          <span className="text-[11px] font-medium px-2 py-0.5 rounded border bg-gray-100 text-gray-600 border-gray-200">Normal</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">{new Date(lead.created_at).toLocaleDateString("fr-FR")}</td>
+                      <td className="px-3 py-2.5 w-[100px] tabular-nums text-gray-500">{new Date(lead.created_at).toLocaleDateString("fr-FR")}</td>
                     </tr>
                   ))}
                 </tbody>
