@@ -84,7 +84,7 @@ const Login = () => {
             Transformez vos contacts en <span className="text-gradient">commissions</span>
           </h2>
           <p className="text-white/60 text-lg leading-relaxed">
-            Déclarez un besoin IT en 2 minutes. Nous trouvons le profil. Vous touchez votre commission.
+            Déclarez un besoin IT en 2 minutes, nous trouvons le profil adapté et vous touchez votre commission en quelques clics.
           </p>
         </motion.div>
       </div>
