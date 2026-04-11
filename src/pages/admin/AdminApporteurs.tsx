@@ -222,6 +222,7 @@ const AdminApporteurs = () => {
               {tab === "trash" ? "La corbeille est vide" : "Aucun apporteur trouvé"}
             </div>
           ) : (
+            <>
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-border/50 bg-secondary/30">
