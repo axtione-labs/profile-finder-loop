@@ -158,37 +158,24 @@ const Index = () => {
       </nav>
 
       {/* Hero */}
-      <section className="gradient-hero relative overflow-hidden pt-32 pb-24">
-        {/* Decorative elements */}
-        <div className="absolute inset-0" style={{
-          backgroundImage: "radial-gradient(circle at 20% 50%, hsl(250 80% 70% / 0.25), transparent 50%), radial-gradient(circle at 80% 20%, hsl(200 90% 70% / 0.15), transparent 50%), radial-gradient(circle at 50% 80%, hsl(221 83% 40% / 0.2), transparent 40%)"
-        }} />
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")"
+      <section className="gradient-hero relative overflow-hidden pt-32 pb-20">
+        <div className="absolute inset-0 opacity-30" style={{
+          backgroundImage: "radial-gradient(circle at 30% 50%, hsl(221 83% 53% / 0.12), transparent 50%), radial-gradient(circle at 70% 30%, hsl(250 80% 60% / 0.08), transparent 50%)"
         }} />
         <div className="container relative mx-auto px-6 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <span className="mb-6 inline-block rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-white/90 backdrop-blur-sm">
+            <span className="mb-6 inline-block rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
               🐺 La meute qui chasse vos commissions
             </span>
           </motion.div>
 
           <motion.h1
-            className="mx-auto mt-6 max-w-4xl font-display text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl"
+            className="mx-auto mt-6 max-w-4xl font-display text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl"
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
           >
-            Transformez vos contacts en{" "}
-            <span className="text-gradient-hero">commissions récurrentes</span>.
+            Votre réseau vaut de l'<span className="text-gradient">or</span>.{" "}
+            Transformez chaque contact en <span className="text-gradient">revenu passif</span>.
           </motion.h1>
-
-          <motion.p
-            className="mx-auto mt-5 max-w-2xl text-lg text-white/70"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            Déclarez un besoin IT en 2 minutes. Nous trouvons le profil. Vous touchez votre commission.
-          </motion.p>
 
           {/* === CŒUR DE MÉTIER — Pipeline 3 étapes === */}
           <motion.div
@@ -205,23 +192,23 @@ const Index = () => {
               ].map((item, i) => (
                 <div key={i} className="flex items-center gap-3 sm:gap-4">
                   <motion.div
-                    className="flex items-center gap-2.5 rounded-full bg-white/10 border border-white/15 pl-3 pr-5 py-2.5 sm:py-3 backdrop-blur-sm"
+                    className="flex items-center gap-2.5 rounded-full bg-primary/10 border border-primary/20 pl-3 pr-5 py-2.5 sm:py-3"
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.4, delay: 0.4 + i * 0.15 }}
-                    whileHover={{ scale: 1.04, backgroundColor: "rgba(255,255,255,0.15)" }}
+                    whileHover={{ scale: 1.04, backgroundColor: "hsl(var(--primary) / 0.15)" }}
                   >
-                    <div className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center shrink-0">
-                      <item.icon className="w-4 h-4 text-white" />
+                    <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+                      <item.icon className="w-4 h-4 text-primary" />
                     </div>
-                    <span className="text-sm font-semibold text-white whitespace-pre-line leading-tight">
+                    <span className="text-sm font-semibold text-primary whitespace-pre-line leading-tight">
                       {item.label}
                     </span>
                   </motion.div>
                   {i < 2 && (
                     <>
                       <motion.div
-                        className="hidden sm:flex items-center text-white/30"
+                        className="hidden sm:flex items-center text-muted-foreground/50"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.7 + i * 0.15 }}
@@ -229,7 +216,7 @@ const Index = () => {
                         <ArrowRight className="h-4 w-4" />
                       </motion.div>
                       <motion.div
-                        className="sm:hidden text-white/30"
+                        className="sm:hidden text-muted-foreground/50"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.7 + i * 0.15 }}
@@ -243,20 +230,20 @@ const Index = () => {
             </div>
 
             <motion.p
-              className="mt-5 text-white/60 text-center text-base"
+              className="mt-5 text-muted-foreground text-center text-base"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.9 }}
             >
               On trouve le profil. Vous touchez la commission.{" "}
               <motion.span
-                className="relative inline-block text-white font-extrabold text-lg sm:text-xl"
+                className="relative inline-block text-foreground font-extrabold text-lg sm:text-xl"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 1.1, type: "spring", stiffness: 200 }}
               >
                 <motion.span
-                  className="absolute -inset-x-2 -inset-y-1 rounded-lg bg-white/10 -z-10"
+                  className="absolute -inset-x-2 -inset-y-1 rounded-lg bg-primary/15 -z-10"
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
                   transition={{ duration: 0.3, delay: 1.3 }}
@@ -269,24 +256,24 @@ const Index = () => {
 
           <motion.div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}>
             <Link to="/register">
-              <Button size="lg" className="bg-white text-primary hover:bg-white/90 border-0 px-6 sm:px-8 text-sm sm:text-base font-semibold shadow-lg shadow-black/20">
+              <Button size="lg" className="gradient-primary glow-primary border-0 px-6 sm:px-8 text-sm sm:text-base font-semibold">
                 Rejoindre la meute
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
             <a href="#blog">
-              <Button variant="outline" size="lg" className="text-white border-white/30 hover:bg-white/10 text-base">
+              <Button variant="outline" size="lg" className="text-base">
                 En savoir plus
               </Button>
             </a>
           </motion.div>
 
           {/* Stats */}
-          <motion.div className="mx-auto mt-14 grid max-w-xl grid-cols-3 gap-4 sm:gap-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5 }}>
+          <motion.div className="mx-auto mt-12 grid max-w-xl grid-cols-3 gap-4 sm:gap-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5 }}>
             {stats.map((s) => (
-              <div key={s.label} className="rounded-xl bg-white/5 border border-white/10 p-4 backdrop-blur-sm">
-                <div className="font-display text-3xl font-bold text-gradient-hero">{s.value}</div>
-                <div className="mt-1 text-sm text-white/60">{s.label}</div>
+              <div key={s.label}>
+                <div className="font-display text-3xl font-bold text-gradient">{s.value}</div>
+                <div className="mt-1 text-sm text-muted-foreground">{s.label}</div>
               </div>
             ))}
           </motion.div>
