@@ -249,7 +249,7 @@ const AdminLeads = () => {
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Client</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Apporteur</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">TJM</th>
-                  
+                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Marge</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Statut</th>
                   <th className="px-4 py-3 text-left font-medium text-muted-foreground">Actions</th>
                 </tr>
@@ -270,6 +270,9 @@ const AdminLeads = () => {
                     <td className="px-4 py-3 text-muted-foreground">{lead.client}</td>
                     <td className="px-4 py-3 text-muted-foreground">{getApporteurName(lead.user_id)}</td>
                     <td className="px-4 py-3 font-medium">{lead.tjm}€</td>
+                    <td className="px-4 py-3">
+                      <MarginCell lead={lead} updateLead={updateLead} />
+                    </td>
                     <td className="px-4 py-3">
                       <Select value={lead.status} onValueChange={(v) => handleUpdateStatus(lead.id, v)}>
                         <SelectTrigger className={`h-7 w-[130px] border text-xs font-medium ${statusColor[lead.status] || ""}`}>
