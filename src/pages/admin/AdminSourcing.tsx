@@ -298,7 +298,7 @@ const AdminSourcing = () => {
                         ))}
                       </div>
                     </td>
-                    <td className="px-3 py-2.5 max-w-0 truncate text-gray-500 tabular-nums">{candidate.phone || "—"}</td>
+                    <td className="px-3 py-2.5 whitespace-nowrap text-gray-500 tabular-nums">{candidate.phone || "—"}</td>
                     <td className="px-3 py-2.5 w-[140px]">{getStatusBadge(candidate.status)}</td>
                     <td className="px-3 py-2.5">
                       {candidate.cv_url ? (
