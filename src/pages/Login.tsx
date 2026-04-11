@@ -82,7 +82,7 @@ const Login = () => {
           </div>
           <h2 className="text-3xl font-display font-bold text-white mb-4">
             Transformez vos contacts en{" "}
-            <span className="text-yellow-300 drop-shadow-lg">revenus passifs</span>
+            <span className="font-extrabold text-warning">revenus passifs</span>
           </h2>
           <p className="text-white/60 text-lg leading-relaxed">
             Déclarez un besoin IT en 2 minutes, nous trouvons le profil adapté et vous touchez vos gains en quelques clics.
