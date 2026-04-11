@@ -29,6 +29,7 @@ const AdminApporteurs = () => {
   const { data: allDocuments = [] } = useAllDocuments();
   const validateDocument = useValidateDocument();
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search);
   const [selectedProfile, setSelectedProfile] = useState<any>(null);
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({ first_name: "", last_name: "", phone: "", company: "", admin_comment: "" });

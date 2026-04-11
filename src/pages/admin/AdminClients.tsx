@@ -30,6 +30,7 @@ const AdminClients = () => {
   const { data: leads = [], isLoading } = useLeads();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search);
   const [sectorFilter, setSectorFilter] = useState("all");
   const [editClient, setEditClient] = useState<ClientInfo | null>(null);
   const [editForm, setEditForm] = useState({ name: "", sector: "", contact_name: "", contact_phone: "", contact_email: "" });

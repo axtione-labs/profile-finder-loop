@@ -32,6 +32,7 @@ const AdminSourcing = () => {
   const updateCandidate = useUpdateCandidate();
   const deleteCandidate = useDeleteCandidate();
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search);
   const [addOpen, setAddOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editCandidate, setEditCandidate] = useState<any>(null);
