@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, ArrowRight, Check, Building2, Briefcase, DollarSign,
@@ -28,12 +28,24 @@ const stepsConfig = [
 
 const TOTAL_STEPS = stepsConfig.length;
 
+type FormErrors = Record<string, string>;
+
+const FieldError = ({ error }: { error?: string }) => {
+  if (!error) return null;
+  return <p className="text-sm text-destructive mt-1">{error}</p>;
+};
+
+const phoneRegex = /^(\+?\d{1,4}[\s.-]?)?(\(?\d{1,}\)?[\s.-]?){1,}$/;
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const nameRegex = /^[a-zA-ZÀ-ÿ0-9\s\-']+$/;
+
 const DeclareLead = () => {
   const [step, setStep] = useState(0);
   const navigate = useNavigate();
   const { user } = useAuth();
   const createLead = useCreateLead();
   const createContract = useCreateContract();
+  const formRef = useRef<HTMLDivElement>(null);
 
   const [form, setForm] = useState({
     client: "", sector: "", location: "", remote: "",
@@ -45,13 +57,24 @@ const DeclareLead = () => {
     description: "",
   });
 
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [leadId, setLeadId] = useState<string | null>(null);
   const [signatureData, setSignatureData] = useState("");
   const [signatureType, setSignatureType] = useState<"draw" | "text">("draw");
   const [signed, setSigned] = useState(false);
   const [contractUrl, setContractUrl] = useState<string | null>(null);
 
-  const update = (field: string, value: string | string[] | boolean) => setForm(f => ({ ...f, [field]: value }));
+  const update = (field: string, value: string | string[] | boolean) => {
+    setForm(f => ({ ...f, [field]: value }));
+    setTouched(t => ({ ...t, [field]: true }));
+    // Clear error on change
+    setErrors(e => {
+      const next = { ...e };
+      delete next[field];
+      return next;
+    });
+  };
 
   const handleClientSecretChange = (checked: boolean) => {
     setForm((prev) => ({
@@ -59,9 +82,95 @@ const DeclareLead = () => {
       client_secret: checked,
       ...(checked ? { client: "", contact_name: "", contact_phone: "", contact_email: "" } : {}),
     }));
+    if (checked) {
+      setErrors(e => {
+        const next = { ...e };
+        delete next.client;
+        delete next.contact_name;
+        delete next.contact_phone;
+        delete next.contact_email;
+        return next;
+      });
+    }
   };
 
-  // Submit lead at step 3→4 transition, then show contract at step 4
+  // Validation per step
+  const validateStep = useCallback((stepIndex: number): FormErrors => {
+    const e: FormErrors = {};
+
+    if (stepIndex === 0) {
+      if (!form.client_secret) {
+        if (!form.client.trim()) {
+          e.client = "Le nom du client est obligatoire";
+        } else if (form.client.trim().length < 2) {
+          e.client = "Le nom du client doit contenir au moins 2 caractères";
+        } else if (form.client.trim().length > 100) {
+          e.client = "Le nom du client ne doit pas dépasser 100 caractères";
+        } else if (!nameRegex.test(form.client.trim())) {
+          e.client = "Le nom du client contient des caractères non autorisés";
+        }
+      }
+      if (!form.sector) e.sector = "Veuillez sélectionner un secteur";
+      if (!form.location.trim()) {
+        e.location = "Veuillez renseigner la localisation";
+      } else if (form.location.trim().length < 2) {
+        e.location = "Veuillez renseigner la localisation";
+      }
+      if (!form.remote) e.remote = "Veuillez sélectionner le mode de travail";
+
+      if (!form.client_secret) {
+        if (!form.contact_name.trim()) {
+          e.contact_name = "Le nom du responsable est obligatoire";
+        } else if (form.contact_name.trim().length < 2) {
+          e.contact_name = "Le nom du responsable doit contenir au moins 2 caractères";
+        } else if (form.contact_name.trim().length > 100) {
+          e.contact_name = "Le nom du responsable ne doit pas dépasser 100 caractères";
+        }
+
+        if (form.contact_phone.trim() && !phoneRegex.test(form.contact_phone.trim())) {
+          e.contact_phone = "Format de téléphone invalide";
+        }
+
+        if (!form.contact_email.trim()) {
+          e.contact_email = "Adresse email invalide";
+        } else if (!emailRegex.test(form.contact_email.trim())) {
+          e.contact_email = "Adresse email invalide";
+        }
+      }
+    }
+
+    if (stepIndex === 1) {
+      if (!form.position.trim()) {
+        e.position = "Veuillez renseigner le poste recherché";
+      } else if (form.position.trim().length < 3) {
+        e.position = "Veuillez renseigner le poste recherché";
+      } else if (form.position.trim().length > 100) {
+        e.position = "Le poste ne doit pas dépasser 100 caractères";
+      }
+      if (!form.seniority) e.seniority = "Veuillez sélectionner la seniorité";
+      if (!form.start_date) e.start_date = "Veuillez sélectionner une date de démarrage valide";
+      if (!form.duration) e.duration = "Veuillez sélectionner une durée";
+    }
+
+    if (stepIndex === 2) {
+      if (!form.tjm.trim() || isNaN(Number(form.tjm)) || Number(form.tjm) <= 0) {
+        e.tjm = "Veuillez renseigner un TJM valide";
+      }
+      if (!form.priority) e.priority = "Veuillez sélectionner une priorité";
+    }
+
+    return e;
+  }, [form]);
+
+  const scrollToFirstError = () => {
+    setTimeout(() => {
+      const firstErrorEl = formRef.current?.querySelector('[data-field-error="true"]');
+      if (firstErrorEl) {
+        firstErrorEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 50);
+  };
+
   const submitLead = () => {
     createLead.mutate(
       {
@@ -102,7 +211,6 @@ const DeclareLead = () => {
     }
     setSigned(true);
 
-    // Send contract email to the user
     try {
       await supabase.functions.invoke("send-contract-email", {
         body: {
@@ -121,11 +229,38 @@ const DeclareLead = () => {
 
   const handleNext = () => {
     if (step === 3) {
+      // Validate all steps 0-2 before submitting
+      const allErrors: FormErrors = {
+        ...validateStep(0),
+        ...validateStep(1),
+        ...validateStep(2),
+      };
+      if (Object.keys(allErrors).length > 0) {
+        setErrors(allErrors);
+        // Go to first step with error
+        const step0Errors = validateStep(0);
+        if (Object.keys(step0Errors).length > 0) { setStep(0); }
+        else {
+          const step1Errors = validateStep(1);
+          if (Object.keys(step1Errors).length > 0) { setStep(1); }
+          else { setStep(2); }
+        }
+        scrollToFirstError();
+        return;
+      }
       submitLead();
     } else if (step < TOTAL_STEPS - 1) {
+      const stepErrors = validateStep(step);
+      if (Object.keys(stepErrors).length > 0) {
+        setErrors(prev => ({ ...prev, ...stepErrors }));
+        scrollToFirstError();
+        return;
+      }
       setStep(s => s + 1);
     }
   };
+
+  const hasFieldError = (field: string) => !!errors[field];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -138,7 +273,7 @@ const DeclareLead = () => {
         </div>
       </nav>
 
-      <div className="container mx-auto max-w-2xl px-6 py-12">
+      <div className="container mx-auto max-w-2xl px-6 py-12" ref={formRef}>
         {/* Progress bar */}
         <div className="mb-2">
           <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
@@ -185,7 +320,6 @@ const DeclareLead = () => {
             transition={{ duration: 0.6, ease: "easeOut" }}
             className="text-center space-y-8 py-8"
           >
-            {/* Animated celebration */}
             <motion.div
               className="relative mx-auto w-32 h-32"
               initial={{ rotate: -10 }}
@@ -217,7 +351,6 @@ const DeclareLead = () => {
               </p>
             </motion.div>
 
-            {/* Stats cards */}
             <motion.div
               className="grid grid-cols-3 gap-4"
               initial={{ opacity: 0, y: 20 }}
@@ -261,7 +394,6 @@ const DeclareLead = () => {
           </motion.div>
         ) : (
           <>
-            {/* Form Steps */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={step}
@@ -286,53 +418,92 @@ const DeclareLead = () => {
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                       {!form.client_secret && (
-                        <div className="sm:col-span-2">
-                          <Label>Client</Label>
-                          <Input placeholder="Nom du client" value={form.client} onChange={e => update("client", e.target.value)} className="mt-1.5 bg-background/50" />
+                        <div className="sm:col-span-2" data-field-error={hasFieldError("client") || undefined}>
+                          <Label>Client <span className="text-destructive">*</span></Label>
+                          <Input
+                            placeholder="Nom du client"
+                            value={form.client}
+                            onChange={e => update("client", e.target.value)}
+                            className={`mt-1.5 bg-background/50 ${hasFieldError("client") ? "border-destructive" : ""}`}
+                            maxLength={100}
+                          />
+                          <FieldError error={errors.client} />
                         </div>
                       )}
-                      <div>
-                        <Label>Secteur</Label>
+                      <div data-field-error={hasFieldError("sector") || undefined}>
+                        <Label>Secteur <span className="text-destructive">*</span></Label>
                         <Select value={form.sector} onValueChange={v => update("sector", v)}>
-                          <SelectTrigger className="mt-1.5 bg-background/50"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                          <SelectTrigger className={`mt-1.5 bg-background/50 ${hasFieldError("sector") ? "border-destructive" : ""}`}>
+                            <SelectValue placeholder="Sélectionner" />
+                          </SelectTrigger>
                           <SelectContent>
                             {["Banque / Finance", "Assurance", "Énergie", "Santé", "Retail", "Industrie", "Tech", "Telecom", "Public", "Autre"].map(s => (
                               <SelectItem key={s} value={s}>{s}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
+                        <FieldError error={errors.sector} />
                       </div>
-                      <div>
-                        <Label>Localisation</Label>
-                        <Input placeholder="Paris, Lyon, Remote..." value={form.location} onChange={e => update("location", e.target.value)} className="mt-1.5 bg-background/50" />
+                      <div data-field-error={hasFieldError("location") || undefined}>
+                        <Label>Localisation <span className="text-destructive">*</span></Label>
+                        <Input
+                          placeholder="Paris, Lyon, Remote..."
+                          value={form.location}
+                          onChange={e => update("location", e.target.value)}
+                          className={`mt-1.5 bg-background/50 ${hasFieldError("location") ? "border-destructive" : ""}`}
+                        />
+                        <FieldError error={errors.location} />
                       </div>
-                      <div>
-                        <Label>Mode de travail</Label>
+                      <div data-field-error={hasFieldError("remote") || undefined}>
+                        <Label>Mode de travail <span className="text-destructive">*</span></Label>
                         <Select value={form.remote} onValueChange={v => update("remote", v)}>
-                          <SelectTrigger className="mt-1.5 bg-background/50"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                          <SelectTrigger className={`mt-1.5 bg-background/50 ${hasFieldError("remote") ? "border-destructive" : ""}`}>
+                            <SelectValue placeholder="Sélectionner" />
+                          </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="onsite">Sur site</SelectItem>
                             <SelectItem value="hybrid">Hybride</SelectItem>
                             <SelectItem value="remote">Full remote</SelectItem>
                           </SelectContent>
                         </Select>
+                        <FieldError error={errors.remote} />
                       </div>
                     </div>
                     {!form.client_secret && (
                       <div className="border-t border-border/30 pt-4">
                         <h3 className="text-sm font-semibold text-muted-foreground mb-3">Responsable recrutement côté client</h3>
                         <div className="grid gap-4 sm:grid-cols-2">
-                          <div className="sm:col-span-2">
-                            <Label>Nom du responsable</Label>
-                            <Input placeholder="Ex: Marie Martin" value={form.contact_name} onChange={e => update("contact_name", e.target.value)} className="mt-1.5 bg-background/50" />
+                          <div className="sm:col-span-2" data-field-error={hasFieldError("contact_name") || undefined}>
+                            <Label>Nom du responsable <span className="text-destructive">*</span></Label>
+                            <Input
+                              placeholder="Ex: Marie Martin"
+                              value={form.contact_name}
+                              onChange={e => update("contact_name", e.target.value)}
+                              className={`mt-1.5 bg-background/50 ${hasFieldError("contact_name") ? "border-destructive" : ""}`}
+                              maxLength={100}
+                            />
+                            <FieldError error={errors.contact_name} />
                           </div>
-                          <div>
+                          <div data-field-error={hasFieldError("contact_phone") || undefined}>
                             <Label>Téléphone <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
-                            <Input placeholder="06 12 34 56 78" value={form.contact_phone} onChange={e => update("contact_phone", e.target.value)} className="mt-1.5 bg-background/50" />
+                            <Input
+                              placeholder="06 12 34 56 78"
+                              value={form.contact_phone}
+                              onChange={e => update("contact_phone", e.target.value)}
+                              className={`mt-1.5 bg-background/50 ${hasFieldError("contact_phone") ? "border-destructive" : ""}`}
+                            />
+                            <FieldError error={errors.contact_phone} />
                           </div>
-                          <div>
-                            <Label>Email <span className="text-muted-foreground text-xs">(optionnel)</span></Label>
-                            <Input type="email" placeholder="marie@client.com" value={form.contact_email} onChange={e => update("contact_email", e.target.value)} className="mt-1.5 bg-background/50" />
+                          <div data-field-error={hasFieldError("contact_email") || undefined}>
+                            <Label>Email <span className="text-destructive">*</span></Label>
+                            <Input
+                              type="email"
+                              placeholder="marie@client.com"
+                              value={form.contact_email}
+                              onChange={e => update("contact_email", e.target.value)}
+                              className={`mt-1.5 bg-background/50 ${hasFieldError("contact_email") ? "border-destructive" : ""}`}
+                            />
+                            <FieldError error={errors.contact_email} />
                           </div>
                         </div>
                       </div>
@@ -344,14 +515,23 @@ const DeclareLead = () => {
                   <div className="space-y-5">
                     <h2 className="font-display text-2xl font-bold">Détails de la mission</h2>
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <div>
-                        <Label>Poste recherché</Label>
-                        <Input placeholder="Ex: Développeur Fullstack" value={form.position} onChange={e => update("position", e.target.value)} className="mt-1.5 bg-background/50" />
+                      <div data-field-error={hasFieldError("position") || undefined}>
+                        <Label>Poste recherché <span className="text-destructive">*</span></Label>
+                        <Input
+                          placeholder="Ex: Développeur Fullstack"
+                          value={form.position}
+                          onChange={e => update("position", e.target.value)}
+                          className={`mt-1.5 bg-background/50 ${hasFieldError("position") ? "border-destructive" : ""}`}
+                          maxLength={100}
+                        />
+                        <FieldError error={errors.position} />
                       </div>
-                      <div>
-                        <Label>Seniorité</Label>
+                      <div data-field-error={hasFieldError("seniority") || undefined}>
+                        <Label>Seniorité <span className="text-destructive">*</span></Label>
                         <Select value={form.seniority} onValueChange={v => update("seniority", v)}>
-                          <SelectTrigger className="mt-1.5 bg-background/50"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                          <SelectTrigger className={`mt-1.5 bg-background/50 ${hasFieldError("seniority") ? "border-destructive" : ""}`}>
+                            <SelectValue placeholder="Sélectionner" />
+                          </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="junior">Junior (0-2 ans)</SelectItem>
                             <SelectItem value="mid">Confirmé (3-5 ans)</SelectItem>
@@ -359,15 +539,25 @@ const DeclareLead = () => {
                             <SelectItem value="expert">Expert (8+ ans)</SelectItem>
                           </SelectContent>
                         </Select>
+                        <FieldError error={errors.seniority} />
                       </div>
-                      <div>
-                        <Label>Démarrage</Label>
-                        <Input type="date" min={todayStr} value={form.start_date} onChange={e => update("start_date", e.target.value)} className="mt-1.5 bg-background/50" />
+                      <div data-field-error={hasFieldError("start_date") || undefined}>
+                        <Label>Démarrage <span className="text-destructive">*</span></Label>
+                        <Input
+                          type="date"
+                          min={todayStr}
+                          value={form.start_date}
+                          onChange={e => update("start_date", e.target.value)}
+                          className={`mt-1.5 bg-background/50 ${hasFieldError("start_date") ? "border-destructive" : ""}`}
+                        />
+                        <FieldError error={errors.start_date} />
                       </div>
-                      <div>
-                        <Label>Durée estimée</Label>
+                      <div data-field-error={hasFieldError("duration") || undefined}>
+                        <Label>Durée estimée <span className="text-destructive">*</span></Label>
                         <Select value={form.duration} onValueChange={v => update("duration", v)}>
-                          <SelectTrigger className="mt-1.5 bg-background/50"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                          <SelectTrigger className={`mt-1.5 bg-background/50 ${hasFieldError("duration") ? "border-destructive" : ""}`}>
+                            <SelectValue placeholder="Sélectionner" />
+                          </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="1-3">1 à 3 mois</SelectItem>
                             <SelectItem value="3-6">3 à 6 mois</SelectItem>
@@ -375,6 +565,7 @@ const DeclareLead = () => {
                             <SelectItem value="12+">12+ mois</SelectItem>
                           </SelectContent>
                         </Select>
+                        <FieldError error={errors.duration} />
                       </div>
                     </div>
                     <div className="flex items-center justify-between rounded-lg border border-border/50 bg-secondary/30 p-4">
@@ -390,20 +581,31 @@ const DeclareLead = () => {
                 {step === 2 && (
                   <div className="space-y-5">
                     <h2 className="font-display text-2xl font-bold">Budget client</h2>
-                    <div>
-                      <Label>TJM client (€ HT / jour)</Label>
-                      <Input type="number" placeholder="Ex: 550" value={form.tjm || ""} onChange={e => update("tjm", e.target.value)} className="mt-1.5 bg-background/50" min={0} />
+                    <div data-field-error={hasFieldError("tjm") || undefined}>
+                      <Label>TJM client (€ HT / jour) <span className="text-destructive">*</span></Label>
+                      <Input
+                        type="number"
+                        placeholder="Ex: 550"
+                        value={form.tjm || ""}
+                        onChange={e => update("tjm", e.target.value)}
+                        className={`mt-1.5 bg-background/50 ${hasFieldError("tjm") ? "border-destructive" : ""}`}
+                        min={0}
+                      />
+                      <FieldError error={errors.tjm} />
                     </div>
-                    <div>
-                      <Label>Priorité</Label>
+                    <div data-field-error={hasFieldError("priority") || undefined}>
+                      <Label>Priorité <span className="text-destructive">*</span></Label>
                       <Select value={form.priority} onValueChange={v => update("priority", v)}>
-                        <SelectTrigger className="mt-1.5 bg-background/50"><SelectValue placeholder="Sélectionner" /></SelectTrigger>
+                        <SelectTrigger className={`mt-1.5 bg-background/50 ${hasFieldError("priority") ? "border-destructive" : ""}`}>
+                          <SelectValue placeholder="Sélectionner" />
+                        </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="urgent">🔴 Urgent</SelectItem>
                           <SelectItem value="normal">🟡 Normal</SelectItem>
                           <SelectItem value="low">🟢 Pas pressé</SelectItem>
                         </SelectContent>
                       </Select>
+                      <FieldError error={errors.priority} />
                     </div>
                   </div>
                 )}
@@ -423,7 +625,6 @@ const DeclareLead = () => {
 
                 {step === 4 && (
                   <div className="space-y-8">
-                    {/* Hero banner for contract step */}
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -455,7 +656,6 @@ const DeclareLead = () => {
                         </div>
                       </div>
 
-                      {/* Floating badges */}
                       <div className="relative z-10 flex flex-wrap gap-3 mt-6">
                         {[
                           { icon: Shield, text: "Signature sécurisée" },
@@ -476,7 +676,6 @@ const DeclareLead = () => {
                       </div>
                     </motion.div>
 
-                    {/* Contract content */}
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -488,7 +687,6 @@ const DeclareLead = () => {
                       </div>
                     </motion.div>
 
-                    {/* Signature section */}
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
