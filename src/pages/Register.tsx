@@ -102,7 +102,7 @@ const Register = () => {
               className="text-transparent bg-clip-text"
               style={{ backgroundImage: "linear-gradient(to right, #fcd34d, #fef3c7)" }}
             >
-              DealFlowNetwork
+              Lynx
             </span>
           </h1>
 
@@ -153,7 +153,7 @@ const Register = () => {
             <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
               <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="text-lg font-display font-bold text-foreground">DealFlowNetwork</span>
+            <span className="text-lg font-display font-bold text-foreground">Lynx</span>
           </div>
 
           <div>

@@ -145,7 +145,7 @@ const ForgotPassword = () => {
             <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
               <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="text-lg font-display font-bold text-foreground">DealFlowNetwork</span>
+            <span className="text-lg font-display font-bold text-foreground">Lynx</span>
           </div>
 
           <div>
