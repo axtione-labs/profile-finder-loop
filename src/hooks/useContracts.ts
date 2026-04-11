@@ -219,7 +219,7 @@ li { margin-bottom: 4px; }
 <div class="signatures-grid">
 <div class="sig-col">
 <p><strong>LE DONNEUR D'ORDRE</strong></p>
-<p style="color:#999;">DealFlowNetwork</p>
+<p style="color:#999;">Lynx</p>
 </div>
 <div class="sig-col">
 <p><strong>L'APPORTEUR D'AFFAIRES</strong></p>

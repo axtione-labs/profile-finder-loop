@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
           <div style="display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 12px; border-radius: 12px;">
             <span style="color: white; font-size: 24px; font-weight: bold;">📝</span>
           </div>
-          <h1 style="margin: 16px 0 0; font-size: 24px; color: #1a1a2e;">DealFlowNetwork</h1>
+          <h1 style="margin: 16px 0 0; font-size: 24px; color: #1a1a2e;">Lynx</h1>
         </div>
 
         <h2 style="color: #1a1a2e; font-size: 20px;">Contrat signé avec succès ✅</h2>
@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
         </p>
 
         <p style="color: #888; font-size: 14px; text-align: center; border-top: 1px solid #eee; padding-top: 20px; margin-top: 32px;">
-          L'équipe DealFlowNetwork
+          L'équipe Lynx
         </p>
       </div>
     `;
@@ -89,9 +89,9 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "DealFlowNetwork <onboarding@resend.dev>",
+        from: "Lynx <onboarding@resend.dev>",
         to: [email],
-        subject: `Votre contrat d'apport d'affaires signé — DealFlowNetwork`,
+        subject: `Votre contrat d'apport d'affaires signé — Lynx`,
         html: emailHtml,
       }),
     });

@@ -41,8 +41,14 @@ export function AdminSidebar() {
       <SidebarContent>
         <div className="flex items-center gap-2 px-4 py-4">
           {!collapsed && (
-            <Link to="/" className="font-display text-lg font-bold text-gradient-gold">
-              DealFlowNetwork
+            <Link to="/" className="flex items-center gap-2">
+              <img src="/lynx-logo.png" alt="Lynx" className="h-7 w-7" />
+              <span className="font-display text-lg font-bold text-gradient-gold">Lynx</span>
+            </Link>
+          )}
+          {collapsed && (
+            <Link to="/">
+              <img src="/lynx-logo.png" alt="Lynx" className="h-7 w-7" />
             </Link>
           )}
         </div>

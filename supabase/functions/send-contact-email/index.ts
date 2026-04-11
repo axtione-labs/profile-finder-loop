@@ -31,7 +31,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResponse = await resend.emails.send({
-      from: "DealFlowNetwork <onboarding@resend.dev>",
+      from: "Lynx <onboarding@resend.dev>",
       to: ["farouk.hmdi@gmail.com"],
       subject: `[Contact] ${subject}`,
       html: `

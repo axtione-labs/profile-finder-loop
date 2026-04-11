@@ -170,10 +170,8 @@ const Login = () => {
         >
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-2 mb-4 mt-6">
-            <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
-              <Zap className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-lg font-display font-bold text-foreground">DealFlowNetwork</span>
+            <img src="/lynx-logo.png" alt="Lynx" className="w-8 h-8" />
+            <span className="text-lg font-display font-bold text-foreground">Lynx</span>
           </div>
 
           <div>
@@ -259,8 +257,8 @@ const Login = () => {
               <AlertDialogTitle className="text-center">Compte bloqué</AlertDialogTitle>
               <AlertDialogDescription className="text-center">
                 Votre compte a été suspendu. Pour toute question, veuillez contacter le support à l'adresse{" "}
-                <a href="mailto:support@dealflownetwork.fr" className="text-primary font-medium hover:underline">
-                  support@dealflownetwork.fr
+                <a href="mailto:support@lynx.fr" className="text-primary font-medium hover:underline">
+                  support@lynx.fr
                 </a>
               </AlertDialogDescription>
             </AlertDialogHeader>
