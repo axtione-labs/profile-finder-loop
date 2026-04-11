@@ -51,6 +51,7 @@ const AdminApporteurs = () => {
       (p.company || "").toLowerCase().includes(term)
     );
   });
+  const { page, setPage, totalPages, paginated, total, from, to } = usePagination(filtered, 25);
 
   const getStats = (userId: string) => {
     const userLeads = leads.filter(l => l.user_id === userId);
