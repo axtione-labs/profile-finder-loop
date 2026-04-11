@@ -81,7 +81,8 @@ const Login = () => {
             <span className="text-2xl font-display font-bold text-white">DealFlowNetwork</span>
           </div>
           <h2 className="text-3xl font-display font-bold text-white mb-4">
-            Transformez vos contacts en <span className="text-gradient">revenus passifs</span>
+            Transformez vos contacts en{" "}
+            <span className="text-yellow-300 drop-shadow-lg">revenus passifs</span>
           </h2>
           <p className="text-white/60 text-lg leading-relaxed">
             Déclarez un besoin IT en 2 minutes, nous trouvons le profil adapté et vous touchez vos gains en quelques clics.
