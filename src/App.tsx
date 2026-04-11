@@ -22,6 +22,9 @@ import AdminClients from "./pages/admin/AdminClients";
 import AdminApporteurs from "./pages/admin/AdminApporteurs";
 import SignContract from "./pages/SignContract";
 import NotFound from "./pages/NotFound";
+import MesClients from "./pages/apporteur/MesClients";
+import MesContrats from "./pages/apporteur/MesContrats";
+import MesCommissions from "./pages/apporteur/MesCommissions";
 
 const queryClient = new QueryClient();
 
@@ -39,8 +42,10 @@ const App = () => (
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/commissions" element={<ProtectedRoute><CommissionsDashboard /></ProtectedRoute>} />
+            <Route path="/dashboard/clients" element={<ProtectedRoute><MesClients /></ProtectedRoute>} />
+            <Route path="/dashboard/contracts" element={<ProtectedRoute><MesContrats /></ProtectedRoute>} />
+            <Route path="/dashboard/commissions" element={<ProtectedRoute><MesCommissions /></ProtectedRoute>} />
             <Route path="/declare" element={<ProtectedRoute><DeclareLead /></ProtectedRoute>} />
             <Route path="/sign-contract" element={<ProtectedRoute><SignContract /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminOverview /></ProtectedRoute>} />
