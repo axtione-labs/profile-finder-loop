@@ -18,7 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useQueryClient } from "@tanstack/react-query";
 
-
+interface MarginCellProps {
   lead: Lead;
   updateLead: ReturnType<typeof useUpdateLead>;
 }
