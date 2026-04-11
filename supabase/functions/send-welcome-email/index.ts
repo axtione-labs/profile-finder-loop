@@ -39,11 +39,11 @@ Deno.serve(async (req) => {
           <div style="display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 12px; border-radius: 12px;">
             <span style="color: white; font-size: 24px; font-weight: bold;">⚡</span>
           </div>
-          <h1 style="margin: 16px 0 0; font-size: 24px; color: #1a1a2e;">DealFlowNetwork</h1>
+          <h1 style="margin: 16px 0 0; font-size: 24px; color: #1a1a2e;">Lynx</h1>
         </div>
         <h2 style="color: #1a1a2e; font-size: 20px;">Bienvenue ${firstName} ! 🎉</h2>
         <p style="color: #555; line-height: 1.6; font-size: 16px;">
-          Votre compte apporteur d'affaires a bien été créé sur <strong>DealFlowNetwork</strong>.
+          Votre compte apporteur d'affaires a bien été créé sur <strong>Lynx</strong>.
         </p>
         <p style="color: #555; line-height: 1.6; font-size: 16px;">
           Vous pouvez dès maintenant :
@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
           </a>
         </div>
         <p style="color: #888; font-size: 14px; text-align: center; border-top: 1px solid #eee; padding-top: 20px;">
-          L'équipe DealFlowNetwork
+          L'équipe Lynx
         </p>
       </div>
     `;
@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "DealFlowNetwork <onboarding@resend.dev>",
+        from: "Lynx <onboarding@resend.dev>",
         to: [email],
         subject: `Bienvenue sur DealFlow, ${firstName} !`,
         html: emailHtml,
