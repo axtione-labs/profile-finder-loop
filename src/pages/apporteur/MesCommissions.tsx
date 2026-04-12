@@ -69,8 +69,8 @@ const MesCommissions = () => {
     }
 
     const { error: dbError } = await supabase
-      .from("commissions" as any)
-      .update({ invoice_url: filePath } as any)
+      .from("commissions")
+      .update({ invoice_url: filePath })
       .eq("id", commissionId);
 
     if (dbError) {

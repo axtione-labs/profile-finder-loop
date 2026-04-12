@@ -83,7 +83,7 @@ const Login = () => {
             <Zap className="w-5 h-5 text-white" />
           </div>
           <span className="text-xl font-display font-bold tracking-tight">
-            DealFlow<span className="text-primary">Network</span>
+            Lynx
           </span>
         </motion.div>
 
