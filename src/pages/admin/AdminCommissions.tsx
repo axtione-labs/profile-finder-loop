@@ -258,9 +258,9 @@ const AdminCommissions = () => {
                       <td className="px-3 py-2.5 w-[100px] text-right tabular-nums font-medium text-blue-600">{(c.days_worked * c.admin_amount).toLocaleString("fr-FR")} €</td>
                       <td className="px-3 py-2.5">
                         {(c as any).invoice_url ? (
-                          <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs text-green-600" onClick={() => {
-                            const { data } = supabase.storage.from("documents").getPublicUrl((c as any).invoice_url);
-                            window.open(data.publicUrl, "_blank");
+                          <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs text-green-600" onClick={async () => {
+                            const { data } = await supabase.storage.from("documents").createSignedUrl((c as any).invoice_url, 3600);
+                            if (data?.signedUrl) window.open(data.signedUrl, "_blank");
                           }}>
                             <Eye className="h-3 w-3" /> Voir facture
                           </Button>
