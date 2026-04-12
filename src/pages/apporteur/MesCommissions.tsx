@@ -1,15 +1,25 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMissions, useCommissions } from "@/hooks/useMissions";
 import ApporteurLayout from "@/components/apporteur/ApporteurLayout";
 import { Badge } from "@/components/ui/badge";
-import { Coins, TrendingUp, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Coins, TrendingUp, Clock, Upload, Eye, CheckCircle2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
+const ALLOWED_TYPES = ["application/pdf", "image/png", "image/jpeg", "image/jpg"];
 
 const MesCommissions = () => {
   const { user } = useAuth();
   const { data: missions = [] } = useMissions();
   const { data: commissions = [], isLoading } = useCommissions();
+  const queryClient = useQueryClient();
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const pendingCommissionId = useRef<string | null>(null);
 
   const currentYear = new Date().getFullYear();
   const [filterYear, setFilterYear] = useState(String(currentYear));
@@ -22,6 +32,57 @@ const MesCommissions = () => {
 
   const years = [...new Set(myCommissions.map((c) => c.commission_year))].sort((a, b) => b - a);
   if (!years.includes(currentYear)) years.unshift(currentYear);
+
+  const handleUploadClick = (commissionId: string) => {
+    pendingCommissionId.current = commissionId;
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const commissionId = pendingCommissionId.current;
+    e.target.value = "";
+
+    if (!file || !commissionId || !user) {
+      toast.error("Veuillez sélectionner une facture valide");
+      return;
+    }
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      toast.error("Format non autorisé. Formats acceptés : PDF, PNG, JPG, JPEG");
+      return;
+    }
+
+    setUploadingId(commissionId);
+
+    const fileExt = file.name.split(".").pop();
+    const filePath = `${user.id}/invoices/${commissionId}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("documents")
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      toast.error("Erreur lors de l'upload : " + uploadError.message);
+      setUploadingId(null);
+      return;
+    }
+
+    const { error: dbError } = await supabase
+      .from("commissions" as any)
+      .update({ invoice_url: filePath } as any)
+      .eq("id", commissionId);
+
+    if (dbError) {
+      toast.error("Erreur : " + dbError.message);
+      setUploadingId(null);
+      return;
+    }
+
+    toast.success("Facture uploadée avec succès");
+    queryClient.invalidateQueries({ queryKey: ["commissions"] });
+    setUploadingId(null);
+  };
 
   return (
     <ApporteurLayout title="Mes commissions">
@@ -38,6 +99,15 @@ const MesCommissions = () => {
           </SelectContent>
         </Select>
       </div>
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf,.jpg,.jpeg,.png"
+        className="hidden"
+        onChange={handleFileChange}
+      />
 
       {/* Summary cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
@@ -81,18 +151,52 @@ const MesCommissions = () => {
                 <th className="pb-3 font-medium">Mois</th>
                 <th className="pb-3 font-medium">Jours</th>
                 <th className="pb-3 font-medium">Montant</th>
+                <th className="pb-3 font-medium">Facture</th>
                 <th className="pb-3 font-medium">Statut</th>
               </tr>
             </thead>
             <tbody>
               {yearComms.map((c) => {
                 const mission = missions.find((m) => m.id === c.mission_id);
+                const hasInvoice = !!(c as any).invoice_url;
                 return (
                   <tr key={c.id} className="border-b border-border/30">
                     <td className="py-3 font-medium">{mission?.consultant_name || "—"} — {mission?.client || ""}</td>
                     <td className="py-3 text-muted-foreground">{c.commission_month}/{c.commission_year}</td>
                     <td className="py-3 text-muted-foreground">{c.days_worked}j</td>
                     <td className="py-3 font-semibold">{c.amount.toLocaleString("fr-FR")}€</td>
+                    <td className="py-3">
+                      {hasInvoice ? (
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="border-success/30 bg-success/10 text-success gap-1">
+                            <CheckCircle2 className="h-3 w-3" />
+                            Déposée
+                          </Badge>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 gap-1 text-xs"
+                            onClick={() => {
+                              const { data } = supabase.storage.from("documents").getPublicUrl((c as any).invoice_url);
+                              window.open(data.publicUrl, "_blank");
+                            }}
+                          >
+                            <Eye className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 gap-1 text-xs"
+                          disabled={uploadingId === c.id}
+                          onClick={() => handleUploadClick(c.id)}
+                        >
+                          <Upload className="h-3 w-3" />
+                          {uploadingId === c.id ? "Upload..." : "Uploader facture"}
+                        </Button>
+                      )}
+                    </td>
                     <td className="py-3">
                       <Badge
                         variant="outline"

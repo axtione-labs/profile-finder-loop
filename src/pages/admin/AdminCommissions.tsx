@@ -1,20 +1,16 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { motion } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Calendar, Coins, Upload, FileText, AlertTriangle, Eye } from "lucide-react";
+import { TrendingUp, Calendar, Coins, FileText, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { useCommissions, useUpdateCommission, useMissions } from "@/hooks/useMissions";
 import { useProfiles } from "@/hooks/useProfiles";
 import { useAllDocuments } from "@/hooks/useDocuments";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 const commStatusColor: Record<string, string> = {
@@ -31,11 +27,8 @@ const AdminCommissions = () => {
   const { data: profiles = [] } = useProfiles();
   const { data: allDocuments = [] } = useAllDocuments();
   const updateCommission = useUpdateCommission();
-  const queryClient = useQueryClient();
 
   const [payConfirm, setPayConfirm] = useState<string | null>(null);
-  const [invoiceUploadId, setInvoiceUploadId] = useState<string | null>(null);
-  const invoiceInputRef = useRef<HTMLInputElement>(null);
   const currentYear = new Date().getFullYear();
   const [filterYear, setFilterYear] = useState(String(currentYear));
 
@@ -48,10 +41,23 @@ const AdminCommissions = () => {
 
   const handleUpdateStatus = (id: string, status: string) => {
     if (status === "Payée") {
-      // Check documents and invoice before paying
       const commission = commissions.find(c => c.id === id);
       if (!commission) return;
 
+      // Check mission is "Gagnée"
+      const mission = getMissionInfo(commission.mission_id);
+      if (!mission || mission.status !== "Gagnée") {
+        toast.error("Impossible de marquer cette commission comme payée : la mission n'est pas encore gagnée.");
+        return;
+      }
+
+      // Check invoice uploaded by apporteur
+      if (!(commission as any).invoice_url) {
+        toast.error("Impossible de marquer cette commission comme payée tant que la facture n'a pas été déposée par l'apporteur d'affaires.");
+        return;
+      }
+
+      // Check documents
       const userDocs = allDocuments.filter(d => d.user_id === commission.apporteur_id);
       const rib = userDocs.find(d => d.type === "rib");
       const kbis = userDocs.find(d => d.type === "kbis");
@@ -63,20 +69,7 @@ const AdminCommissions = () => {
       if (!idCard || idCard.status !== "validated") missingDocs.push("Pièce d'identité");
 
       if (missingDocs.length > 0) {
-        const hasAnyDoc = userDocs.length > 0;
-        if (hasAnyDoc) {
-          toast.error(`Documents non validés : ${missingDocs.join(", ")}. Veuillez les valider dans la section Apporteurs avant de payer.`);
-        } else {
-          toast.error(`L'apporteur n'a pas envoyé ses documents (${missingDocs.join(", ")}). Un email lui sera envoyé pour les demander.`);
-          // TODO: send email notification
-        }
-        return;
-      }
-
-      // Check invoice
-      if (!(commission as any).invoice_url) {
-        toast.error("Facture manquante. L'apporteur doit uploader sa facture avant le paiement.");
-        setInvoiceUploadId(id);
+        toast.error(`Documents non validés : ${missingDocs.join(", ")}. Veuillez les valider avant de payer.`);
         return;
       }
 
@@ -98,40 +91,7 @@ const AdminCommissions = () => {
     });
   };
 
-  const handleInvoiceUpload = async (commissionId: string, file: File) => {
-    const commission = commissions.find(c => c.id === commissionId);
-    if (!commission) return;
-
-    const fileExt = file.name.split(".").pop();
-    const filePath = `${commission.apporteur_id}/invoices/${commissionId}.${fileExt}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from("documents")
-      .upload(filePath, file, { upsert: true });
-    if (uploadError) {
-      toast.error("Erreur upload facture: " + uploadError.message);
-      return;
-    }
-
-    const { error: dbError } = await supabase
-      .from("commissions" as any)
-      .update({ invoice_url: filePath } as any)
-      .eq("id", commissionId);
-    if (dbError) {
-      toast.error("Erreur: " + dbError.message);
-      return;
-    }
-
-    toast.success("Facture uploadée avec succès");
-    queryClient.invalidateQueries({ queryKey: ["commissions"] });
-    setInvoiceUploadId(null);
-  };
-
   const handleUpdateDaysWorked = (id: string, days: number) => {
-    const commission = commissions.find(c => c.id === id);
-    if (!commission) return;
-    const newAmount = days * commission.amount / (commission.days_worked || 1 );
-    // Recalculate: amount = days_worked * rate_per_day (amount / old_days or original rate)
     updateCommission.mutate({ id, days_worked: days } as any, {
       onSuccess: () => toast.success(`Jours travaillés mis à jour`),
     });
@@ -143,7 +103,7 @@ const AdminCommissions = () => {
   const totalPending = yearCommissions.filter(c => c.status !== "Payée").reduce((s, c) => s + (c.days_worked * c.amount), 0);
   const totalAdmin = yearCommissions.reduce((s, c) => s + (c.days_worked * c.admin_amount), 0);
 
-  // Chart data: monthly breakdown
+  // Chart data
   const chartData = months.map((m, i) => {
     const monthComms = yearCommissions.filter(c => c.commission_month === i + 1);
     return {
@@ -155,6 +115,16 @@ const AdminCommissions = () => {
 
   const years = [...new Set(commissions.map(c => c.commission_year))].sort((a, b) => b - a);
   if (!years.includes(currentYear)) years.unshift(currentYear);
+
+  const getInvoiceStatus = (commission: any) => {
+    const mission = getMissionInfo(commission.mission_id);
+    const hasInvoice = !!commission.invoice_url;
+    const missionWon = mission?.status === "Gagnée";
+
+    if (hasInvoice && missionWon) return "ready";
+    if (hasInvoice && !missionWon) return "invoice_only";
+    return "none";
+  };
 
   return (
     <AdminLayout>
@@ -223,7 +193,7 @@ const AdminCommissions = () => {
               />
               <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
               <Bar dataKey="apporteurs" name="Comm. apporteurs" fill="#2563EB" radius={[4, 4, 0, 0]} maxBarSize={32} />
-              <Bar dataKey="admin" name="Marge admin" fill="#F97316" radius={[4, 4, 0, 0]} maxBarSize={32} />
+              <Bar dataKey="admin" name="Commission admin" fill="#F97316" radius={[4, 4, 0, 0]} maxBarSize={32} />
             </BarChart>
           </ResponsiveContainer>
         </motion.div>
@@ -256,7 +226,7 @@ const AdminCommissions = () => {
                   <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Consultant</th>
                   <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Jours</th>
                   <th className="px-3 py-2.5 text-right text-[11px] font-medium uppercase text-gray-500 w-[100px]">Total comm.</th>
-                  <th className="px-3 py-2.5 text-right text-[11px] font-medium uppercase text-gray-500 w-[100px]">Marge admin</th>
+                  <th className="px-3 py-2.5 text-right text-[11px] font-medium uppercase text-gray-500 w-[100px]">Commission admin</th>
                   <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500">Facture</th>
                   <th className="px-3 py-2.5 text-left text-[11px] font-medium uppercase text-gray-500 w-[140px]">Statut</th>
                 </tr>
@@ -264,6 +234,7 @@ const AdminCommissions = () => {
               <tbody>
                 {yearCommissions.map((c, idx) => {
                   const mission = getMissionInfo(c.mission_id);
+                  const invoiceStatus = getInvoiceStatus(c);
                   return (
                     <tr key={c.id} className={`h-11 border-b border-gray-100 hover:bg-blue-50/40 transition-colors duration-100 ${idx % 2 === 1 ? "bg-gray-50/30" : "bg-white"}`}>
                       <td className="px-3 py-2.5 text-gray-500 w-[100px] tabular-nums">{months[(c.commission_month || 1) - 1]} {c.commission_year}</td>
@@ -291,14 +262,10 @@ const AdminCommissions = () => {
                             const { data } = supabase.storage.from("documents").getPublicUrl((c as any).invoice_url);
                             window.open(data.publicUrl, "_blank");
                           }}>
-                            <Eye className="h-3 w-3" /> Voir
-                          </Button>
-                        ) : c.status === "Générée" ? (
-                          <Button variant="outline" size="sm" className="h-7 gap-1 text-xs border-gray-200" onClick={() => setInvoiceUploadId(c.id)}>
-                            <Upload className="h-3 w-3" /> Uploader
+                            <Eye className="h-3 w-3" /> Voir facture
                           </Button>
                         ) : (
-                          <span className="text-xs text-gray-400">—</span>
+                          <span className="text-xs text-gray-400">Aucune facture déposée</span>
                         )}
                       </td>
                       <td className="px-3 py-2.5 w-[140px]">
@@ -332,7 +299,7 @@ const AdminCommissions = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmer le paiement ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette commission sera marquée comme payée. Les documents de l'apporteur sont validés et la facture est présente. Cette action est irréversible.
+              Cette commission sera marquée comme payée. La mission est gagnée, les documents sont validés et la facture est présente. Cette action est irréversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -341,38 +308,6 @@ const AdminCommissions = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Invoice Upload Dialog */}
-      <Dialog open={!!invoiceUploadId} onOpenChange={(open) => !open && setInvoiceUploadId(null)}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary" />
-              Uploader la facture
-            </DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            L'apporteur doit fournir sa facture avant le paiement de la commission.
-          </p>
-          <input
-            ref={invoiceInputRef}
-            type="file"
-            accept=".pdf,.jpg,.jpeg,.png"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file && invoiceUploadId) {
-                handleInvoiceUpload(invoiceUploadId, file);
-              }
-              e.target.value = "";
-            }}
-          />
-          <Button className="gradient-primary border-0 w-full" onClick={() => invoiceInputRef.current?.click()}>
-            <Upload className="h-4 w-4 mr-2" />
-            Sélectionner la facture
-          </Button>
-        </DialogContent>
-      </Dialog>
     </AdminLayout>
   );
 };
