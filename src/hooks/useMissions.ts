@@ -30,6 +30,7 @@ export interface Commission {
   days_worked: number;
   commission_month: number;
   commission_year: number;
+  invoice_url: string | null;
 }
 
 export const useMissions = () => {
