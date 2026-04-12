@@ -46,7 +46,7 @@ const AdminCommissions = () => {
 
       // Check mission is "Gagnée"
       const mission = getMissionInfo(commission.mission_id);
-      if (!mission || mission.status !== "Gagnée") {
+      if (!mission || (mission.status !== "Gagnée" && mission.status !== "Gagné")) {
         toast.error("Impossible de marquer cette commission comme payée : la mission n'est pas encore gagnée.");
         return;
       }
