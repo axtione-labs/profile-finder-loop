@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { TrendingUp, Calendar, Coins, FileText, Eye } from "lucide-react";
 import { toast } from "sonner";
-import { useCommissions, useUpdateCommission, useMissions } from "@/hooks/useMissions";
+import { useCommissions, useUpdateCommission, useMissions, type Commission } from "@/hooks/useMissions";
 import { useProfiles } from "@/hooks/useProfiles";
 import { useAllDocuments } from "@/hooks/useDocuments";
 import { supabase } from "@/integrations/supabase/client";
