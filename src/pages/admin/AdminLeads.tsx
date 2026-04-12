@@ -260,9 +260,14 @@ const AdminLeads = () => {
                       )}
                     </td>
                     <td className="px-3 py-2.5 w-[140px]">
-                      <span className={`inline-block rounded border px-2 py-0.5 text-[11px] font-medium whitespace-nowrap ${statusColor[lead.status] || "bg-gray-100 text-gray-600 border-gray-200"}`}>
-                        {lead.status}
-                      </span>
+                      <Select value={lead.status} onValueChange={(v) => handleUpdateStatus(lead.id, v)}>
+                        <SelectTrigger className={`h-6 w-[130px] border text-[11px] font-medium ${statusColor[lead.status] || "bg-gray-100 text-gray-600 border-gray-200"}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {allStatuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
                     </td>
                     <td className="px-3 py-2.5 w-[100px] tabular-nums text-gray-500">{new Date(lead.created_at).toLocaleDateString("fr-FR")}</td>
                     <td className="px-3 py-2.5 w-[120px] text-right">

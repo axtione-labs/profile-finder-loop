@@ -253,13 +253,13 @@ const AdminApporteurs = () => {
                   const deletedAt = (p as any).deleted_at;
                   return (
                     <tr key={p.id} className={`h-11 border-b border-gray-100 hover:bg-blue-50/40 transition-colors duration-100 ${idx % 2 === 1 ? "bg-gray-50/30" : "bg-white"}`}>
-                      <td className="px-3 py-2.5 max-w-0">
-                        <div className="flex items-center gap-2 truncate">
+                      <td className="px-3 py-2.5">
+                        <div className="flex items-center gap-2 whitespace-nowrap">
                           <UserCheck className="h-3.5 w-3.5 text-blue-500 shrink-0" />
-                          <span className="font-medium text-gray-900 truncate">{p.first_name} {p.last_name}</span>
+                          <span className="font-medium text-gray-900">{p.first_name} {p.last_name}</span>
                         </div>
                       </td>
-                      <td className="px-3 py-2.5 max-w-0 truncate text-gray-600">{p.company || "—"}</td>
+                      <td className="px-3 py-2.5 whitespace-nowrap text-gray-600">{p.company || "—"}</td>
                       <td className="px-3 py-2.5">
                         <span className="inline-block rounded border px-2 py-0.5 text-[11px] font-medium bg-blue-100 text-blue-700 border-blue-200">{stats.leads}</span>
                       </td>
