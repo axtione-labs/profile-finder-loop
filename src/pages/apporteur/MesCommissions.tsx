@@ -176,9 +176,9 @@ const MesCommissions = () => {
                             variant="ghost"
                             size="sm"
                             className="h-7 gap-1 text-xs"
-                            onClick={() => {
-                              const { data } = supabase.storage.from("documents").getPublicUrl((c as any).invoice_url);
-                              window.open(data.publicUrl, "_blank");
+                            onClick={async () => {
+                              const { data } = await supabase.storage.from("documents").createSignedUrl((c as any).invoice_url, 3600);
+                              if (data?.signedUrl) window.open(data.signedUrl, "_blank");
                             }}
                           >
                             <Eye className="h-3 w-3" />
