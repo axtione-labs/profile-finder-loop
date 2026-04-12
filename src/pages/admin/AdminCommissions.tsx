@@ -119,7 +119,7 @@ const AdminCommissions = () => {
   const getInvoiceStatus = (commission: any) => {
     const mission = getMissionInfo(commission.mission_id);
     const hasInvoice = !!commission.invoice_url;
-    const missionWon = mission?.status === "Gagnée";
+    const missionWon = mission?.status === "Gagnée" || mission?.status === "Gagné";
 
     if (hasInvoice && missionWon) return "ready";
     if (hasInvoice && !missionWon) return "invoice_only";
