@@ -46,7 +46,7 @@ const AdminCommissions = () => {
 
       // Check mission is "Gagnée"
       const mission = getMissionInfo(commission.mission_id);
-      if (!mission || mission.status !== "Gagnée") {
+      if (!mission || (mission.status !== "Gagnée" && mission.status !== "Gagné")) {
         toast.error("Impossible de marquer cette commission comme payée : la mission n'est pas encore gagnée.");
         return;
       }
@@ -119,7 +119,7 @@ const AdminCommissions = () => {
   const getInvoiceStatus = (commission: any) => {
     const mission = getMissionInfo(commission.mission_id);
     const hasInvoice = !!commission.invoice_url;
-    const missionWon = mission?.status === "Gagnée";
+    const missionWon = mission?.status === "Gagnée" || mission?.status === "Gagné";
 
     if (hasInvoice && missionWon) return "ready";
     if (hasInvoice && !missionWon) return "invoice_only";
