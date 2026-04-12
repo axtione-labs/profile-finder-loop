@@ -52,7 +52,7 @@ const AdminCommissions = () => {
       }
 
       // Check invoice uploaded by apporteur
-      if (!(commission as any).invoice_url) {
+      if (!commission.invoice_url) {
         toast.error("Impossible de marquer cette commission comme payée tant que la facture n'a pas été déposée par l'apporteur d'affaires.");
         return;
       }
@@ -116,7 +116,7 @@ const AdminCommissions = () => {
   const years = [...new Set(commissions.map(c => c.commission_year))].sort((a, b) => b - a);
   if (!years.includes(currentYear)) years.unshift(currentYear);
 
-  const getInvoiceStatus = (commission: any) => {
+  const getInvoiceStatus = (commission: Commission) => {
     const mission = getMissionInfo(commission.mission_id);
     const hasInvoice = !!commission.invoice_url;
     const missionWon = mission?.status === "Gagnée" || mission?.status === "Gagné";
@@ -257,9 +257,9 @@ const AdminCommissions = () => {
                       <td className="px-3 py-2.5 w-[100px] text-right tabular-nums font-medium text-gray-900">{(c.days_worked * c.amount).toLocaleString("fr-FR")} €</td>
                       <td className="px-3 py-2.5 w-[100px] text-right tabular-nums font-medium text-blue-600">{(c.days_worked * c.admin_amount).toLocaleString("fr-FR")} €</td>
                       <td className="px-3 py-2.5">
-                        {(c as any).invoice_url ? (
+                        {c.invoice_url ? (
                           <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs text-green-600" onClick={async () => {
-                            const { data } = await supabase.storage.from("documents").createSignedUrl((c as any).invoice_url, 3600);
+                            const { data } = await supabase.storage.from("documents").createSignedUrl(c.invoice_url!, 3600);
                             if (data?.signedUrl) window.open(data.signedUrl, "_blank");
                           }}>
                             <Eye className="h-3 w-3" /> Voir facture

@@ -139,6 +139,7 @@ const AdminMissions = () => {
         days_worked: 0,
         commission_month: new Date().getMonth() + 1,
         commission_year: new Date().getFullYear(),
+        invoice_url: null,
       });
 
       // Update candidate status to "Placé chez [client]"
